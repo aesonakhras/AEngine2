@@ -7,12 +7,24 @@
 #include "d3dcompiler.h"
 #include <DirectXMath.h>
 
+//for fun
+#include <memory.h>
+
+//This is for Debugging
+#include <comdef.h>
+
+//AEngine Specific
+#include "../VertexBuffer.h"
+#include "../IndexBuffer.h"
+#include "../VertexShader.h"
+#include "../FragmentShader.h"
+
 //TODO: Lmao what is this
 #pragma comment(lib, "d3d11.lib")
+#pragma comment(lib, "D3DCompiler.lib")
 
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
-
 
 struct VERTEX {
     //TODO: What is going on with this float here
@@ -29,10 +41,18 @@ namespace Core {
     ID3D11Device* device = nullptr;
     ID3D11DeviceContext* deviceContext = nullptr;
     ID3D11RenderTargetView* backBuffer = nullptr;
-    ID3D11Buffer* pVBuffer = nullptr;
+    std::shared_ptr<VertexBuffer> vertexBuffer = nullptr;
+    std::shared_ptr<IndexBuffer> indexBuffer = nullptr;
 
-    ID3D11VertexShader* pVS;
-    ID3D11PixelShader* pPS;
+    std::shared_ptr<VertexShader> vertexShader = nullptr;
+    std::shared_ptr<FragmentShader> fragmentShader = nullptr;
+
+    void PrintHResult(HRESULT result) {
+        _com_error err(result);
+        LPCTSTR errMsg = err.ErrorMessage();
+
+        std::wcout << errMsg << std::endl;
+    }
 
 	void PrintHelloWorld()
 	{
@@ -62,18 +82,26 @@ namespace Core {
     }
 
     void SetUpPipeline() {
-        ID3D10Blob *VS;
-        ID3D10Blob *PS;
+        vertexShader = std::make_shared<VertexShader>(device, L"shaders.shader");
+        vertexShader->Bind(deviceContext);
 
-        //TODO: Apparently I need to use another function than this
-        //for times sake I will go ahead and use this and convert it later
-        D3DCompileFromFile(L"Shaders.shader", 0, 0, "VShader", "vs_4_0", 0, 0, &VS, 0);
-        D3DCompileFromFile(L"shaders.shader", 0, 0, "PShader", "ps_4_0", 0, 0, &PS, 0);
+        fragmentShader = std::make_shared<FragmentShader>(device, L"shaders.shader");
+        fragmentShader->Bind(deviceContext);
 
-        device->CreateVertexShader(VS->GetBufferPointer(), VS->GetBufferSize(), NULL, &pVS);
-        device->CreatePixelShader(PS->GetBufferPointer(), PS->GetBufferSize(), NULL, &pPS);
-        
+        ID3D11InputLayout *layout;
+        D3D11_INPUT_ELEMENT_DESC ied[] =
 
+        {
+            {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+            {"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
+        };
+
+        //TODO: This is terrible, make a cleaner interface for creating the InputLayout
+        device->CreateInputLayout(ied, 2, vertexShader->GetBlob()->GetBufferPointer(), 
+                                            vertexShader->GetBlob()->GetBufferSize(), &layout);
+        deviceContext->IASetInputLayout(layout);
+
+        //send data to the GPU
         //define the triangle
         VERTEX OurVertices[] =
         {
@@ -82,22 +110,12 @@ namespace Core {
             {-0.45f, -0.5f, 0.0f, DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f)}
         };
 
-        //set up the vertex buffer
-        D3D11_BUFFER_DESC bd;
+        //setup the index buffer
+        //just assume it worked for now
+        unsigned int index[] = { 0, 1, 2 };
 
-        bd.Usage = D3D11_USAGE_DYNAMIC;
-        bd.ByteWidth = sizeof(VERTEX) * 3;
-        bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-        bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-
-        device->CreateBuffer(&bd, NULL, &pVBuffer);
-
-        D3D11_MAPPED_SUBRESOURCE ms;
-
-        //TODO: Either disable or move on
-        deviceContext->Map(pVBuffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);
-        memcpy(ms.pData, OurVertices, sizeof(OurVertices));
-        deviceContext->Unmap(pVBuffer, NULL);
+        vertexBuffer = std::make_shared<VertexBuffer>(device, (void*)OurVertices, (unsigned int)(3 * sizeof(VERTEX)));
+        indexBuffer = std::make_shared<IndexBuffer>(device, (void*)index, sizeof(unsigned int) * 3);
     }
 
     void InitD3D(HWND hwnd) {
@@ -144,9 +162,6 @@ namespace Core {
     void CleanD3D() {
         swapChain->SetFullscreenState(FALSE, NULL);    // switch to windowed mode
 
-        pVS->Release();
-        pPS->Release();
-
         swapChain->Release();
         backBuffer->Release();
         device->Release();
@@ -162,7 +177,23 @@ namespace Core {
     void renderFrame() {
         deviceContext->ClearRenderTargetView(backBuffer, RGBA{ 0.0f, 0.2f, 0.4f, 1.0f });
 
+        // select which vertex buffer to display
+        UINT stride = sizeof(VERTEX);
+        UINT offset = 0;
+        vertexBuffer->Bind(deviceContext, stride, offset);
+        indexBuffer->Bind(deviceContext, DXGI_FORMAT_R32_UINT, 0);
+        // select which primtive type we are using
+        //deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        deviceContext->DrawIndexed(3, 0, 0);
+
+        // draw the vertex buffer to the back buffer
+        //deviceContext->Draw(3, 0);
+
         swapChain->Present(0, 0);
+    }
+
+    void cleanUp() {
+        //elete vertexBuffer;
     }
 
 	void SetupWindow() {
