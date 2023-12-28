@@ -1,6 +1,7 @@
 #include "VertexBuffer.h"
 
-VertexBuffer::VertexBuffer(ID3D11Device* device, const void* data, unsigned int dataSize) {
+VertexBuffer::VertexBuffer(ID3D11DeviceContext* deviceContext, ID3D11Device* device, const void* data, unsigned int dataSize) :
+m_deviceContext(deviceContext) {
 	D3D11_BUFFER_DESC bufferDesc;
 
 	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -14,7 +15,7 @@ VertexBuffer::VertexBuffer(ID3D11Device* device, const void* data, unsigned int 
 	initData.SysMemPitch = 0;
 	initData.SysMemSlicePitch = 0;
 
-	HRESULT hr = device->CreateBuffer(&bufferDesc, &initData, &pVBuffer);
+	HRESULT hr = device->CreateBuffer(&bufferDesc, &initData, &m_pVBuffer);
 
 	if (FAILED(hr)) {
 		//TODO: Determine what to do with errors and how to print them
@@ -24,9 +25,9 @@ VertexBuffer::VertexBuffer(ID3D11Device* device, const void* data, unsigned int 
 }
 
 VertexBuffer::~VertexBuffer() {
-	pVBuffer->Release();
+	m_pVBuffer->Release();
 }
 
-void VertexBuffer::Bind(ID3D11DeviceContext* deviceContext, UINT stride, UINT offset) {
-	deviceContext->IASetVertexBuffers(0, 1, &pVBuffer, &stride, &offset);
+void VertexBuffer::Bind(UINT stride, UINT offset) {
+	m_deviceContext->IASetVertexBuffers(0, 1, &m_pVBuffer, &stride, &offset);
 }

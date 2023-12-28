@@ -4,7 +4,8 @@
 
 #include <comdef.h>
 
-FragmentShader::FragmentShader(ID3D11Device* device, LPCWSTR pFileName) {
+FragmentShader::FragmentShader(ID3D11DeviceContext* deviceContext, ID3D11Device* device, LPCWSTR pFileName) :
+	m_deviceContext(deviceContext) {
 	//TODO: IDK what the compiler is yappin about, this is initialized
 	ID3D10Blob* PS = nullptr;
 
@@ -25,15 +26,15 @@ FragmentShader::FragmentShader(ID3D11Device* device, LPCWSTR pFileName) {
 		}
 	}
 
-	hr = device->CreatePixelShader(PS->GetBufferPointer(), PS->GetBufferSize(), NULL, &pPS);
+	hr = device->CreatePixelShader(PS->GetBufferPointer(), PS->GetBufferSize(), NULL, &m_pPS);
 	if (FAILED(hr)) {
 		std::cout << "Fragment Shader failed" << std::endl;
 	}
 }
-void FragmentShader::Bind(ID3D11DeviceContext* deviceContext) {
-	deviceContext->PSSetShader(pPS, 0, 0);
+void FragmentShader::Bind() {
+	m_deviceContext->PSSetShader(m_pPS, 0, 0);
 }
 
 FragmentShader::~FragmentShader() {
-	pPS->Release();
+	m_pPS->Release();
 }

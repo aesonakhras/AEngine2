@@ -4,10 +4,13 @@
 
 class IndexBuffer {
 public:
-	IndexBuffer(ID3D11Device* device, const void* data, unsigned int dataSize);
-	void Bind(ID3D11DeviceContext* deviceContext, DXGI_FORMAT format, UINT offset);
+	IndexBuffer(ID3D11DeviceContext* deviceContext, ID3D11Device* device, const void* data, unsigned int dataSize);
+	void Bind(DXGI_FORMAT format, UINT offset);
+	unsigned int GetSize();
 	~IndexBuffer();
 
 private:
-	ID3D11Buffer* pIBuffer = nullptr;
+	ID3D11Buffer* m_pIBuffer = nullptr;
+	ID3D11DeviceContext* m_deviceContext = nullptr;
+	unsigned int m_indeciesCount;
 };
