@@ -37,10 +37,11 @@ public:
     void SetTransform(Transform transform) {
         //turn the transform into the model matrix
 
-        m_modelMatrix = DirectX::XMMatrixIdentity() *
+        m_modelMatrix = /*DirectX::XMMatrixIdentity() **/
             DirectX::XMMatrixScalingFromVector(transform.Scale) *
             DirectX::XMMatrixRotationRollPitchYawFromVector(transform.Rotation) *
             DirectX::XMMatrixTranslationFromVector(transform.Position);
+            
 
        // m_modelMatrix = DirectX::XMMatrixIdentity();
             //DirectX::XMMatrixRotationRollPitchYawFromVector(transform.Rotation);

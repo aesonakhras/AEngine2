@@ -27,9 +27,17 @@
 #include "../Camera.h"
 
 #include "../Texture.h"
+#include "../D3DShaderResource.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+
+//TempIncludes and other hacks to remove later
+#include "../AEngineVertexTypes.h"
+using namespace AEngineVertexTypes;
+
+#include "../AEngineConstants.h"
+using namespace AEngineConstants;
 
 //TODO: Lmao what is this
 #pragma comment(lib, "d3d11.lib")
@@ -38,15 +46,10 @@
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
 
-struct VERTEX {
-    DirectX::XMFLOAT3 POS;
-    DirectX::XMFLOAT2 UV;
-};
-
-
-
-//Notes:
-//The D3DX (D3DX 9, D3DX 10, and D3DX 11) utility library is deprecated
+//
+#include <assimp/Importer.hpp>      // C++ importer interface
+#include <assimp/scene.h>           // Output data structure
+#include <assimp/postprocess.h>     // Post processing flags
 
 namespace Core {
     IDXGISwapChain* swapChain = nullptr;
@@ -65,53 +68,16 @@ namespace Core {
 
     ID3D11DepthStencilView* pDSV;
 
+    std::shared_ptr<VertexShader> screenQuadVert;
+    std::shared_ptr<FragmentShader> screenQuadFrag;
+
+    std::shared_ptr<D3DShaderResource> meshShaderResource;
+    std::shared_ptr<D3DShaderResource> screenQuadResource;
+
+    std::shared_ptr<Texture> screenQuadTexture = nullptr;
+    ID3D11RenderTargetView* screenQuadRenderTargetView = nullptr;
+
     Camera camera = { {0.0f, 0.0f, -1.0f, 0.0f}, 1.0472f, (float)SCREEN_WIDTH/(float)SCREEN_HEIGHT, 0.01f, 100.0f };
-
-
-    //This is a quad
-    VERTEX QuadVerticies[] =
-    {
-        {  DirectX::XMFLOAT3(- 1.0f, 1.0f, 0.0f), DirectX::XMFLOAT2(0.0f, 0.0f)},
-        { DirectX::XMFLOAT3(1.0f, 1.0f, 0.0f), DirectX::XMFLOAT2(1.0f, 0.0f) },
-        { DirectX::XMFLOAT3(-1.0f, -1.0f, 0.0f), DirectX::XMFLOAT2(0.0f, 1.0f) },
-        { DirectX::XMFLOAT3(1.0f, -1.0f, 0.0f), DirectX::XMFLOAT2(1.0f, 1.0f) },
-    };
-
-    unsigned int QuadIndicies[] = { 
-        0,1,2, 1,3,2,
-    };
-
-    VERTEX CubeVerticies[] = {
-            {DirectX::XMFLOAT3(-1.0f, -1.0f, -1.0f), DirectX::XMFLOAT2(0.0f, 1.0f)},
-            {DirectX::XMFLOAT3(1.0f,  -1.0f, -1.0f), DirectX::XMFLOAT2(1.0f, 1.0f)},
-            {DirectX::XMFLOAT3(-1.0f,  1.0f, -1.0f), DirectX::XMFLOAT2(0.0f, 0.0f)},
-            {DirectX::XMFLOAT3(1.0f, 1.0f, -1.0f), DirectX::XMFLOAT2(1.0f, 0.0f)},
-
-            // Back Face
-            {DirectX::XMFLOAT3(-1.0f, -1.0f, 1.0f), DirectX::XMFLOAT2(0.0f, 1.0f)},
-            {DirectX::XMFLOAT3(1.0f, -1.0f, 1.0f),DirectX::XMFLOAT2(1.0f, 1.0f)},
-            {DirectX::XMFLOAT3(-1.0f,  1.0f, 1.0f), DirectX::XMFLOAT2(0.0f, 0.0f)},
-            {DirectX::XMFLOAT3(1.0f,  1.0f, 1.0f), DirectX::XMFLOAT2(1.0f, 0.0f)},
-    };
-
-    unsigned int CubeIndicies[] = {
-        0,2,1, 2,3,1,
-        1,3,5, 3,7,5,
-        2,6,3, 3,6,7,
-        4,5,7, 4,7,6,
-        0,4,2, 2,4,6,
-        0,1,4, 1,5,4
-    };
-
-    VERTEX TriangleVerticies[] =
-    {
-        {DirectX::XMFLOAT3(0.0f, 0.73f, 0.0f), DirectX::XMFLOAT2(1.0f, 0.0f)},
-        {DirectX::XMFLOAT3(1.0f, -1.0f, 0.0f), DirectX::XMFLOAT2(0.0f, 1.0f)},
-        {DirectX::XMFLOAT3(-1.0f, -1.0f, 0.0f), DirectX::XMFLOAT2(0.0f, 0.0f)}
-    };
-
-    unsigned int TriangleIndicies[] = { 0, 1, 2 };
-
 
     void PrintHResult(HRESULT result) {
         _com_error err(result);
@@ -159,21 +125,6 @@ namespace Core {
 
         fragmentShader = std::make_shared<FragmentShader>(deviceContext, device, L"shaders.shader");
 
-        //send data to the GPU
-        //define the triangle
-
-
-        //VERTEX OurVertices2[] =
-        //{
-        //    {-0.5f, 0.5f, 0.0f, DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f)},
-        //    {0.0f, -0.5f, 0.0f, DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f)},
-        //    {-1.0f, -0.5f, 0.0f, DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f)}
-        //};
-
-        //setup the index buffer
-        //just assume it worked for now
-        
-
         //vertexBuffer = std::make_shared<VertexBuffer>(deviceContext, device, (void*)OurVertices, (unsigned int)(3 * sizeof(VERTEX)));
         indexBuffer = std::make_shared<IndexBuffer>(deviceContext, device, (void*)TriangleIndicies, sizeof(unsigned int) * 3);
 
@@ -202,11 +153,12 @@ namespace Core {
         };
 
         
-        meshes.push_back(new StaticMesh{vertexBuffer2, indexBuffer2, vertexShader, fragmentShader, transform, deviceContext});
-        //meshes.push_back(new StaticMesh{ vertexBuffer1, indexBuffer, vertexShader2, fragmentShader, transform2, deviceContext });
-        //create 2 meshes for drawing
+        //meshes.push_back(new StaticMesh{vertexBuffer2, indexBuffer2, vertexShader, fragmentShader, transform, deviceContext});
 
         deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+        screenQuadVert = std::make_shared<VertexShader>(deviceContext, device, L"ScreenQuad.shader", DirectX::XMFLOAT4{ 0.0f, 1.0f, 0.0f, 0.0f });
+        screenQuadFrag = std::make_shared<FragmentShader>(deviceContext, device, L"ScreenQuad.shader");
     }
 
     void setupDepthStencilState() {
@@ -237,6 +189,7 @@ namespace Core {
         // Create depth stencil state
         ID3D11DepthStencilState* pDSState;
         device->CreateDepthStencilState(&dsDesc, &pDSState);
+        deviceContext->OMSetDepthStencilState(NULL, 0);
     }
 
     void InitD3D(HWND hwnd) {
@@ -262,7 +215,7 @@ namespace Core {
         }
 
         //Depth
-        setupDepthStencilState();
+        
 
         D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
         ZeroMemory(&descDSV, sizeof(descDSV));
@@ -293,6 +246,10 @@ namespace Core {
         device->CreateRenderTargetView(pBackBuffer, NULL, &backBuffer);
         pBackBuffer->Release();
 
+        //screenQuadTexture = std::make_shared<Texture>(device, nullptr, SCREEN_WIDTH, SCREEN_HEIGHT, 1, DXGI_FORMAT_R8G8B8A8_UNORM, 4, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE);
+        //device->CreateRenderTargetView(screenQuadTexture->GetTexture(), NULL, &screenQuadRenderTargetView);
+
+
         deviceContext->OMSetRenderTargets(1, &backBuffer, pDSV);
 
         D3D11_VIEWPORT viewport;
@@ -302,13 +259,14 @@ namespace Core {
         viewport.TopLeftY = 0;
         viewport.Width = SCREEN_WIDTH;
         viewport.Height = SCREEN_HEIGHT;
+        viewport.MinDepth = 0.0f;
+        viewport.MaxDepth = 1.0f;
         deviceContext->RSSetViewports(1, &viewport);
-
 
         //set up the raster state
         D3D11_RASTERIZER_DESC  rasterDesc;
 
-        rasterDesc.FillMode = D3D11_FILL_SOLID ,
+        rasterDesc.FillMode = D3D11_FILL_SOLID,
         rasterDesc.CullMode = D3D11_CULL_BACK,
         rasterDesc.FrontCounterClockwise = FALSE;
         rasterDesc.DepthBias = 0;
@@ -328,6 +286,8 @@ namespace Core {
         }
 
         deviceContext->RSSetState(rasterState);
+
+        setupDepthStencilState();
     }
 
     void CleanD3D() {
@@ -352,48 +312,114 @@ namespace Core {
 
     float y = 0;
 
-    float zPos = 6;
+    float zPos = 1;
 
     //oooh not very good, this is quite stinky
     //but for now we will pass it references to the things that we need
     void renderFrame() {
-        
+        //meshShaderResource->Bind();
+        //deviceContext->OMSetRenderTargets(1, &screenQuadRenderTargetView, pDSV);
+
+        //set render target to the rt
         deviceContext->ClearRenderTargetView(backBuffer, RGBA{ 0.0f, 0.2f, 0.4f, 1.0f });
         deviceContext->ClearDepthStencilView(pDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
-
 
         // select which vertex buffer to display
         UINT stride = sizeof(VERTEX);
         UINT offset = 0;
         
-        y += 0.00005f;
+        y += 0.0001f;
         if (y > 6.28) {
             y = 0.0f;
         }
+        std::cout <<"Y: " << y << std::endl;
 
         int i = 0;
         for (auto mesh : meshes) {
             if (i == 0) {
                 Transform transform{
-                    {0.0f, 0.0f, zPos, 1.0f}, //pos
-                    {0.0f, y, 0.0f, 1.0f}, //rot
-                    {1.0f, 1.0f, 1.0f, 1.0f}  //scale
+                    {0.0f, -1.0f, zPos, 1.0f}, //pos
+                    {1.5f, y, 0.0f, 0.0f}, //rot
+                    {0.025f, 0.025f, 0.025f, 1.0f}  //scale
                 };
 
                 mesh->SetTransform(transform);
             }
             i++;
             mesh->Draw(stride, camera.GetVP());
+
         }
 
-        // draw the vertex buffer to the back buffer
-        //deviceContext->Draw(3, 0);
+        
+        //trying to be fance.
+        //deviceContext->OMSetRenderTargets(1, &backBuffer, NULL);
+        //deviceContext->ClearRenderTargetView(backBuffer, RGBA{ 0.0f, 0.2f, 0.4f, 1.0f });
+        ////change render target to the normal back buffer
+        //screenQuadResource->Bind();
+        //screenQuadFrag->Bind();
+        //screenQuadVert->Bind();
+
+        //deviceContext->Draw(4, 0);
+
 
         swapChain->Present(0, 0);
     }
 
     void cleanUp() {
         //elete vertexBuffer;
+    }
+
+    void ImportMesh(std::string fileName) {
+        Assimp::Importer importer;
+
+        // And have it read the given file with some example postprocessing
+        // Usually - if speed is not the most important aspect for you - you'll
+        // probably to request more postprocessing than we do in this example.
+        const aiScene* scene = importer.ReadFile(fileName,
+            aiProcess_CalcTangentSpace |
+            aiProcess_Triangulate |
+            aiProcess_JoinIdenticalVertices |
+            aiProcess_SortByPType |
+            aiProcess_MakeLeftHanded|
+            aiProcess_FlipWindingOrder|
+            aiProcess_FlipUVs);
+
+        // If the import failed, report it
+        if (nullptr == scene) {
+            std::cout << "model has failed" << std::endl;
+        }
+        if (scene->HasMeshes()) {
+            std::cout << "model exists, parsing now" << std::endl;
+        }
+
+        std::vector<unsigned int> indicies{};
+
+         for (int i = 0; i < scene->mMeshes[0]->mNumFaces; i++) {
+             for (int j = 0; j < 3; j++) {
+                 indicies.push_back(scene->mMeshes[0]->mFaces[i].mIndices[j]);
+             }
+         }
+
+
+        std::vector<VERTEX> AEngineVerticies{};
+
+        for (int i = 0; i < scene->mMeshes[0]->mNumVertices; i++) {
+            auto vertex = scene->mMeshes[0]->mVertices[i];
+            auto uv = scene->mMeshes[0]->mTextureCoords[0][i];
+
+            AEngineVerticies.push_back({ {vertex.x, vertex.y, vertex.z},{uv.x, uv.y} });
+        }
+
+        auto vertexBuffer = std::make_shared<VertexBuffer>(deviceContext, device, (void*)AEngineVerticies.data(), sizeof(VERTEX) * AEngineVerticies.size());
+        auto indexBuffer = std::make_shared<IndexBuffer>(deviceContext, device, (void*)indicies.data(), sizeof(unsigned int) * indicies.size());
+
+        Transform transform{
+            {0.0f, 0.0f, 1.0f, 0.0f}, //pos
+            {0.0f, 0.0f, 0.0f, 0.0f}, //rot
+            {1.0f, 1.0f, 1.0f}  //scale
+        };
+
+        meshes.push_back(new StaticMesh{ vertexBuffer, indexBuffer, vertexShader, fragmentShader, transform, deviceContext });
     }
 
     //hahaha lazy
@@ -403,21 +429,20 @@ namespace Core {
         int width = 0;
         int height = 0;
         int channels = 0;
-        const char* filename = "map.png";
+        const char* filename = "CatTP.png";
 
         unsigned char* img = stbi_load(filename, &width, &height, &channels, 0);
+
+        if (img == nullptr) {
+            std::cout << "WAAAA" << std::endl;
+        }
 
         std::cout << width << " , " << height << std::endl;
 
         texture = new Texture(device, img, width, height, 1, DXGI_FORMAT_R8G8B8A8_UNORM, 1, D3D11_BIND_SHADER_RESOURCE);
+        meshShaderResource = std::make_shared<D3DShaderResource>(deviceContext, device, texture->GetTexture(), D3D11_SRV_DIMENSION_TEXTURE2D);
+        //screenQuadResource = std::make_shared<D3DShaderResource>(deviceContext, device, screenQuadTexture->GetTexture(), D3D11_SRV_DIMENSION_TEXTURE2D);
 
-        ID3D11ShaderResourceView* shaderResourceView;
-        D3D11_SHADER_RESOURCE_VIEW_DESC shaderViewDesc;
-        ZeroMemory(&shaderViewDesc, sizeof(D3D11_SHADER_RESOURCE_VIEW_DESC));
-        shaderViewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-        shaderViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-
-        device->CreateShaderResourceView(texture->GetTexture(), NULL, &shaderResourceView);
 
         ID3D11SamplerState* pSampler = nullptr;
         // Create the sample state
@@ -432,7 +457,7 @@ namespace Core {
         sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
         device->CreateSamplerState(&sampDesc, &pSampler);
 
-        deviceContext->PSSetShaderResources(0, 1, &shaderResourceView);
+        meshShaderResource->Bind();
         deviceContext->PSSetSamplers(0, 1, &pSampler);
 
         free(img);
@@ -487,17 +512,10 @@ namespace Core {
         MSG msg;
 
         ///////////////////////////////////Set Up Direct X related stuff////////////////////////////////////
-
-
-
         InitD3D(hWnd);
         SetUpPipeline();
         textureSetup();
-
-
-
-
-        //test to see if free image works
+        ImportMesh(std::string("Cat.obj"));
 
         // wait for the next message in the queue, store the result in 'msg'
         while (TRUE)
