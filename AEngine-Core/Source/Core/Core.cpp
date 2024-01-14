@@ -126,7 +126,7 @@ namespace Core {
             {1.0f, 1.0f, 1.0f}  //scale
         };
 
-        meshes.push_back(new StaticMesh{ vertexBuffer, indexBuffer, vertexShader, fragmentShader, transform, g_GraphicsManager.GetDeviceContext() });
+        meshes.push_back(new StaticMesh{ vertexBuffer, indexBuffer, vertexShader, fragmentShader, transform});
     }
 
     void textureSetup() {
@@ -164,8 +164,6 @@ namespace Core {
 
         textureSetup();
         ImportMesh(std::string("Cat.obj"));
-        //screenQuadVert = std::make_shared<VertexShader>(deviceContext, device, L"ScreenQuad.shader", DirectX::XMFLOAT4{ 0.0f, 1.0f, 0.0f, 0.0f });
-        //screenQuadFrag = std::make_shared<FragmentShader>(deviceContext, device, L"ScreenQuad.shader");
     }
 
     //oooh not very good, this is quite stinky
@@ -184,7 +182,7 @@ namespace Core {
             if (i == 0) {
                 Transform transform{
                     {0.0f, -1.0f, zPos, 1.0f}, //pos
-                    {1.5f, 0.0f, 0.0f, 0.0f}, //rot
+                    {1.5f, y, 0.0f, 0.0f}, //rot
                     {0.025f, 0.025f, 0.025f, 1.0f}  //scale
                 };
 

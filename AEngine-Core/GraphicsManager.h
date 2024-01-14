@@ -13,6 +13,8 @@
 #include <vector>
 #include "AEngineVertexTypes.h"
 
+#include "IGLI.h"
+
 namespace AECore {
 	class GraphicsManager {
 
@@ -25,27 +27,18 @@ namespace AECore {
 		void ShutDown();
 
 		//TODO: TEMP TEMP TEMP TEMP TEMP TEMP TEMP TEMP TEMP/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		ID3D11Device* GetDevice() { return m_device; };
-		ID3D11DeviceContext* GetDeviceContext() { return m_deviceContext; };
+		ID3D11Device* GetDevice();
+		ID3D11DeviceContext* GetDeviceContext();
 
 		//CreateBuffer
 		
 
 	private:
-		ID3D11Device* m_device = nullptr;
-		ID3D11DeviceContext* m_deviceContext = nullptr;
-		ID3D11Texture2D* m_depthTexture = nullptr;
-		IDXGISwapChain* m_swapChain = nullptr;
-		ID3D11RenderTargetView* m_backBuffer = nullptr;
-		ID3D11DepthStencilView* m_pDSV = nullptr;
+		void DrawMesh(const StaticMesh& mesh, DirectX::XMMATRIX VP);
 
-		void setupDepthStencilState();
-		void D3DCreateCall(HRESULT hresult, std::string failInfo);
+		std::unique_ptr<IGLI> m_GLI = nullptr;
 
-		//internal for this class, do not expose outside
-		ID3D11Texture2D* CreateTextureD3D(void* data, unsigned int height, unsigned int width, unsigned int miplevel,
-			DXGI_FORMAT format, unsigned int sampleCount, unsigned int BindFlags);
-		//TODO: Find another solution for this
-		typedef float RGBA[4];
+		UINT m_stride = sizeof(AEngineVertexTypes::VERTEX);
+		UINT m_offset = 0;
 	};
 }
