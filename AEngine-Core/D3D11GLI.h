@@ -19,6 +19,12 @@ namespace AECore {
 		virtual ID3D11DeviceContext* GetDeviceContext() final override;
 		virtual void Clear() final override;
 		virtual void Swap() final override;
+
+		//Creation
+		virtual IndexBuffer CreateIndexBuffer(const void* data, size_t count, size_t stride) final override;
+
+		//Binding
+		virtual void BindBuffer(const std::shared_ptr<IndexBuffer>& ib) final override;
 		///////////////////////////End of the IGLI functions
 
 	private:

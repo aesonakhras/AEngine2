@@ -148,6 +148,8 @@ namespace Core {
         fragmentShader = std::make_shared<FragmentShader>(g_GraphicsManager.GetDeviceContext(), g_GraphicsManager.GetDevice(), L"shaders.shader");
 
         auto vertexBuffer2 = std::make_shared<VertexBuffer>(g_GraphicsManager.GetDeviceContext(), g_GraphicsManager.GetDevice(), (void*)CubeVerticies, sizeof(VERTEX) * (sizeof(CubeVerticies)/sizeof(CubeVerticies[0])));
+
+        //NOTE: This is where the compile error is being generated
         auto indexBuffer2 = std::make_shared<IndexBuffer>(g_GraphicsManager.GetDeviceContext(), g_GraphicsManager.GetDevice(), (void*)CubeIndicies, sizeof(unsigned int) * (sizeof(CubeIndicies) / sizeof(CubeIndicies[0])));
 
         Transform transform{
