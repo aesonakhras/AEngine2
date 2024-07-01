@@ -118,7 +118,7 @@ namespace Core {
         MeshData meshData = FileImporter::ImportMesh(fileName);
 
         auto vertexBuffer = std::make_shared<VertexBuffer>(g_GraphicsManager.GetDeviceContext(), g_GraphicsManager.GetDevice(), (void*)meshData.vertexData, sizeof(VERTEX) * meshData.vertexCount);
-        auto indexBuffer = std::make_shared<IndexBuffer>(g_GraphicsManager.GetDeviceContext(), g_GraphicsManager.GetDevice(), (void*)meshData.indexData, sizeof(unsigned int) * meshData.indexCount);
+        auto indexBuffer = std::make_shared<DX11_IndexBuffer>(g_GraphicsManager.GetDeviceContext(), g_GraphicsManager.GetDevice(), (void*)meshData.indexData, sizeof(unsigned int) * meshData.indexCount);
 
         Transform transform{
             {0.0f, 0.0f, 1.0f, 0.0f}, //pos
@@ -150,7 +150,7 @@ namespace Core {
         auto vertexBuffer2 = std::make_shared<VertexBuffer>(g_GraphicsManager.GetDeviceContext(), g_GraphicsManager.GetDevice(), (void*)CubeVerticies, sizeof(VERTEX) * (sizeof(CubeVerticies)/sizeof(CubeVerticies[0])));
 
         //NOTE: This is where the compile error is being generated
-        auto indexBuffer2 = std::make_shared<IndexBuffer>(g_GraphicsManager.GetDeviceContext(), g_GraphicsManager.GetDevice(), (void*)CubeIndicies, sizeof(unsigned int) * (sizeof(CubeIndicies) / sizeof(CubeIndicies[0])));
+        auto indexBuffer2 = std::make_shared<DX11_IndexBuffer>(g_GraphicsManager.GetDeviceContext(), g_GraphicsManager.GetDevice(), (void*)CubeIndicies, sizeof(unsigned int) * (sizeof(CubeIndicies) / sizeof(CubeIndicies[0])));
 
         Transform transform{
             {0.0f, 0.0f, 1.0f, 0.0f}, //pos

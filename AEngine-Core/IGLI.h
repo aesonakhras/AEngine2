@@ -4,6 +4,8 @@
 
 #include <d3d11.h>
 
+
+//TODO: Must refactor, this is a D3D11 class.  need to determine abstraction
 namespace AECore {
 	class IGLI {
 	public:
@@ -19,10 +21,10 @@ namespace AECore {
 		virtual void Swap() = 0;
 
 		//Creation
-		virtual IndexBuffer CreateIndexBuffer(const void* data, size_t count, size_t stride) = 0;
+		virtual IIndexBuffer CreateIndexBuffer(const void* data, size_t count, size_t stride) = 0;
 
 		//Binding
-		virtual void BindBuffer(const std::shared_ptr<IndexBuffer>& ib) = 0;
+		virtual void BindBuffer(const std::shared_ptr<IIndexBuffer>& ib) = 0;
 
 		virtual ~IGLI() {};
 	};

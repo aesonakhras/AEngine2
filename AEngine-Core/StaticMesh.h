@@ -8,7 +8,7 @@
 struct StaticMesh {    
 public:
 
-    StaticMesh(std::shared_ptr<VertexBuffer> vertexBuffer, std::shared_ptr<IndexBuffer> indexBuffer,
+    StaticMesh(std::shared_ptr<VertexBuffer> vertexBuffer, std::shared_ptr<IIndexBuffer> indexBuffer,
         std::shared_ptr<VertexShader> vertexShader, std::shared_ptr<FragmentShader> fragmentShader, Transform transform) :
         m_vertexBuffer(vertexBuffer),
         m_indexBuffer(indexBuffer),
@@ -30,7 +30,7 @@ public:
 
     //TODO: This will be cleaned up later
     std::shared_ptr<VertexBuffer> m_vertexBuffer = nullptr;
-    std::shared_ptr<IndexBuffer> m_indexBuffer = nullptr;
+    std::shared_ptr<IIndexBuffer> m_indexBuffer = nullptr;
 
     std::shared_ptr<VertexShader> m_vertexShader = nullptr;
     std::shared_ptr<FragmentShader> m_fragmentShader = nullptr;

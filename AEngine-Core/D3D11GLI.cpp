@@ -192,44 +192,16 @@ void AECore::D3D11GLI::D3DCreateCall(HRESULT hresult, std::string failInfo) {
 }
 
 //Creation
-IndexBuffer AECore::D3D11GLI::CreateIndexBuffer(const void* data, size_t count, size_t stride) {
-    D3D11_BUFFER_DESC bufferDesc;
-
-    //TODO: Read into how much I should do this
-    ZeroMemory(&bufferDesc, sizeof(bufferDesc));
-
-    bufferDesc.Usage = D3D11_USAGE_DEFAULT;
-    bufferDesc.ByteWidth = count * stride;
-    bufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-    bufferDesc.CPUAccessFlags = 0;
-    bufferDesc.MiscFlags = 0;
-    bufferDesc.StructureByteStride = stride;
-
-    D3D11_SUBRESOURCE_DATA InitData;
-    InitData.pSysMem = data;
-    InitData.SysMemPitch = 0;
-    InitData.SysMemSlicePitch = 0;
-
-    //swap this to a ref counter pointer
-    ID3D11Buffer* buffer = nullptr;
-
-    HRESULT hr = m_device->CreateBuffer(&bufferDesc, &InitData, &buffer);
-
-    if (FAILED(hr)) {
-        //TODO: Determine what to do with errors and how to print them
-        //For now dump to cout
-        std::cout << "Index buffer Failed." << std::endl;
-    }
-
-    //I have forgotten what is needed for the stide
-    IndexBuffer indexBuffer = { (void*)buffer, count, stride};
-
-    return indexBuffer;
+IIndexBuffer AECore::D3D11GLI::CreateIndexBuffer(const void* data, size_t count, size_t stride) {
+    return DX11_IndexBuffer {m_deviceContext.Get(), m_device.Get(), data, count * (size_t)sizeof(unsigned int)};
 }
 
 //Binding
-void AECore::D3D11GLI::BindBuffer(const std::shared_ptr<IndexBuffer>& ib) {
-    m_deviceContext->IASetIndexBuffer(static_cast<ID3D11Buffer*>(ib->ResourcePTR), DXGI_FORMAT_R32_UINT, 0);
+void AECore::D3D11GLI::BindBuffer(const std::shared_ptr<IIndexBuffer>& ib) {
+    //TODO: Yeah this ain't it man
+    auto dxbuffer = static_cast<DX11_IndexBuffer*>(ib.get());
+
+    m_deviceContext->IASetIndexBuffer(dxbuffer->Resource, DXGI_FORMAT_R32_UINT, 0);
 }
 
 void AECore::D3D11GLI::ShutDown() {
