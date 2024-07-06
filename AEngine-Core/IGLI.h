@@ -1,6 +1,6 @@
 #pragma once
 #include "DeviceCreateInfo.h"
-#include "IndexBuffer.h"
+#include "IBuffer.h"
 
 #include <d3d11.h>
 
@@ -20,11 +20,9 @@ namespace AECore {
 		virtual void Clear() = 0;
 		virtual void Swap() = 0;
 
-		//Creation
-		virtual IIndexBuffer CreateIndexBuffer(const void* data, size_t count, size_t stride) = 0;
-
+		virtual std::shared_ptr <IBuffer> CreateBuffer(const void* data, size_t count, size_t stride, BufferType bufferType) = 0;
 		//Binding
-		virtual void BindBuffer(const std::shared_ptr<IIndexBuffer>& ib) = 0;
+		virtual void BindBuffer(const std::shared_ptr<IBuffer>& ib) = 0;
 
 		virtual ~IGLI() {};
 	};

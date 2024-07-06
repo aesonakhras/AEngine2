@@ -39,23 +39,24 @@ void AECore::GraphicsManager::DrawMesh(const StaticMesh& mesh, DirectX::XMMATRIX
     //update the mvp matrix in the vertexShader
     mesh.m_vertexShader->SetMVP(mesh.m_modelMatrix * VP);
 
-    mesh.m_vertexBuffer->Bind(m_stride, 0);
+    mesh.m_vertexBuffer->Bind();
+    mesh.m_indexBuffer->Bind();
 
-    m_GLI->BindBuffer(mesh.m_indexBuffer);
-    //mesh.m_indexBuffer->Bind(DXGI_FORMAT_R32_UINT, 0);
     mesh.m_vertexShader->Bind();
     mesh.m_fragmentShader->Bind();
 
     
-    m_GLI->GetDeviceContext()->DrawIndexed(mesh.m_indexBuffer->IndicesCount, 0, 0);
+    m_GLI->GetDeviceContext()->DrawIndexed(mesh.m_indexBuffer->Count, 0, 0);
+}
+
+std::shared_ptr<IBuffer> AECore::GraphicsManager::CreateBuffer(const void* data, size_t count, size_t stride, BufferType bufferType) {
+    return m_GLI->CreateBuffer(data, count, stride, bufferType);
 }
 
 void AECore::GraphicsManager::DrawFrame(std::vector<StaticMesh*> meshes, DirectX::XMMATRIX VP) {
     m_GLI->Clear();
 
     // select which vertex buffer to display
-
-
     for (auto mesh : meshes) {
         DrawMesh(*mesh, VP);
     }

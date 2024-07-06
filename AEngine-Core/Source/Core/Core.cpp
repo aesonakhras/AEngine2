@@ -23,8 +23,8 @@
 #include <filesystem>
 
 //AEngine Specific
-#include "../VertexBuffer.h"
-#include "../IndexBuffer.h"
+#include "../DX11_Buffer.h"
+
 #include "../VertexShader.h"
 #include "../FragmentShader.h"
 
@@ -117,8 +117,11 @@ namespace Core {
     void ImportMesh(std::string fileName) {
         MeshData meshData = FileImporter::ImportMesh(fileName);
 
-        auto vertexBuffer = std::make_shared<VertexBuffer>(g_GraphicsManager.GetDeviceContext(), g_GraphicsManager.GetDevice(), (void*)meshData.vertexData, sizeof(VERTEX) * meshData.vertexCount);
-        auto indexBuffer = std::make_shared<DX11_IndexBuffer>(g_GraphicsManager.GetDeviceContext(), g_GraphicsManager.GetDevice(), (void*)meshData.indexData, sizeof(unsigned int) * meshData.indexCount);
+        auto vertexBuffer = g_GraphicsManager.CreateBuffer((void*)meshData.vertexData, meshData.vertexCount, sizeof(VERTEX), AE_Vertex);
+        auto indexBuffer = g_GraphicsManager.CreateBuffer((void*)meshData.indexData, meshData.indexCount, sizeof(unsigned int), AE_Index);
+
+        //auto vertexBuffer = std::make_shared<VertexBuffer>(g_GraphicsManager.GetDeviceContext(), g_GraphicsManager.GetDevice(), (void*)meshData.vertexData, sizeof(VERTEX) * meshData.vertexCount);
+        //auto indexBuffer = std::make_shared<DX11_Buffer>(g_GraphicsManager.GetDevice(), g_GraphicsManager.GetDeviceContext(), meshData.indexCount, (void*)meshData.indexData, Index);
 
         Transform transform{
             {0.0f, 0.0f, 1.0f, 0.0f}, //pos
@@ -146,11 +149,6 @@ namespace Core {
     void SetupScene() {
         vertexShader = std::make_shared<VertexShader>(g_GraphicsManager.GetDeviceContext(), g_GraphicsManager.GetDevice(), L"shaders.shader", DirectX::XMFLOAT4{1.0f, 0.0f, 0.0f, 0.0f});
         fragmentShader = std::make_shared<FragmentShader>(g_GraphicsManager.GetDeviceContext(), g_GraphicsManager.GetDevice(), L"shaders.shader");
-
-        auto vertexBuffer2 = std::make_shared<VertexBuffer>(g_GraphicsManager.GetDeviceContext(), g_GraphicsManager.GetDevice(), (void*)CubeVerticies, sizeof(VERTEX) * (sizeof(CubeVerticies)/sizeof(CubeVerticies[0])));
-
-        //NOTE: This is where the compile error is being generated
-        auto indexBuffer2 = std::make_shared<DX11_IndexBuffer>(g_GraphicsManager.GetDeviceContext(), g_GraphicsManager.GetDevice(), (void*)CubeIndicies, sizeof(unsigned int) * (sizeof(CubeIndicies) / sizeof(CubeIndicies[0])));
 
         Transform transform{
             {0.0f, 0.0f, 1.0f, 0.0f}, //pos

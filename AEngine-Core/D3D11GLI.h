@@ -21,10 +21,10 @@ namespace AECore {
 		virtual void Swap() final override;
 
 		//Creation
-		virtual IIndexBuffer CreateIndexBuffer(const void* data, size_t count, size_t stride) final override;
+		virtual std::shared_ptr <IBuffer> CreateBuffer(const void* data, size_t count, size_t stride, BufferType bufferType) final override;
 
 		//Binding
-		virtual void BindBuffer(const std::shared_ptr<IIndexBuffer>& ib) final override;
+		virtual void BindBuffer(const std::shared_ptr<IBuffer>& ib) final override;
 		///////////////////////////End of the IGLI functions
 
 	private:

@@ -4,6 +4,8 @@
 
 #include <comdef.h>
 
+#include "DX11_Buffer.h"
+
 void AECore::D3D11GLI::PrintHResult(HRESULT result) {
     _com_error err(result);
     LPCTSTR errMsg = err.ErrorMessage();
@@ -191,17 +193,13 @@ void AECore::D3D11GLI::D3DCreateCall(HRESULT hresult, std::string failInfo) {
     }
 }
 
-//Creation
-IIndexBuffer AECore::D3D11GLI::CreateIndexBuffer(const void* data, size_t count, size_t stride) {
-    return DX11_IndexBuffer {m_deviceContext.Get(), m_device.Get(), data, count * (size_t)sizeof(unsigned int)};
+//Only Creates index buffers
+std::shared_ptr<IBuffer> AECore::D3D11GLI::CreateBuffer(const void* data, size_t count, size_t stride, BufferType bufferType) {
+    return std::make_shared<DX11_Buffer>( m_device.Get(), m_deviceContext.Get(), count, stride, data, bufferType);
 }
-
 //Binding
-void AECore::D3D11GLI::BindBuffer(const std::shared_ptr<IIndexBuffer>& ib) {
-    //TODO: Yeah this ain't it man
-    auto dxbuffer = static_cast<DX11_IndexBuffer*>(ib.get());
-
-    m_deviceContext->IASetIndexBuffer(dxbuffer->Resource, DXGI_FORMAT_R32_UINT, 0);
+void AECore::D3D11GLI::BindBuffer(const std::shared_ptr<IBuffer>& ib) {
+    ib->Bind();
 }
 
 void AECore::D3D11GLI::ShutDown() {

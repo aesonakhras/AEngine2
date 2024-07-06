@@ -26,12 +26,11 @@ namespace AECore {
 		void DrawFrame(std::vector<StaticMesh*> meshes, DirectX::XMMATRIX VP);
 		void ShutDown();
 
-		//TODO: TEMP TEMP TEMP TEMP TEMP TEMP TEMP TEMP TEMP/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		ID3D11Device* GetDevice();
 		ID3D11DeviceContext* GetDeviceContext();
 
 		//CreateBuffer
-		
+		std::shared_ptr<IBuffer> CreateBuffer(const void* data, size_t count, size_t stride, BufferType bufferType);
 
 	private:
 		void DrawMesh(const StaticMesh& mesh, DirectX::XMMATRIX VP);
