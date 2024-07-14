@@ -1,4 +1,5 @@
 #include "DX11_Buffer.h"
+#include "Debug.h"
 #include <cassert>
 
 DX11_Buffer::DX11_Buffer(ComPtr<ID3D11Device> device, ComPtr <ID3D11DeviceContext> context, size_t size, size_t stride, const void* data, BufferType bufferType) :
@@ -24,10 +25,8 @@ DX11_Buffer::DX11_Buffer(ComPtr<ID3D11Device> device, ComPtr <ID3D11DeviceContex
     HRESULT hr = device->CreateBuffer(&bufferDesc, &InitData, &m_Resource);
 
     if (FAILED(hr)) {
-        //TODO: Determine what to do with errors and how to print them
-        //For now dump to cout
-        std::cout << "Buffer creation failed." << std::endl;
-    }
+        AECore::Debug::LogError("Buffer creation failed.");
+    }    
 }
 
 void DX11_Buffer::Bind() const {

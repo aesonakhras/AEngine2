@@ -175,7 +175,7 @@ namespace Core {
         if (y > 6.28) {
             y = 0.0f;
         }
-        std::cout <<"Y: " << y << std::endl;
+        //std::cout <<"Y: " << y << std::endl;
 
         int i = 0;
         for (auto mesh : meshes) {
