@@ -147,7 +147,16 @@ namespace Core {
     }
 
     void SetupScene() {
-        vertexShader = std::make_shared<VertexShader>(g_GraphicsManager.GetDeviceContext(), g_GraphicsManager.GetDevice(), L"shaders.shader", DirectX::XMFLOAT4{1.0f, 0.0f, 0.0f, 0.0f});
+        VextexLayout defaultLayout = {
+            {
+                {"POSITION", 0, AE_R32B32G32, 0},
+                {"UV", 0, AE_R32B32G32, 12},
+            },
+            sizeof(VERTEX)
+        };
+
+
+        vertexShader = std::make_shared<VertexShader>(g_GraphicsManager.GetDeviceContext(), g_GraphicsManager.GetDevice(), L"shaders.shader", DirectX::XMFLOAT4{1.0f, 0.0f, 0.0f, 0.0f}, defaultLayout);
         fragmentShader = std::make_shared<FragmentShader>(g_GraphicsManager.GetDeviceContext(), g_GraphicsManager.GetDevice(), L"shaders.shader");
 
         Transform transform{

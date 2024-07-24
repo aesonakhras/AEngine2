@@ -36,7 +36,7 @@ void VertexShader::setupConstantbuffer(ID3D11Device* device, DirectX::XMFLOAT4 c
 }
 /////////////////////////////////
 
-VertexShader::VertexShader(ID3D11DeviceContext* deviceContext, ID3D11Device* device, LPCWSTR pFileName, DirectX::XMFLOAT4 color) :
+VertexShader::VertexShader(ID3D11DeviceContext* deviceContext, ID3D11Device* device, LPCWSTR pFileName, DirectX::XMFLOAT4 color, VextexLayout layout) :
 	m_deviceContext (deviceContext),
 	m_color(color) {
 	//TODO: IDK what the compiler is yappin about, this is initialized
@@ -78,8 +78,6 @@ void VertexShader::Bind() {
 }
 
 void VertexShader::SetMVP(DirectX::XMMATRIX mvp) {
-	
-
 	auto transposeMatrix = DirectX::XMMatrixTranspose(mvp);
 
 	VS_CONSTANT_BUFFER VsConstData{ transposeMatrix, m_color };

@@ -2,10 +2,11 @@
 #include <d3d11.h>
 #include <DirectXMath.h>
 #include "Transform.h"
+#include "VertexLayout.h"
 
 class VertexShader {
 public:
-	VertexShader(ID3D11DeviceContext* deviceContext, ID3D11Device* device, LPCWSTR pFileName, DirectX::XMFLOAT4 color);
+	VertexShader(ID3D11DeviceContext* deviceContext, ID3D11Device* device, LPCWSTR pFileName, DirectX::XMFLOAT4 color, VextexLayout layout);
 	void Bind();
 	
 	//TODO: This cannot be on the VertexShader
