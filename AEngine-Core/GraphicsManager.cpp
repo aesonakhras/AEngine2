@@ -25,11 +25,11 @@ void AECore::GraphicsManager::ShutDown() {
 	return;
 }
 
-ID3D11Device* AECore::GraphicsManager::GetDevice() {
+Microsoft::WRL::ComPtr <ID3D11Device> AECore::GraphicsManager::GetDevice() {
     return m_GLI->GetDevice();
 }
 
-ID3D11DeviceContext* AECore::GraphicsManager::GetDeviceContext() {
+Microsoft::WRL::ComPtr <ID3D11DeviceContext> AECore::GraphicsManager::GetDeviceContext() {
     return m_GLI->GetDeviceContext();
 }
 

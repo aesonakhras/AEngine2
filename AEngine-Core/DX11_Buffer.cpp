@@ -2,6 +2,8 @@
 #include "Debug.h"
 #include <cassert>
 
+using Microsoft::WRL::ComPtr;
+
 DX11_Buffer::DX11_Buffer(ComPtr<ID3D11Device> device, ComPtr <ID3D11DeviceContext> context, size_t size, size_t stride, const void* data, BufferType bufferType) :
     IBuffer( size ), m_device(device), m_deviceContext(context), m_bufferType(ConvertToDX11Buffer(bufferType)), m_stride(stride) {
     

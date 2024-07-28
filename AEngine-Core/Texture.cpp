@@ -1,7 +1,7 @@
 #include "Texture.h"
 #include <iostream>
 
-Texture::Texture(ID3D11Device* device, void* data, unsigned int width, unsigned int height, unsigned int miplevel, 
+Texture::Texture(Microsoft::WRL::ComPtr <ID3D11Device> device, void* data, unsigned int width, unsigned int height, unsigned int miplevel,
 	DXGI_FORMAT format, unsigned int sampleCount, unsigned int BindFlags) {
 	D3D11_TEXTURE2D_DESC desc;
 	ZeroMemory(&desc, sizeof(desc));

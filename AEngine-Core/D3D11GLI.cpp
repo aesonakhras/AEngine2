@@ -13,12 +13,12 @@ void AECore::D3D11GLI::PrintHResult(HRESULT result) {
     std::wcout << errMsg << std::endl;
 }
 
-ID3D11Device* AECore::D3D11GLI::GetDevice() {
-    return m_device.Get();
+Microsoft::WRL::ComPtr <ID3D11Device> AECore::D3D11GLI::GetDevice() {
+    return m_device;
 }
 
-ID3D11DeviceContext* AECore::D3D11GLI::GetDeviceContext() {
-    return m_deviceContext.Get();
+Microsoft::WRL::ComPtr <ID3D11DeviceContext> AECore::D3D11GLI::GetDeviceContext() {
+    return m_deviceContext;
 }
 
 void AECore::D3D11GLI::Init(AECore::DeviceCreateInfo info) {

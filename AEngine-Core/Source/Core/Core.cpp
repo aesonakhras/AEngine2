@@ -136,7 +136,7 @@ namespace Core {
         TextureData textureData = FileImporter::ImportTexture(std::string("CatTP.png"));
 
         texture = new Texture(g_GraphicsManager.GetDevice(), textureData.data, textureData.width, textureData.height, 1, DXGI_FORMAT_R8G8B8A8_UNORM, 1, D3D11_BIND_SHADER_RESOURCE);
-        meshShaderResource = std::make_shared<D3DShaderResource>(g_GraphicsManager.GetDeviceContext(), g_GraphicsManager.GetDevice(), texture->GetTexture(), D3D11_SRV_DIMENSION_TEXTURE2D);
+        meshShaderResource = std::make_shared<D3DShaderResource>(g_GraphicsManager.GetDeviceContext().Get(), g_GraphicsManager.GetDevice().Get(), texture->GetTexture(), D3D11_SRV_DIMENSION_TEXTURE2D);
         //screenQuadResource = std::make_shared<D3DShaderResource>(deviceContext, device, screenQuadTexture->GetTexture(), D3D11_SRV_DIMENSION_TEXTURE2D);
 
         //TODO: Leak much?
@@ -157,7 +157,7 @@ namespace Core {
 
 
         vertexShader = std::make_shared<VertexShader>(g_GraphicsManager.GetDeviceContext(), g_GraphicsManager.GetDevice(), L"shaders.shader", DirectX::XMFLOAT4{1.0f, 0.0f, 0.0f, 0.0f}, defaultLayout);
-        fragmentShader = std::make_shared<FragmentShader>(g_GraphicsManager.GetDeviceContext(), g_GraphicsManager.GetDevice(), L"shaders.shader");
+        fragmentShader = std::make_shared<FragmentShader>(g_GraphicsManager.GetDeviceContext().Get(), g_GraphicsManager.GetDevice().Get(), L"shaders.shader");
 
         Transform transform{
             {0.0f, 0.0f, 1.0f, 0.0f}, //pos

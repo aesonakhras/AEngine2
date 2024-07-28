@@ -3,6 +3,8 @@
 
 #include <iostream>
 
+
+
 //Putting this here for now, will refactor l8r
 struct VS_CONSTANT_BUFFER
 {
@@ -10,8 +12,7 @@ struct VS_CONSTANT_BUFFER
 	DirectX::XMFLOAT4 cb_color;
 };
 
-void VertexShader::setupConstantbuffer(ID3D11Device* device, DirectX::XMFLOAT4 color) {
-
+void VertexShader::setupConstantbuffer(Microsoft::WRL::ComPtr<ID3D11Device> device, DirectX::XMFLOAT4 color) {
 	VS_CONSTANT_BUFFER VsConstData{ DirectX::XMMatrixIdentity(), color };
 
 	D3D11_BUFFER_DESC cbDesc;
@@ -21,7 +22,6 @@ void VertexShader::setupConstantbuffer(ID3D11Device* device, DirectX::XMFLOAT4 c
 	cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	cbDesc.MiscFlags = 0;
 	cbDesc.StructureByteStride = 0;
-
 	D3D11_SUBRESOURCE_DATA InitData;
 	InitData.pSysMem = &VsConstData;
 	InitData.SysMemPitch = 0;
@@ -36,13 +36,11 @@ void VertexShader::setupConstantbuffer(ID3D11Device* device, DirectX::XMFLOAT4 c
 }
 /////////////////////////////////
 
-VertexShader::VertexShader(ID3D11DeviceContext* deviceContext, ID3D11Device* device, LPCWSTR pFileName, DirectX::XMFLOAT4 color, VextexLayout layout) :
+VertexShader::VertexShader(Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext, 
+	Microsoft::WRL::ComPtr<ID3D11Device> device, LPCWSTR pFileName, DirectX::XMFLOAT4 color, VextexLayout layout) :
 	m_deviceContext (deviceContext),
-	m_color(color) {
-	//TODO: IDK what the compiler is yappin about, this is initialized
-	m_pVS = NULL;
-	
-	ID3DBlob* pErrorBlob = NULL;
+	m_color(color) {	
+	Microsoft::WRL::ComPtr <ID3DBlob> pErrorBlob = NULL;
 
 	UINT compileFlags = D3DCOMPILE_ENABLE_STRICTNESS;
 
@@ -64,17 +62,16 @@ VertexShader::VertexShader(ID3D11DeviceContext* deviceContext, ID3D11Device* dev
 		std::cout << "Vertex Shader failed" << std::endl;
 	}
 
-
-	//set up the layout
-	device->CreateInputLayout(m_ied, 2, m_VS->GetBufferPointer(),
-		m_VS->GetBufferSize(), &m_layout);
+	m_layout = std::make_shared<DX11_InputLayout<AEngineVertexTypes::VERTEX2>>(deviceContext, device, m_VS );
 
 	setupConstantbuffer(device, color);
 }
+
 void VertexShader::Bind() {
 	m_deviceContext->VSSetConstantBuffers(0, 1, &m_pConstantBuffer);
-	m_deviceContext->IASetInputLayout(m_layout);
-	m_deviceContext->VSSetShader(m_pVS, 0, 0);
+	//m_deviceContext->IASetInputLayout(m_layout);
+	m_layout->Bind();
+	m_deviceContext->VSSetShader(m_pVS.Get(), 0, 0);
 }
 
 void VertexShader::SetMVP(DirectX::XMMATRIX mvp) {

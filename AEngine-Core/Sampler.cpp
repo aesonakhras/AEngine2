@@ -1,6 +1,6 @@
 #include "Sampler.h"
 
-Sampler::Sampler(ID3D11DeviceContext* deviceContext, ID3D11Device* device) : m_deviceContext(deviceContext){
+Sampler::Sampler(Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext, Microsoft::WRL::ComPtr <ID3D11Device> device) : m_deviceContext(deviceContext){
     // Create the sample state
     D3D11_SAMPLER_DESC sampDesc;
     ZeroMemory(&sampDesc, sizeof(sampDesc));

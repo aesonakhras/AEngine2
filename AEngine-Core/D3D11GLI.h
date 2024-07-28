@@ -15,8 +15,8 @@ namespace AECore {
 		virtual void Init(AECore::DeviceCreateInfo info) final override;
 		virtual void ShutDown() final override;
 
-		virtual ID3D11Device* GetDevice() final override;
-		virtual ID3D11DeviceContext* GetDeviceContext() final override;
+		virtual Microsoft::WRL::ComPtr <ID3D11Device> GetDevice() final override;
+		virtual Microsoft::WRL::ComPtr <ID3D11DeviceContext> GetDeviceContext() final override;
 		virtual void Clear() final override;
 		virtual void Swap() final override;
 

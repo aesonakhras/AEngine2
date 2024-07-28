@@ -1,4 +1,6 @@
 #pragma once
+
+//TODO: Add data type at end?
 enum AE_FORMAT {
 	//Supported format
 	AE_R32B32G32,

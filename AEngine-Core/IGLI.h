@@ -2,8 +2,9 @@
 #include "DeviceCreateInfo.h"
 #include "IBuffer.h"
 
+//TODO: These should not be here at all
 #include <d3d11.h>
-
+#include <wrl/client.h>
 
 //TODO: Must refactor, this is a D3D11 class.  need to determine abstraction
 namespace AECore {
@@ -11,8 +12,8 @@ namespace AECore {
 	public:
 		//Temp Solution, ensure that any API specific code is out of this soon
 
-		virtual ID3D11Device*  GetDevice() = 0;
-		virtual ID3D11DeviceContext* GetDeviceContext() = 0;
+		virtual Microsoft::WRL::ComPtr <ID3D11Device>  GetDevice() = 0;
+		virtual Microsoft::WRL::ComPtr <ID3D11DeviceContext> GetDeviceContext() = 0;
 
 		virtual void Init(AECore::DeviceCreateInfo info) = 0;
 		virtual void ShutDown() = 0;
