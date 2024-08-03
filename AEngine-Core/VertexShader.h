@@ -8,6 +8,7 @@
 
 #include "../DX11_InputLayout.h"
 #include "../AEngineVertexTypes.h"
+#include "../DX11_Buffer.h"
 #include <memory>
 
 class VertexShader {
@@ -21,15 +22,12 @@ public:
 	void SetMVP(DirectX::XMMATRIX mvp);
 	~VertexShader();
 private:
-	void setupConstantbuffer(Microsoft::WRL::ComPtr <ID3D11Device> device, DirectX::XMFLOAT4 color);
-
 	Microsoft::WRL::ComPtr <ID3D11VertexShader> m_pVS = nullptr;
 	Microsoft::WRL::ComPtr <ID3D10Blob> m_VS = nullptr;
-
 	Microsoft::WRL::ComPtr <ID3D11DeviceContext> m_deviceContext = nullptr;
-	ID3D11Buffer* m_pConstantBuffer = nullptr;
 	DirectX::XMFLOAT4 m_color;
 
-	//Todo: convert to smart pointer or something
 	std::shared_ptr <DX11_InputLayout<AEngineVertexTypes::VERTEX2>> m_layout = nullptr;
+
+	std::shared_ptr<DX11_Buffer> m_constantBuffer = nullptr;
 };

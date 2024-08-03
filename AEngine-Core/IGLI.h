@@ -21,7 +21,7 @@ namespace AECore {
 		virtual void Clear() = 0;
 		virtual void Swap() = 0;
 
-		virtual std::shared_ptr <IBuffer> CreateBuffer(const void* data, size_t count, size_t stride, BufferType bufferType) = 0;
+		virtual std::shared_ptr <IBuffer> CreateBuffer(const void* data, size_t count, size_t stride, AEngine::Graphics::BufferType bufferType) = 0;
 		//Binding
 		virtual void BindBuffer(const std::shared_ptr<IBuffer>& ib) = 0;
 

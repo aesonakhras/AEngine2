@@ -12,6 +12,7 @@
 #include "StaticMesh.h"
 #include <vector>
 #include "AEngineVertexTypes.h"
+#include "../Material.h"
 
 #include "IGLI.h"
 
@@ -30,8 +31,9 @@ namespace AECore {
 		Microsoft::WRL::ComPtr <ID3D11DeviceContext> GetDeviceContext();
 
 		//CreateBuffer
-		std::shared_ptr<IBuffer> CreateBuffer(const void* data, size_t count, size_t stride, BufferType bufferType);
+		std::shared_ptr<IBuffer> CreateBuffer(const void* data, size_t count, size_t stride, AEngine::Graphics::BufferType bufferType);
 
+		std::shared_ptr<AEngine::Graphics::Material> CreateMaterial(std::string shaderName);
 	private:
 		void DrawMesh(const StaticMesh& mesh, DirectX::XMMATRIX VP);
 

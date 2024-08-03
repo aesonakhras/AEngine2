@@ -8,7 +8,7 @@
 #include <d3d11.h>
 
 template <typename T>
-class DX11_InputLayout : public IIinputLayout<T> {
+class DX11_InputLayout : public IInputLayout<T> {
 private:
 	Microsoft::WRL::ComPtr <ID3D11InputLayout> m_layout = nullptr;
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_deviceContext = nullptr;

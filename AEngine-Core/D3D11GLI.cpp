@@ -194,7 +194,7 @@ void AECore::D3D11GLI::D3DCreateCall(HRESULT hresult, std::string failInfo) {
 }
 
 //Only Creates index buffers
-std::shared_ptr<IBuffer> AECore::D3D11GLI::CreateBuffer(const void* data, size_t count, size_t stride, BufferType bufferType) {
+std::shared_ptr<IBuffer> AECore::D3D11GLI::CreateBuffer(const void* data, size_t count, size_t stride, AEngine::Graphics::BufferType bufferType) {
     return std::make_shared<DX11_Buffer>( m_device.Get(), m_deviceContext.Get(), count, stride, data, bufferType);
 }
 //Binding

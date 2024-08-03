@@ -1,7 +1,7 @@
 #pragma once
 
 #include <DirectXMath.h>
-#include <../VertexLayout.h>
+#include "../VertexLayout.h"
 
 //This is mostly for now, a quick hack to remove some text from the core.cpp 
 //until I know where to put these
@@ -22,7 +22,7 @@ namespace AEngineVertexTypes {
         DirectX::XMFLOAT2 UV;
 
         static VextexLayout GetLayout() {
-            return { 
+            return VextexLayout {
                 {
                     {"POSITION", 0, AE_R32B32G32, 0},
                     {"UV", 0, AE_R32B32G32, 12},

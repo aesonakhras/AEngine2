@@ -49,7 +49,7 @@ void AECore::GraphicsManager::DrawMesh(const StaticMesh& mesh, DirectX::XMMATRIX
     m_GLI->GetDeviceContext()->DrawIndexed(mesh.m_indexBuffer->Count, 0, 0);
 }
 
-std::shared_ptr<IBuffer> AECore::GraphicsManager::CreateBuffer(const void* data, size_t count, size_t stride, BufferType bufferType) {
+std::shared_ptr<IBuffer> AECore::GraphicsManager::CreateBuffer(const void* data, size_t count, size_t stride, AEngine::Graphics::BufferType bufferType) {
     return m_GLI->CreateBuffer(data, count, stride, bufferType);
 }
 
@@ -62,4 +62,12 @@ void AECore::GraphicsManager::DrawFrame(std::vector<StaticMesh*> meshes, DirectX
     }
 
     m_GLI->Swap();
+}
+
+std::shared_ptr<AEngine::Graphics::Material> CreateMaterial(std::string shaderName) {
+    //IGlI->CreateShader(Vertex)
+    //IGlie->CreateHsader(Fragment)
+    //IGlie->Layout
+    //IGli->Cra
+    return nullptr;
 }

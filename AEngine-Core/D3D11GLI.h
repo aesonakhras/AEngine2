@@ -21,7 +21,7 @@ namespace AECore {
 		virtual void Swap() final override;
 
 		//Creation
-		virtual std::shared_ptr <IBuffer> CreateBuffer(const void* data, size_t count, size_t stride, BufferType bufferType) final override;
+		virtual std::shared_ptr <IBuffer> CreateBuffer(const void* data, size_t count, size_t stride, AEngine::Graphics::BufferType bufferType) final override;
 
 		//Binding
 		virtual void BindBuffer(const std::shared_ptr<IBuffer>& ib) final override;

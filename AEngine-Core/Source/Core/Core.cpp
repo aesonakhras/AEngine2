@@ -117,8 +117,8 @@ namespace Core {
     void ImportMesh(std::string fileName) {
         MeshData meshData = FileImporter::ImportMesh(fileName);
 
-        auto vertexBuffer = g_GraphicsManager.CreateBuffer((void*)meshData.vertexData, meshData.vertexCount, sizeof(VERTEX), AE_Vertex);
-        auto indexBuffer = g_GraphicsManager.CreateBuffer((void*)meshData.indexData, meshData.indexCount, sizeof(unsigned int), AE_Index);
+        auto vertexBuffer = g_GraphicsManager.CreateBuffer((void*)meshData.vertexData, meshData.vertexCount, sizeof(VERTEX), AEngine::Graphics::BufferType::Vertex);
+        auto indexBuffer = g_GraphicsManager.CreateBuffer((void*)meshData.indexData, meshData.indexCount, sizeof(unsigned int), AEngine::Graphics::BufferType::Index);
 
         //auto vertexBuffer = std::make_shared<VertexBuffer>(g_GraphicsManager.GetDeviceContext(), g_GraphicsManager.GetDevice(), (void*)meshData.vertexData, sizeof(VERTEX) * meshData.vertexCount);
         //auto indexBuffer = std::make_shared<DX11_Buffer>(g_GraphicsManager.GetDevice(), g_GraphicsManager.GetDeviceContext(), meshData.indexCount, (void*)meshData.indexData, Index);

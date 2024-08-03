@@ -11,29 +11,6 @@ struct VS_CONSTANT_BUFFER
 	DirectX::XMMATRIX mWorldViewProj;
 	DirectX::XMFLOAT4 cb_color;
 };
-
-void VertexShader::setupConstantbuffer(Microsoft::WRL::ComPtr<ID3D11Device> device, DirectX::XMFLOAT4 color) {
-	VS_CONSTANT_BUFFER VsConstData{ DirectX::XMMatrixIdentity(), color };
-
-	D3D11_BUFFER_DESC cbDesc;
-	cbDesc.ByteWidth = sizeof(VS_CONSTANT_BUFFER);
-	cbDesc.Usage = D3D11_USAGE_DYNAMIC;
-	cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	cbDesc.MiscFlags = 0;
-	cbDesc.StructureByteStride = 0;
-	D3D11_SUBRESOURCE_DATA InitData;
-	InitData.pSysMem = &VsConstData;
-	InitData.SysMemPitch = 0;
-	InitData.SysMemSlicePitch = 0;
-
-	HRESULT hr = device->CreateBuffer(&cbDesc, &InitData,
-		&m_pConstantBuffer);
-
-	if (FAILED(hr)) {
-		std::cout << "Constant Buffer Failed" << std::endl;
-	}
-}
 /////////////////////////////////
 
 VertexShader::VertexShader(Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext, 
@@ -64,12 +41,13 @@ VertexShader::VertexShader(Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceCon
 
 	m_layout = std::make_shared<DX11_InputLayout<AEngineVertexTypes::VERTEX2>>(deviceContext, device, m_VS );
 
-	setupConstantbuffer(device, color);
+	VS_CONSTANT_BUFFER VsConstData{ DirectX::XMMatrixIdentity(), color };
+
+	m_constantBuffer = std::make_shared<DX11_Buffer>(device, deviceContext, sizeof(VsConstData), 1, &VsConstData, AEngine::Graphics::BufferType::Uniform);
 }
 
 void VertexShader::Bind() {
-	m_deviceContext->VSSetConstantBuffers(0, 1, &m_pConstantBuffer);
-	//m_deviceContext->IASetInputLayout(m_layout);
+	m_constantBuffer->Bind();
 	m_layout->Bind();
 	m_deviceContext->VSSetShader(m_pVS.Get(), 0, 0);
 }
@@ -78,12 +56,7 @@ void VertexShader::SetMVP(DirectX::XMMATRIX mvp) {
 	auto transposeMatrix = DirectX::XMMatrixTranspose(mvp);
 
 	VS_CONSTANT_BUFFER VsConstData{ transposeMatrix, m_color };
-
-	//update stuff will happen here
-	D3D11_MAPPED_SUBRESOURCE ms;
-	m_deviceContext->Map(m_pConstantBuffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
-	memcpy(ms.pData, &VsConstData, sizeof(VS_CONSTANT_BUFFER));                // copy the data
-	m_deviceContext->Unmap(m_pConstantBuffer, NULL);                          // unmap the buffer
+	m_constantBuffer->Update(&VsConstData, sizeof(VS_CONSTANT_BUFFER));
 }
 
 VertexShader::~VertexShader() {

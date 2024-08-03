@@ -4,18 +4,25 @@
 
 using Microsoft::WRL::ComPtr;
 
-DX11_Buffer::DX11_Buffer(ComPtr<ID3D11Device> device, ComPtr <ID3D11DeviceContext> context, size_t size, size_t stride, const void* data, BufferType bufferType) :
+DX11_Buffer::DX11_Buffer(ComPtr<ID3D11Device> device, ComPtr <ID3D11DeviceContext> context, size_t size, size_t stride, const void* data, AEngine::Graphics::BufferType bufferType) :
     IBuffer( size ), m_device(device), m_deviceContext(context), m_bufferType(ConvertToDX11Buffer(bufferType)), m_stride(stride) {
     
     D3D11_BUFFER_DESC bufferDesc;
 
-    //TODO: Read into how much I should do this
+    
     ZeroMemory(&bufferDesc, sizeof(bufferDesc));
 
-    bufferDesc.Usage = D3D11_USAGE_DEFAULT;
-    bufferDesc.ByteWidth = size * stride;
     bufferDesc.BindFlags = m_bufferType;
-    bufferDesc.CPUAccessFlags = 0;
+    if (m_bufferType & D3D11_BIND_CONSTANT_BUFFER) {
+        bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+        bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    }
+    else {
+        bufferDesc.Usage = D3D11_USAGE_DEFAULT;
+        bufferDesc.CPUAccessFlags = 0;
+    }
+    bufferDesc.ByteWidth = size * stride;
+    
     bufferDesc.MiscFlags = 0;
     bufferDesc.StructureByteStride = stride;
 
@@ -41,6 +48,7 @@ void DX11_Buffer::Bind() const {
         m_deviceContext->IASetVertexBuffers(0, 1, m_Resource.GetAddressOf(), &m_stride, &m_offset);
         break;
     case D3D11_BIND_CONSTANT_BUFFER:
+        m_deviceContext->VSSetConstantBuffers(0, 1, m_Resource.GetAddressOf());
         break;
     default:
         break;
@@ -51,18 +59,18 @@ void DX11_Buffer::UnBind() const {
     //Not required for DX11
 }
 
-D3D11_BIND_FLAG DX11_Buffer::ConvertToDX11Buffer(BufferType bufferType) {
+D3D11_BIND_FLAG DX11_Buffer::ConvertToDX11Buffer(AEngine::Graphics::BufferType bufferType) {
     D3D11_BIND_FLAG d3dBufferFlag;
     
     switch (bufferType)
     {
-    case AE_Index:
+    case AEngine::Graphics::BufferType::Index:
         return D3D11_BIND_INDEX_BUFFER;
         break;
-    case AE_Vertex:
+    case AEngine::Graphics::BufferType::Vertex:
         return D3D11_BIND_VERTEX_BUFFER;
         break;
-    case AE_Uniform:
+    case AEngine::Graphics::BufferType::Uniform:
         return D3D11_BIND_CONSTANT_BUFFER;
         break;
     default:
@@ -73,4 +81,14 @@ D3D11_BIND_FLAG DX11_Buffer::ConvertToDX11Buffer(BufferType bufferType) {
     
     //TODO: Not sure what to return here
     return D3D11_BIND_INDEX_BUFFER;
+}
+
+void DX11_Buffer::Update(const void* data, size_t size) {
+    HRESULT hr;
+    D3D11_MAPPED_SUBRESOURCE ms;
+
+    hr = m_deviceContext->Map(m_Resource.Get(), NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);
+    assert(!FAILED(hr) && "Unable to map resource");
+    memcpy(ms.pData, data, size);
+    m_deviceContext->Unmap(m_Resource.Get(), NULL);
 }
