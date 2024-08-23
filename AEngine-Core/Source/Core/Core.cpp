@@ -50,6 +50,8 @@ using namespace AEngineConstants;
 
 #include "../DeviceCreateInfo.h"
 
+#include "../FileManagment/FileManager.h"
+
 //TODO: Lmao what is this
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "D3DCompiler.lib")
@@ -277,7 +279,7 @@ namespace Core {
 
     void Start() {
         std::cout << "Engine Boot\n";
-
+        AE::Core::System::FileManager& fileManager = AE::Core::System::FileManager::GetInstance();
         //Engine Startup,
         //This should probably be it's own class
 

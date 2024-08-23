@@ -5,6 +5,7 @@
 #include <comdef.h>
 
 #include "DX11_Buffer.h"
+#include "DX11_Shader.h"
 
 void AECore::D3D11GLI::PrintHResult(HRESULT result) {
     _com_error err(result);
@@ -195,8 +196,14 @@ void AECore::D3D11GLI::D3DCreateCall(HRESULT hresult, std::string failInfo) {
 
 //Only Creates index buffers
 std::shared_ptr<IBuffer> AECore::D3D11GLI::CreateBuffer(const void* data, size_t count, size_t stride, AEngine::Graphics::BufferType bufferType) {
-    return std::make_shared<DX11_Buffer>( m_device.Get(), m_deviceContext.Get(), count, stride, data, bufferType);
+    return std::make_shared<DX11_Buffer>(m_device.Get(), m_deviceContext.Get(), count, stride, data, bufferType);
 }
+
+std::shared_ptr<IShader> AECore::D3D11GLI::CreateShader(std::string shaderName, AEngine::Graphics::ShaderType shaderType) {
+    return std::make_shared<DX11_Shader>(m_deviceContext.Get(), m_device.Get(), shaderName.c_str(), shaderType);
+}
+
+
 //Binding
 void AECore::D3D11GLI::BindBuffer(const std::shared_ptr<IBuffer>& ib) {
     ib->Bind();

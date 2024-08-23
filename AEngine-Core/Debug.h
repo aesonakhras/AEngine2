@@ -43,13 +43,4 @@ namespace AECore {
 				_Log(message, AE_ALL);
 			}
 	};
-
-	//definition of the static variables declared above
-	const char* Debug::SeverityNames[SEVERITY_COUNT] = {
-		ENUM_TO_STRING(AE_ALL),
-		ENUM_TO_STRING(AE_WARNING),
-		ENUM_TO_STRING(AE_ERROR)
-	};
-
-	Debug::Severity Debug::m_severity = Debug::Severity::AE_WARNING;
 }
