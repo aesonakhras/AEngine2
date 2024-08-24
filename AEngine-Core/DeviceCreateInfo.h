@@ -1,12 +1,15 @@
 #pragma once
-//TODO: Do not like that windows.h is here, once window class is created I will refactor
-#include <Windows.h>
+
+#include "../Window/IWindow.h"
 
 namespace AECore {
 	struct DeviceCreateInfo
 	{
 		unsigned int ScreenWidth;
 		unsigned int ScreenHeight;
-		HWND window;
+		AE::Core::System::IWindow& Window;
+
+		DeviceCreateInfo(unsigned int _screenWidth, unsigned int _screenHeight, AE::Core::System::IWindow& _window) :
+		ScreenWidth(_screenWidth), ScreenHeight(_screenHeight), Window(_window){ }
 	};
 }

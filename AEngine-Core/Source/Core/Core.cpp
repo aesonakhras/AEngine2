@@ -15,7 +15,7 @@
 
 //for fun
 #include <memory.h>
-
+#include <string>
 #include <vector>
 
 //This is for Debugging
@@ -23,8 +23,6 @@
 #include <filesystem>
 
 //AEngine Specific
-#include "../DX11_Buffer.h"
-
 #include "../VertexShader.h"
 #include "../FragmentShader.h"
 
@@ -52,6 +50,8 @@ using namespace AEngineConstants;
 
 #include "../FileManagment/FileManager.h"
 
+#include "../Window/WindowFactory.h"
+
 //TODO: Lmao what is this
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "D3DCompiler.lib")
@@ -73,47 +73,17 @@ namespace Core {
     std::shared_ptr<FragmentShader> screenQuadFrag;
 
     std::shared_ptr<D3DShaderResource> meshShaderResource;
-    std::shared_ptr<D3DShaderResource> screenQuadResource;
-
-    std::shared_ptr<Texture> screenQuadTexture = nullptr;
-    ID3D11RenderTargetView* screenQuadRenderTargetView = nullptr;
 
     //hahaha lazy
     Texture* texture;
 
     Camera camera = { {0.0f, 0.0f, -1.0f, 0.0f}, 1.0472f, (float)SCREEN_WIDTH/(float)SCREEN_HEIGHT, 0.01f, 100.0f };
 
-    //This is a test for the app core connection
-	void PrintHelloWorld()
-	{
-		std::cout << "Hello World!\n";
-	}
+    std::unique_ptr<AE::Core::System::IWindow> window;
 
     void printCWD() {
         std::filesystem::path cwd = std::filesystem::current_path();
         std::cout << "CWD: " << cwd << std::endl;
-    }
-
-    //Code for window is mostly taken from http://www.directxtutorial.com/ with modifications
-    //to integrate with this project
-
-    // this is the main message handler for the program
-    LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-    {
-        // sort through and find what code to run for the message given
-        switch (message)
-        {
-            // this message is read when the window is closed
-        case WM_DESTROY:
-        {
-            // close the application entirely
-            PostQuitMessage(0);
-            return 0;
-        } break;
-        }
-
-        // Handle any messages the switch statement didn't
-        return DefWindowProc(hWnd, message, wParam, lParam);
     }
 
     void ImportMesh(std::string fileName) {
@@ -121,9 +91,6 @@ namespace Core {
 
         auto vertexBuffer = g_GraphicsManager.CreateBuffer((void*)meshData.vertexData, meshData.vertexCount, sizeof(VERTEX), AEngine::Graphics::BufferType::Vertex);
         auto indexBuffer = g_GraphicsManager.CreateBuffer((void*)meshData.indexData, meshData.indexCount, sizeof(unsigned int), AEngine::Graphics::BufferType::Index);
-
-        //auto vertexBuffer = std::make_shared<VertexBuffer>(g_GraphicsManager.GetDeviceContext(), g_GraphicsManager.GetDevice(), (void*)meshData.vertexData, sizeof(VERTEX) * meshData.vertexCount);
-        //auto indexBuffer = std::make_shared<DX11_Buffer>(g_GraphicsManager.GetDevice(), g_GraphicsManager.GetDeviceContext(), meshData.indexCount, (void*)meshData.indexData, Index);
 
         Transform transform{
             {0.0f, 0.0f, 1.0f, 0.0f}, //pos
@@ -139,7 +106,6 @@ namespace Core {
 
         texture = new Texture(g_GraphicsManager.GetDevice(), textureData.data, textureData.width, textureData.height, 1, DXGI_FORMAT_R8G8B8A8_UNORM, 1, D3D11_BIND_SHADER_RESOURCE);
         meshShaderResource = std::make_shared<D3DShaderResource>(g_GraphicsManager.GetDeviceContext().Get(), g_GraphicsManager.GetDevice().Get(), texture->GetTexture(), D3D11_SRV_DIMENSION_TEXTURE2D);
-        //screenQuadResource = std::make_shared<D3DShaderResource>(deviceContext, device, screenQuadTexture->GetTexture(), D3D11_SRV_DIMENSION_TEXTURE2D);
 
         //TODO: Leak much?
         Sampler* sampler = new Sampler(g_GraphicsManager.GetDeviceContext(), g_GraphicsManager.GetDevice());
@@ -205,75 +171,9 @@ namespace Core {
         g_GraphicsManager.DrawFrame(meshes, camera.GetVP());
     }
 
-    //TODO: Window manager should probably be a thing
-    HWND SetupWindow() {
-        // the handle for the window, filled by a function
-        HWND hWnd;
-        // this struct holds information for the window class
-        WNDCLASSEX wc;
-
-        // clear out the window class for use
-        ZeroMemory(&wc, sizeof(WNDCLASSEX));
-
-        // fill in the struct with the needed information
-        wc.cbSize = sizeof(WNDCLASSEX);
-        wc.style = CS_HREDRAW | CS_VREDRAW;
-        wc.lpfnWndProc = WindowProc;
-
-        //Could be a problem area only works if statically linked
-        wc.hInstance = GetModuleHandle(NULL);
-        wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-        //wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
-        wc.lpszClassName = L"WindowClass1";
-
-        // register the window class
-        RegisterClassEx(&wc);
-
-        //be able to set the client size properly
-        RECT rect = { 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
-        AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, FALSE);
-
-        // create the window and use the result as the handle
-        hWnd = CreateWindowEx(NULL,
-            L"WindowClass1",    // name of the window class
-            L"Our First Windowed Program",   // title of the window
-            WS_OVERLAPPEDWINDOW,    // window style
-            300,    // x-position of the window
-            300,    // y-position of the window
-            rect.right - rect.left,    // width of the window
-            rect.bottom - rect.top,    // height of the window
-            NULL,    // we have no parent window, NULL
-            NULL,    // we aren't using menus, NULL
-            wc.hInstance,    // application handle
-            NULL);    // used with multiple windows, NULL
-
-        // display the window on the screen
-        ShowWindow(hWnd, SW_NORMAL);
-
-        return hWnd;
-	}
-
     void Simulate() {
-        // this struct holds Windows event messages
-        MSG msg;
-
-        // wait for the next message in the queue, store the result in 'msg'
-        while (TRUE)
-        {
-            if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-                // translate keystroke messages into the right format
-                TranslateMessage(&msg);
-
-                // send the message to the WindowProc function
-                DispatchMessage(&msg);
-
-                if (msg.message == WM_QUIT)
-                    break;
-            }
-            else {
-                //Handle the game logic
-                renderFrame();
-            }
+        while (!window->ShouldEngineExit()) {
+            renderFrame();
         }
     }
 
@@ -283,12 +183,15 @@ namespace Core {
         //Engine Startup,
         //This should probably be it's own class
 
-        auto hWnd = SetupWindow();
+        //auto hWnd = SetupWindow();
 
-        AECore::DeviceCreateInfo createInfo;
-        createInfo.ScreenHeight = SCREEN_HEIGHT;
-        createInfo.ScreenWidth = SCREEN_WIDTH;
-        createInfo.window = hWnd;
+        std::string windowName = "AEngine";
+
+        AE::Core::System::WindowCreateInfo windowCreateInfo{ SCREEN_WIDTH, SCREEN_HEIGHT, windowName };
+
+        window = AE::Core::System::WindowFactory::Create(windowCreateInfo);
+
+        AECore::DeviceCreateInfo createInfo { SCREEN_HEIGHT, SCREEN_WIDTH, *window};
 
         ///////////////////////////////////Set Up Direct X related stuff////////////////////////////////////
         g_GraphicsManager.Initialize(createInfo);

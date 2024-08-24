@@ -33,7 +33,7 @@ void AECore::D3D11GLI::Init(AECore::DeviceCreateInfo info) {
     desc.BufferDesc.Width = info.ScreenWidth;                    // set the back buffer width
     desc.BufferDesc.Height = info.ScreenHeight;                  // set the back buffer height
     desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    desc.OutputWindow = info.window;
+    desc.OutputWindow = info.Window.GetWindowHandle<HWND>();;
     desc.SampleDesc.Count = 4;
     desc.Windowed = TRUE;
     desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
