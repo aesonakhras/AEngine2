@@ -1,26 +1,11 @@
 #include "Core.h"
-
-
 #include "../GraphicsManager.h"
 
-
 //I want to see most of the below #include GONE
-#include <iostream>
-#include <Windows.h>
-
-#include <d3d11.h>
-#include "d3dcompiler.h"
-#include <DirectXMath.h>
-#include <dxgidebug.h>
-
 //for fun
 #include <memory.h>
 #include <string>
 #include <vector>
-
-//This is for Debugging
-#include <comdef.h>
-#include <filesystem>
 
 //AEngine Specific
 #include "../VertexShader.h"
@@ -30,12 +15,8 @@
 #include "../Camera.h"
 
 #include "../Texture.h"
-#include "../D3DShaderResource.h"
 
 #include "../FileImporter.h"
-
-//#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
 
 //TempIncludes and other hacks to remove later
 #include "../AEngineVertexTypes.h"
@@ -52,10 +33,6 @@ using namespace AEngineConstants;
 
 #include "../Graphics/TextureCreateInfo.h"
 
-//TODO: Lmao what is this
-#pragma comment(lib, "d3d11.lib")
-#pragma comment(lib, "D3DCompiler.lib")
-
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
 
@@ -67,21 +44,11 @@ namespace Core {
 
     std::vector<StaticMesh*> meshes;
 
-    std::shared_ptr<Texture> depthTexture = nullptr;
-
-    std::shared_ptr<VertexShader> screenQuadVert;
-    std::shared_ptr<FragmentShader> screenQuadFrag;
-
     std::shared_ptr<Texture> texture;
 
     Camera camera = { {0.0f, 0.0f, -1.0f, 0.0f}, 1.0472f, (float)SCREEN_WIDTH/(float)SCREEN_HEIGHT, 0.01f, 100.0f };
 
     std::unique_ptr<AE::Core::System::IWindow> window;
-
-    void printCWD() {
-        std::filesystem::path cwd = std::filesystem::current_path();
-        std::cout << "CWD: " << cwd << std::endl;
-    }
 
     void ImportMesh(std::string fileName) {
         MeshData meshData = FileImporter::ImportMesh(fileName);
@@ -101,7 +68,6 @@ namespace Core {
     void textureSetup() {
         AE::Core::Graphics::TextureCreateInfo textureData = FileImporter::ImportTexture(std::string("CatTP.png"));
         
-
         textureData.depth = 1;
         textureData.mipLevels = 1;
         textureData.bindFlags = AE::Core::Graphics::ShaderResource;
@@ -152,7 +118,6 @@ namespace Core {
         if (y > 6.28) {
             y = 0.0f;
         }
-        //std::cout <<"Y: " << y << std::endl;
 
         int i = 0;
         for (auto mesh : meshes) {
@@ -178,8 +143,6 @@ namespace Core {
     }
 
     void Start() {
-        std::cout << "Engine Boot\n";
-
         AE::Core::System::FileManager& fileManager = AE::Core::System::FileManager::GetInstance();
 
         std::string windowName = "AEngine";
@@ -196,7 +159,5 @@ namespace Core {
         Simulate();
 
         g_GraphicsManager.ShutDown();
-
-        std::cin.get();
     }
 }

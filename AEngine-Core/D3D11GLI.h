@@ -1,11 +1,17 @@
 #pragma once
 #include <d3d11.h>
+#include <dxgidebug.h>
+
 #include <string>
 
 #include "IGLI.h"
 
 #include <wrl/client.h>
 #include "Graphics/TextureCreateInfo.h"
+
+//TODO: Lmao what is this
+#pragma comment(lib, "d3d11.lib")
+#pragma comment(lib, "D3DCompiler.lib")
 
 namespace AECore {
 	class D3D11GLI : public IGLI {
