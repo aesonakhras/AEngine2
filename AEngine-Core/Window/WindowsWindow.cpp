@@ -46,10 +46,12 @@ void WindowsWindow::Init(WindowCreateInfo info) {
     RECT rect = { 0, 0, info.x, info.y };
     AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, FALSE);
 
+    std::wstring windowNameWide = std::wstring(info.windowName.begin(), info.windowName.end());
+
     // create the window and use the result as the handle
     m_hwnd = CreateWindowEx(NULL,
         L"WindowClass1",    // name of the window class
-        L"Our First Windowed Program",   // title of the window
+        windowNameWide.c_str(),   // title of the window
         WS_OVERLAPPEDWINDOW,    // window style
         300,    // x-position of the window
         300,    // y-position of the window

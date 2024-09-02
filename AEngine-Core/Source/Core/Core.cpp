@@ -32,8 +32,6 @@
 #include "../Texture.h"
 #include "../D3DShaderResource.h"
 
-#include "../Sampler.h"
-
 #include "../FileImporter.h"
 
 //#define STB_IMAGE_IMPLEMENTATION
@@ -51,6 +49,8 @@ using namespace AEngineConstants;
 #include "../FileManagment/FileManager.h"
 
 #include "../Window/WindowFactory.h"
+
+#include "../Graphics/TextureCreateInfo.h"
 
 //TODO: Lmao what is this
 #pragma comment(lib, "d3d11.lib")
@@ -72,10 +72,7 @@ namespace Core {
     std::shared_ptr<VertexShader> screenQuadVert;
     std::shared_ptr<FragmentShader> screenQuadFrag;
 
-    std::shared_ptr<D3DShaderResource> meshShaderResource;
-
-    //hahaha lazy
-    Texture* texture;
+    std::shared_ptr<Texture> texture;
 
     Camera camera = { {0.0f, 0.0f, -1.0f, 0.0f}, 1.0472f, (float)SCREEN_WIDTH/(float)SCREEN_HEIGHT, 0.01f, 100.0f };
 
@@ -102,16 +99,19 @@ namespace Core {
     }
 
     void textureSetup() {
-        TextureData textureData = FileImporter::ImportTexture(std::string("CatTP.png"));
+        AE::Core::Graphics::TextureCreateInfo textureData = FileImporter::ImportTexture(std::string("CatTP.png"));
+        
 
-        texture = new Texture(g_GraphicsManager.GetDevice(), textureData.data, textureData.width, textureData.height, 1, DXGI_FORMAT_R8G8B8A8_UNORM, 1, D3D11_BIND_SHADER_RESOURCE);
-        meshShaderResource = std::make_shared<D3DShaderResource>(g_GraphicsManager.GetDeviceContext().Get(), g_GraphicsManager.GetDevice().Get(), texture->GetTexture(), D3D11_SRV_DIMENSION_TEXTURE2D);
+        textureData.depth = 1;
+        textureData.mipLevels = 1;
+        textureData.bindFlags = AE::Core::Graphics::ShaderResource;
+        textureData.generateMipMaps = false;
+        textureData.arraySize = 1;
+        textureData.sampleCount = 1;
+        
+        texture = g_GraphicsManager.CreateTexture(textureData);
 
-        //TODO: Leak much?
-        Sampler* sampler = new Sampler(g_GraphicsManager.GetDeviceContext(), g_GraphicsManager.GetDevice());
-
-        meshShaderResource->Bind();
-        sampler->Bind();
+        texture->Bind();
     }
 
     void SetupScene() {
@@ -167,7 +167,7 @@ namespace Core {
             }
             i++;
         }
-
+        texture->Bind();
         g_GraphicsManager.DrawFrame(meshes, camera.GetVP());
     }
 
@@ -179,11 +179,8 @@ namespace Core {
 
     void Start() {
         std::cout << "Engine Boot\n";
-        AE::Core::System::FileManager& fileManager = AE::Core::System::FileManager::GetInstance();
-        //Engine Startup,
-        //This should probably be it's own class
 
-        //auto hWnd = SetupWindow();
+        AE::Core::System::FileManager& fileManager = AE::Core::System::FileManager::GetInstance();
 
         std::string windowName = "AEngine";
 

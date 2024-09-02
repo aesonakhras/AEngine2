@@ -5,6 +5,7 @@
 #include "IGLI.h"
 
 #include <wrl/client.h>
+#include "Graphics/TextureCreateInfo.h"
 
 namespace AECore {
 	class D3D11GLI : public IGLI {
@@ -23,6 +24,11 @@ namespace AECore {
 		//Creation
 		virtual std::shared_ptr <IBuffer> CreateBuffer(const void* data, size_t count, size_t stride, AEngine::Graphics::BufferType bufferType) final override;
 		virtual std::shared_ptr<IShader> CreateShader(std::string shaderName, AEngine::Graphics::ShaderType shaderType) final override;
+
+		virtual std::shared_ptr<AE::Core::Graphics::IShaderResourceView> CreateShaderResourceView(const std::shared_ptr<AE::Core::Graphics::ITextureResource> textureResource) final override;
+		virtual std::shared_ptr<AE::Core::Graphics::ISampler> CreateSampler() final override;
+		virtual std::shared_ptr<AE::Core::Graphics::ITextureResource> CreateTextureResource(const AE::Core::Graphics::TextureCreateInfo& createInfo) final override;
+
 		//Binding
 		virtual void BindBuffer(const std::shared_ptr<IBuffer>& ib) final override;
 		///////////////////////////End of the IGLI functions

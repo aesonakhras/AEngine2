@@ -13,6 +13,7 @@ private:
 	Microsoft::WRL::ComPtr <ID3D11InputLayout> m_layout = nullptr;
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_deviceContext = nullptr;
 
+	//TODO: Eliminate this later for the one contained in DX11Utils
 	DXGI_FORMAT ConvertToDX11Format(AE_FORMAT format) {
 		switch (format)
 		{

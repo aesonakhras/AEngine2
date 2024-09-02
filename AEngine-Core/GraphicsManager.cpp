@@ -64,10 +64,22 @@ void AECore::GraphicsManager::DrawFrame(std::vector<StaticMesh*> meshes, DirectX
     m_GLI->Swap();
 }
 
+
+
 std::shared_ptr<AEngine::Graphics::Material> CreateMaterial(std::string shaderName) {
     //IGlI->CreateShader(Vertex)
     //IGlie->CreateHsader(Fragment)
     //IGlie->Layout
     //IGli->Cra
     return nullptr;
+}
+
+
+std::shared_ptr<Texture> AECore::GraphicsManager::CreateTexture(const AE::Core::Graphics::TextureCreateInfo& info) {
+    auto textureResource = m_GLI->CreateTextureResource(info);
+    
+    auto shaderResourceView = m_GLI->CreateShaderResourceView(textureResource);
+    auto sampler = m_GLI->CreateSampler();
+
+    return std::make_shared<Texture>(shaderResourceView, sampler, textureResource);
 }

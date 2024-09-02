@@ -10,7 +10,7 @@ D3DShaderResource::D3DShaderResource(ID3D11DeviceContext* deviceContext, ID3D11D
     ZeroMemory(&shaderViewDesc, sizeof(D3D11_SHADER_RESOURCE_VIEW_DESC));
     shaderViewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     shaderViewDesc.ViewDimension = viewDimension;
-
+    
 
     auto hr = device->CreateShaderResourceView(texture, NULL, &m_shaderResourceView);
 

@@ -6,6 +6,12 @@
 
 #include "DX11_Buffer.h"
 #include "DX11_Shader.h"
+#include "Graphics/DX11IMPL/DX11Sampler.h"
+#include "Graphics/DX11IMPL/DX11ShaderResourceView.h"
+#include "Graphics/DX11IMPL/DX11TextureResource.h"
+
+//TODO: you must remove this
+using namespace AE::Core::Graphics;
 
 void AECore::D3D11GLI::PrintHResult(HRESULT result) {
     _com_error err(result);
@@ -201,6 +207,28 @@ std::shared_ptr<IBuffer> AECore::D3D11GLI::CreateBuffer(const void* data, size_t
 
 std::shared_ptr<IShader> AECore::D3D11GLI::CreateShader(std::string shaderName, AEngine::Graphics::ShaderType shaderType) {
     return std::make_shared<DX11_Shader>(m_deviceContext.Get(), m_device.Get(), shaderName.c_str(), shaderType);
+}
+
+std::shared_ptr<AE::Core::Graphics::IShaderResourceView> AECore::D3D11GLI::CreateShaderResourceView(const std::shared_ptr<AE::Core::Graphics::ITextureResource> textureResource) {
+    return std::make_shared<DX11ShaderResourceView>(
+            m_deviceContext, 
+            m_device, 
+            static_cast<ID3D11Resource*>(textureResource->Get()), 
+            D3D11_SRV_DIMENSION_TEXTURE2D
+    );
+}
+
+std::shared_ptr<AE::Core::Graphics::ISampler> AECore::D3D11GLI::CreateSampler() {
+    return std::make_shared<DX11Sampler>(
+            m_deviceContext,
+            m_device
+    );
+}
+
+std::shared_ptr<AE::Core::Graphics::ITextureResource> AECore::D3D11GLI::CreateTextureResource(const TextureCreateInfo& createInfo) {
+    return std::make_shared<DX11TextureResource>(
+        m_deviceContext, m_device, createInfo
+        );
 }
 
 

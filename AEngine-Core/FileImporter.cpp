@@ -12,8 +12,8 @@
 #include <string>
 #include <memory>
 
-TextureData FileImporter::ImportTexture(std::string textureName) {
-    TextureData textureData{};
+AE::Core::Graphics::TextureCreateInfo FileImporter::ImportTexture(std::string textureName) {
+    AE::Core::Graphics::TextureCreateInfo textureData{};
     
     const char* filename = textureName.c_str();
     int channels= 0;
@@ -30,13 +30,15 @@ TextureData FileImporter::ImportTexture(std::string textureName) {
     switch (channels)
     {
         case(1):
-            textureData.format = R8;
+            textureData.format = TextureFormat::R8U;
         case(2):
-            textureData.format = R8B8;
+            std::cout << "no support" << std::endl;
+            //textureData.format = R8B8;
         case(3):
-            textureData.format = R8B8G8;
+            std::cout << "no support" << std::endl;
+            //textureData.format = R8B8G8;
         case(4):
-            textureData.format = R8G8B8A8;
+            textureData.format = TextureFormat::RGBA8U;
         default:
             break;
     }

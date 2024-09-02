@@ -1,11 +1,11 @@
 #pragma once
 #include "MeshData.h"
 #include <string>
-#include "TextureData.h"
+#include "../Graphics/TextureCreateInfo.h"
 
 class FileImporter {
 public:
-	static TextureData ImportTexture(std::string textureName);
+	static AE::Core::Graphics::TextureCreateInfo ImportTexture(std::string textureName);
 	static MeshData ImportMesh(std::string fileName);
 
 	

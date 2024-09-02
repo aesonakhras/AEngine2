@@ -13,8 +13,10 @@
 #include <vector>
 #include "AEngineVertexTypes.h"
 #include "../Material.h"
+#include "Texture.h"
 
 #include "IGLI.h"
+#include "Graphics/TextureCreateInfo.h"
 
 namespace AECore {
 	class GraphicsManager {
@@ -34,6 +36,11 @@ namespace AECore {
 		std::shared_ptr<IBuffer> CreateBuffer(const void* data, size_t count, size_t stride, AEngine::Graphics::BufferType bufferType);
 
 		std::shared_ptr<AEngine::Graphics::Material> CreateMaterial(std::string shaderName);
+
+
+		//Pass in the data to the texture, call it make texture
+		std::shared_ptr<Texture> CreateTexture(const AE::Core::Graphics::TextureCreateInfo& info);
+
 	private:
 		void DrawMesh(const StaticMesh& mesh, DirectX::XMMATRIX VP);
 
