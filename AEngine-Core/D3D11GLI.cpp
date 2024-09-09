@@ -5,10 +5,11 @@
 #include <comdef.h>
 
 #include "DX11_Buffer.h"
-#include "DX11_Shader.h"
+#include "Graphics/DX11IMPL/DX11ShaderObject.h"
 #include "Graphics/DX11IMPL/DX11Sampler.h"
 #include "Graphics/DX11IMPL/DX11ShaderResourceView.h"
 #include "Graphics/DX11IMPL/DX11TextureResource.h"
+#include "Graphics/DX11IMPL/DX11FragmentShader.h"
 
 //TODO: you must remove this
 using namespace AE::Core::Graphics;
@@ -205,8 +206,8 @@ std::shared_ptr<IBuffer> AECore::D3D11GLI::CreateBuffer(const void* data, size_t
     return std::make_shared<DX11_Buffer>(m_device.Get(), m_deviceContext.Get(), count, stride, data, bufferType);
 }
 
-std::shared_ptr<IShader> AECore::D3D11GLI::CreateShader(std::string shaderName, AEngine::Graphics::ShaderType shaderType) {
-    return std::make_shared<DX11_Shader>(m_deviceContext.Get(), m_device.Get(), shaderName.c_str(), shaderType);
+std::shared_ptr<DX11ShaderObject> AECore::D3D11GLI::CreateShaderObject(const void* data, size_t dataSize, std::string entryPoint, std::string shaderTarget) {
+    return std::make_shared<DX11ShaderObject>(m_deviceContext.Get(), m_device.Get(), data, dataSize, entryPoint, shaderTarget);
 }
 
 std::shared_ptr<AE::Core::Graphics::IShaderResourceView> AECore::D3D11GLI::CreateShaderResourceView(const std::shared_ptr<AE::Core::Graphics::ITextureResource> textureResource) {
@@ -231,6 +232,15 @@ std::shared_ptr<AE::Core::Graphics::ITextureResource> AECore::D3D11GLI::CreateTe
         );
 }
 
+std::shared_ptr<IFragmentShader> AECore::D3D11GLI::CreateFragmentShader(const void* data, size_t dataSize) {
+    auto shaderObject = CreateShaderObject(data, dataSize, "PShader", "ps_4_0");
+
+    //TODO: Error check here, creation could fail look into tactics for RAII failure error should have alread been logged
+    //Should probably attach a standard pink shader
+    return std::make_shared<DX11FragmentShader>(m_deviceContext, m_device, shaderObject);
+
+}
+
 
 //Binding
 void AECore::D3D11GLI::BindBuffer(const std::shared_ptr<IBuffer>& ib) {
@@ -240,3 +250,7 @@ void AECore::D3D11GLI::BindBuffer(const std::shared_ptr<IBuffer>& ib) {
 void AECore::D3D11GLI::ShutDown() {
 
 }
+
+std::shared_ptr<IVertexShader> AECore::D3D11GLI::CreateVertexShader(std::shared_ptr<IShader>) {
+    return nullptr;
+};

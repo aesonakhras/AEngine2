@@ -9,7 +9,6 @@
 
 //AEngine Specific
 #include "../VertexShader.h"
-#include "../FragmentShader.h"
 
 #include "../StaticMesh.h"
 #include "../Camera.h"
@@ -33,6 +32,8 @@ using namespace AEngineConstants;
 
 #include "../Graphics/TextureCreateInfo.h"
 
+#include "../Graphics/IFragmentShader.h"
+
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
 
@@ -40,7 +41,7 @@ namespace Core {
     AECore::GraphicsManager g_GraphicsManager;
 
     std::shared_ptr<VertexShader> vertexShader = nullptr;
-    std::shared_ptr<FragmentShader> fragmentShader = nullptr;
+    std::shared_ptr<IFragmentShader> fragmentShader = nullptr;
 
     std::vector<StaticMesh*> meshes;
 
@@ -89,9 +90,8 @@ namespace Core {
             sizeof(VERTEX)
         };
 
-
         vertexShader = std::make_shared<VertexShader>(g_GraphicsManager.GetDeviceContext(), g_GraphicsManager.GetDevice(), L"shaders.shader", DirectX::XMFLOAT4{1.0f, 0.0f, 0.0f, 0.0f}, defaultLayout);
-        fragmentShader = std::make_shared<FragmentShader>(g_GraphicsManager.GetDeviceContext().Get(), g_GraphicsManager.GetDevice().Get(), L"shaders.shader");
+        fragmentShader = g_GraphicsManager.CreateFragmentShader("shaders.shader");
 
         Transform transform{
             {0.0f, 0.0f, 1.0f, 0.0f}, //pos

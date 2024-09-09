@@ -13,6 +13,9 @@
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "D3DCompiler.lib")
 
+//forward declare of classes
+class DX11ShaderObject;
+
 namespace AECore {
 	class D3D11GLI : public IGLI {
 
@@ -29,17 +32,22 @@ namespace AECore {
 
 		//Creation
 		virtual std::shared_ptr <IBuffer> CreateBuffer(const void* data, size_t count, size_t stride, AEngine::Graphics::BufferType bufferType) final override;
-		virtual std::shared_ptr<IShader> CreateShader(std::string shaderName, AEngine::Graphics::ShaderType shaderType) final override;
+		
 
 		virtual std::shared_ptr<AE::Core::Graphics::IShaderResourceView> CreateShaderResourceView(const std::shared_ptr<AE::Core::Graphics::ITextureResource> textureResource) final override;
 		virtual std::shared_ptr<AE::Core::Graphics::ISampler> CreateSampler() final override;
 		virtual std::shared_ptr<AE::Core::Graphics::ITextureResource> CreateTextureResource(const AE::Core::Graphics::TextureCreateInfo& createInfo) final override;
+
+		
+		virtual std::shared_ptr<IVertexShader> CreateVertexShader(std::shared_ptr<IShader>) final override;
+		virtual std::shared_ptr<IFragmentShader> CreateFragmentShader(const void* data, size_t dataSize) final override;
 
 		//Binding
 		virtual void BindBuffer(const std::shared_ptr<IBuffer>& ib) final override;
 		///////////////////////////End of the IGLI functions
 
 	private:
+		std::shared_ptr<DX11ShaderObject> CreateShaderObject(const void* data, size_t dataSize, std::string entryPoint, std::string shaderTarget);
 		void setupDepthStencilState();
 		void D3DCreateCall(HRESULT hresult, std::string failInfo);
 		void PrintHResult(HRESULT result);

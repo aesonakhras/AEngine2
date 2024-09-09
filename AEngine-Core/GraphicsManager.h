@@ -11,12 +11,16 @@
 #include "DeviceCreateInfo.h"
 #include "StaticMesh.h"
 #include <vector>
+#include <string>
 #include "AEngineVertexTypes.h"
 #include "../Material.h"
 #include "Texture.h"
 
 #include "IGLI.h"
 #include "Graphics/TextureCreateInfo.h"
+
+//Forward declares to reduce compile time?
+class IFragmentShader;
 
 namespace AECore {
 	class GraphicsManager {
@@ -35,6 +39,8 @@ namespace AECore {
 		//CreateBuffer
 		std::shared_ptr<IBuffer> CreateBuffer(const void* data, size_t count, size_t stride, AEngine::Graphics::BufferType bufferType);
 
+		std::shared_ptr<IFragmentShader> CreateFragmentShader(std::string fileName);
+
 		std::shared_ptr<AEngine::Graphics::Material> CreateMaterial(std::string shaderName);
 
 
@@ -43,6 +49,9 @@ namespace AECore {
 
 	private:
 		void DrawMesh(const StaticMesh& mesh, DirectX::XMMATRIX VP);
+
+		//TODO: Do not like this on the graphics manager
+		std::vector<char> LoadShaderRaw(std::string fileName);
 
 		std::unique_ptr<IGLI> m_GLI = nullptr;
 

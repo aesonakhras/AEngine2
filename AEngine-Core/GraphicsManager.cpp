@@ -2,6 +2,8 @@
 #include <iostream>
 #include <comdef.h>
 
+#include "FileManagment/FileManager.h"
+
 #ifdef D3D11_MODE
     #include "D3D11GLI.h"
 #endif // D3D11_MODE
@@ -65,6 +67,20 @@ void AECore::GraphicsManager::DrawFrame(std::vector<StaticMesh*> meshes, DirectX
 }
 
 
+std::shared_ptr<IFragmentShader> AECore::GraphicsManager::CreateFragmentShader(std::string fileName) {
+    auto shaderData = LoadShaderRaw(fileName);
+    
+    return m_GLI->CreateFragmentShader(shaderData.data(), shaderData.size());
+}
+
+std::vector<char> AECore::GraphicsManager::LoadShaderRaw(std::string fileName) {
+    //Load File
+    AE::Core::System::FileManager& fileManager = AE::Core::System::FileManager::GetInstance();
+
+    auto fileHandle = fileManager.GetFile(fileName, AE::Core::System::FileOperation::Read);
+
+    return fileHandle->ReadAll();
+}
 
 std::shared_ptr<AEngine::Graphics::Material> CreateMaterial(std::string shaderName) {
     //IGlI->CreateShader(Vertex)
