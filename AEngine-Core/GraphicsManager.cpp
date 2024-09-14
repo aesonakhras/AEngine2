@@ -3,6 +3,7 @@
 #include <comdef.h>
 
 #include "FileManagment/FileManager.h"
+#include "../Graphics/Material.h"
 
 #ifdef D3D11_MODE
     #include "D3D11GLI.h"
@@ -36,13 +37,8 @@ Microsoft::WRL::ComPtr <ID3D11DeviceContext> GraphicsManager::GetDeviceContext()
     return m_GLI->GetDeviceContext();
 }
 
-void GraphicsManager::DrawMesh(const StaticMesh& mesh, DirectX::XMMATRIX VP) {
-    //get the mvp from the mesh, potentially just get the m, and then handle the VP from here l8r
-
-    //update the mvp matrix in the vertexShader
-    //mesh.m_vertexShader->SetMVP(mesh.m_modelMatrix * VP);
-
-    mesh.Bind();
+void GraphicsManager::DrawMesh(StaticMesh& mesh, DirectX::XMMATRIX VP) {
+    mesh.Bind(VP);
     
     m_GLI->GetDeviceContext()->DrawIndexed(mesh.GetCount(), 0, 0);
 }
@@ -83,12 +79,19 @@ std::vector<char> GraphicsManager::LoadShaderRaw(std::string fileName) {
     return fileHandle->ReadAll();
 }
 
-std::shared_ptr<AE::Graphics::Material> CreateMaterial(std::string shaderName) {
-    //IGlI->CreateShader(Vertex)
-    //IGlie->CreateHsader(Fragment)
-    //IGlie->Layout
-    //IGli->Cra
-    return nullptr;
+std::shared_ptr<Material> GraphicsManager::CreateMaterial(
+    std::string shaderName,
+    const std::vector<VertexAttribute>& attributes,
+    const void* initalData,
+    size_t intialDataSize
+) 
+{
+    auto vShader = CreateVertexShader(shaderName, attributes);
+    auto pShader = CreateFragmentShader(shaderName);
+    auto ubo = CreateBuffer(initalData, intialDataSize, 0, BufferType::Uniform);
+    
+
+    return std::make_shared<Material>(vShader, pShader, ubo);
 }
 
 

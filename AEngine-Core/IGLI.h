@@ -1,6 +1,6 @@
 #pragma once
 #include "DeviceCreateInfo.h"
-#include "IBuffer.h"
+#include "Graphics/IBuffer.h"
 
 //TODO: These should not be here at all
 #include <d3d11.h>	//<-this will fuck die soon

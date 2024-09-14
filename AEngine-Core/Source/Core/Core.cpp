@@ -23,26 +23,30 @@
 
 #include "../Graphics/TextureCreateInfo.h"
 
-#include "../Graphics/IFragmentShader.h"
-
 #include "../Graphics/CommonVerticies.h"
+
+#include "../Core/WorldObject.h"
 
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
 
 namespace Core {
-    AE::Graphics::GraphicsManager g_GraphicsManager;
+    struct MVP_ONLY_BUFFER
+    {
+        DirectX::XMMATRIX mWorldViewProj;
+    };
 
-    std::shared_ptr<AE::Graphics::IVertexShader> vertexShader = nullptr;
-    std::shared_ptr<AE::Graphics::IFragmentShader> fragmentShader = nullptr;
+    AE::Graphics::GraphicsManager g_GraphicsManager;
 
     std::vector<StaticMesh*> meshes;
 
     std::shared_ptr<Texture> texture;
 
-    Camera camera = { {0.0f, 0.0f, -1.0f, 0.0f}, 1.0472f, (float)SCREEN_WIDTH/(float)SCREEN_HEIGHT, 0.01f, 100.0f };
+    Camera camera = { {0.0f, 0.0f, -1.0f, 0.0f}, 1.0472f, (float)SCREEN_WIDTH/(float)SCREEN_HEIGHT, 0.01f, 1000.0f };
 
     std::unique_ptr<AE::Core::System::IWindow> window;
+
+    std::shared_ptr < AE::Graphics::Material> material;
 
     void ImportMesh(std::string fileName) {
         MeshData meshData = FileImporter::ImportMesh(fileName);
@@ -50,13 +54,9 @@ namespace Core {
         auto vertexBuffer = g_GraphicsManager.CreateBuffer((void*)meshData.vertexData, meshData.vertexCount, sizeof(AE::Graphics::StandardVertex), AE::Graphics::BufferType::Vertex);
         auto indexBuffer = g_GraphicsManager.CreateBuffer((void*)meshData.indexData, meshData.indexCount, sizeof(unsigned int), AE::Graphics::BufferType::Index);
 
-        Transform transform{
-            {0.0f, 0.0f, 1.0f, 0.0f}, //pos
-            {0.0f, 0.0f, 0.0f, 0.0f}, //rot
-            {1.0f, 1.0f, 1.0f}  //scale
-        };
+        std::shared_ptr<AE::Core::WorldObject> worldObj = std::make_shared<AE::Core::WorldObject>();
 
-        meshes.push_back(new StaticMesh{ vertexBuffer, indexBuffer, vertexShader, fragmentShader, transform});
+        meshes.push_back(new StaticMesh{ vertexBuffer, indexBuffer, material, worldObj });
     }
 
     void textureSetup() {
@@ -75,21 +75,16 @@ namespace Core {
     }
 
     void SetupScene() {
-        vertexShader = g_GraphicsManager.CreateVertexShader("shaders.shader", AE::Graphics::StandardVertexDescription::Get());
+        MVP_ONLY_BUFFER mvp;
+        mvp.mWorldViewProj =  DirectX::XMMatrixIdentity();
 
-        fragmentShader = g_GraphicsManager.CreateFragmentShader("shaders.shader");
 
-        Transform transform{
-            {0.0f, 0.0f, 1.0f, 0.0f}, //pos
-            {0.0f, 0.0f, 0.0f, 0.0f}, //rot
-            {1.0f, 1.0f, 1.0f}  //scale
-        };
-
-        Transform transform2 {
-            {10.0f, 10.0f, 100.0f, 0.0f}, //pos
-            {0.0f, 0.0f, 0.0f, 0.0f}, //rot
-            {1.5f, 1.5f, 1.5f}  //scale
-        };
+        material = g_GraphicsManager.CreateMaterial(
+            "shaders.shader", 
+            AE::Graphics::StandardVertexDescription::Get(),
+            &mvp,
+            sizeof(MVP_ONLY_BUFFER)
+        );
 
         textureSetup();
         ImportMesh(std::string("Cat.obj"));
@@ -104,21 +99,13 @@ namespace Core {
         if (y > 6.28) {
             y = 0.0f;
         }
+       // y = 5.0f;
+        auto mesh = meshes[0];
 
-        int i = 0;
-        for (auto mesh : meshes) {
-            if (i == 0) {
-                Transform transform{
-                    {0.0f, -1.0f, zPos, 1.0f}, //pos
-                    {1.5f, y, 0.0f, 0.0f}, //rot
-                    {0.025f, 0.025f, 0.025f, 1.0f}  //scale
-                };
-
-                mesh->SetTransform(transform);
-            }
-            i++;
-        }
-        texture->Bind();
+        mesh->m_worldObject->SetPosition({ 0 , -1.0f, 100, 1.0f });
+        mesh->m_worldObject->SetRotation({ 1.5f, y, 0.0f, 0.0f });
+            
+        //texture->Bind();
         g_GraphicsManager.DrawFrame(meshes, camera.GetVP());
     }
 

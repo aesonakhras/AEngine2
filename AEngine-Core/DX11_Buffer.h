@@ -4,7 +4,7 @@
 #include <iostream>
 #include <d3d11.h>
 #include <wrl/client.h>
-#include "IBuffer.h"
+#include "Graphics/IBuffer.h"
 
 
 namespace AE::Graphics {

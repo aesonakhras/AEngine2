@@ -13,21 +13,21 @@ DX11_Buffer::DX11_Buffer(ComPtr<ID3D11Device> device,
     BufferType bufferType) :
     IBuffer( size ), m_device(device), m_deviceContext(context), m_bufferType(ConvertToDX11Buffer(bufferType)), m_stride(stride) {
     
-    D3D11_BUFFER_DESC bufferDesc;
+    D3D11_BUFFER_DESC bufferDesc{};
 
-    
     ZeroMemory(&bufferDesc, sizeof(bufferDesc));
 
     bufferDesc.BindFlags = m_bufferType;
     if (m_bufferType & D3D11_BIND_CONSTANT_BUFFER) {
         bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
         bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+        bufferDesc.ByteWidth = size;
     }
     else {
         bufferDesc.Usage = D3D11_USAGE_DEFAULT;
         bufferDesc.CPUAccessFlags = 0;
+        bufferDesc.ByteWidth = size * stride;
     }
-    bufferDesc.ByteWidth = size * stride;
     
     bufferDesc.MiscFlags = 0;
     bufferDesc.StructureByteStride = stride;

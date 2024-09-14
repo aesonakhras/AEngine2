@@ -12,7 +12,6 @@
 #include "StaticMesh.h"
 #include <vector>
 #include <string>
-#include "../Material.h"
 #include "Texture.h"
 
 #include "IGLI.h"
@@ -24,6 +23,7 @@ namespace AE::Graphics {
 	class IFragmentShader;
 	class IVertexShader;
 	struct VertexAttribute;
+	class Material;
 
 	class GraphicsManager {
 
@@ -45,14 +45,18 @@ namespace AE::Graphics {
 
 		std::shared_ptr<IFragmentShader> CreateFragmentShader(std::string fileName);
 
-		std::shared_ptr<AE::Graphics::Material> CreateMaterial(std::string shaderName);
-
+		std::shared_ptr<Material> CreateMaterial(
+			std::string shaderName,
+			const std::vector<VertexAttribute>& attributes,
+			const void* initalData,
+			size_t intialDataSize
+		);
 
 		//Pass in the data to the texture, call it make texture
 		std::shared_ptr<Texture> CreateTexture(const AE::Graphics::TextureCreateInfo& info);
 
 	private:
-		void DrawMesh(const StaticMesh& mesh, DirectX::XMMATRIX VP);
+		void DrawMesh(StaticMesh& mesh, DirectX::XMMATRIX VP);
 
 		//TODO: Do not like this on the graphics manager
 		std::vector<char> LoadShaderRaw(std::string fileName);
