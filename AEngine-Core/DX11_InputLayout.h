@@ -13,23 +13,6 @@ private:
 	Microsoft::WRL::ComPtr <ID3D11InputLayout> m_layout = nullptr;
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_deviceContext = nullptr;
 
-	//TODO: Eliminate this later for the one contained in DX11Utils
-	DXGI_FORMAT ConvertToDX11Format(AE_FORMAT format) {
-		switch (format)
-		{
-		case AE_R32B32G32:
-			return DXGI_FORMAT_R32G32B32_FLOAT;
-			break;
-		case AE_R8B8G8A8:
-			return DXGI_FORMAT_R8G8B8A8_UINT;
-			break;
-		default:
-			//TODO: Some sort of error here
-			return DXGI_FORMAT_R32G32B32_FLOAT;
-			break;
-		}
-	}
-
 public:
 	DX11_InputLayout(Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext, 
 		Microsoft::WRL::ComPtr<ID3D11Device> device, Microsoft::WRL::ComPtr <ID3DBlob> vertexShader) : m_deviceContext(deviceContext) {

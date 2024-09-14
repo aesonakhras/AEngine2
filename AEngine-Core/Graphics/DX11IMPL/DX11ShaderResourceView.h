@@ -3,7 +3,7 @@
 #include <d3d11.h>
 #include <wrl/client.h>
 
-namespace AE::Core::Graphics {
+namespace AE::Graphics {
 	class DX11ShaderResourceView : public IShaderResourceView {
 	public:
 		DX11ShaderResourceView() = delete;

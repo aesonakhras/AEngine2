@@ -4,22 +4,25 @@
 #include  "../IFragmentShader.h"
 #include <wrl/client.h>
 
-//forward declerations
-class DX11ShaderObject;
+namespace AE::Graphics {
+	//forward declerations
+	class DX11ShaderObject;
 
-class DX11FragmentShader : public IFragmentShader {
-public:
+	class DX11FragmentShader : public IFragmentShader {
+	public:
 
-	DX11FragmentShader(
-		Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext,
-		Microsoft::WRL::ComPtr<ID3D11Device> device,
-		std::shared_ptr<DX11ShaderObject> shader);
+		DX11FragmentShader(
+			Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext,
+			Microsoft::WRL::ComPtr<ID3D11Device> device,
+			std::shared_ptr<DX11ShaderObject> shader
+		);
 
-	virtual void Bind() final override;
-	virtual void UnBind() final override;
+		virtual void Bind() final override;
+		virtual void UnBind() final override;
 
-private:
-	std::shared_ptr<DX11ShaderObject> m_shader;
-	Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_deviceContext;
-	Microsoft::WRL::ComPtr<ID3D11PixelShader> m_pixelShader;
-};
+	private:
+		std::shared_ptr<DX11ShaderObject> m_shader;
+		Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_deviceContext;
+		Microsoft::WRL::ComPtr<ID3D11PixelShader> m_pixelShader;
+	};
+}

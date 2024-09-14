@@ -2,9 +2,10 @@
 #include <d3d11.h>
 
 #include "../Graphics/TextureFormat.h"
+#include "../Graphics/TextureBindFlag.h"
 #include "../Debug.h"
 
-namespace AE::Core::Graphics {
+namespace AE::Graphics {
 	//TODO: Consider a dx11 namespace, also make sure the converted formats make actual sense for later on
 	inline DXGI_FORMAT ConvertToDX11Format(TextureFormat format) {
 		switch (format)
@@ -15,8 +16,14 @@ namespace AE::Core::Graphics {
 		case TextureFormat::RGBA8U:
 			return DXGI_FORMAT_R8G8B8A8_UNORM;
 			break;
-		case TextureFormat::RGBA32F:
+		case TextureFormat::RG32F:
+			return DXGI_FORMAT_R32G32_FLOAT;
+			break;
+		case TextureFormat::RGB32F:
 			return DXGI_FORMAT_R32G32B32_FLOAT;
+			break;
+		case TextureFormat::RGBA32F:
+			return DXGI_FORMAT_R32G32B32A32_FLOAT;
 			break;
 		default:
 			AECore::Debug::LogWarning("Unsupported texture format used");

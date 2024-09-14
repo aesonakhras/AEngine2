@@ -1,6 +1,6 @@
 #pragma once
 
-namespace AE::Core::Graphics {
+namespace AE::Graphics {
 
     class ISampler
     {

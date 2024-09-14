@@ -1,6 +1,6 @@
 #include "DX11TextureResource.h"
 
-using namespace AE::Core::Graphics;
+using namespace AE::Graphics;
 
 DX11TextureResource::DX11TextureResource(Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext, Microsoft::WRL::ComPtr<ID3D11Device> device, const TextureCreateInfo& createInfo) {
 	D3D11_TEXTURE2D_DESC desc;

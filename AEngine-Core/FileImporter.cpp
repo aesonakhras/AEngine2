@@ -12,8 +12,8 @@
 #include <string>
 #include <memory>
 
-AE::Core::Graphics::TextureCreateInfo FileImporter::ImportTexture(std::string textureName) {
-    AE::Core::Graphics::TextureCreateInfo textureData{};
+AE::Graphics::TextureCreateInfo FileImporter::ImportTexture(std::string textureName) {
+    AE::Graphics::TextureCreateInfo textureData{};
     
     const char* filename = textureName.c_str();
     int channels= 0;

@@ -8,15 +8,15 @@
 
 class Texture {
 public:
-	Texture(std::shared_ptr<AE::Core::Graphics::IShaderResourceView> _shaderResourceView,
-			std::shared_ptr<AE::Core::Graphics::ISampler> _sampler,
-			std::shared_ptr<AE::Core::Graphics::ITextureResource> _textureResource);
+	Texture(std::shared_ptr<AE::Graphics::IShaderResourceView> _shaderResourceView,
+			std::shared_ptr<AE::Graphics::ISampler> _sampler,
+			std::shared_ptr<AE::Graphics::ITextureResource> _textureResource);
 	void Bind();
 	~Texture();
 
 private:
 	//TODO: This is absurdly nasty, flatten namespace structure and enforce better naming standards
-	std::shared_ptr<AE::Core::Graphics::IShaderResourceView> shaderResourceView;
-	std::shared_ptr<AE::Core::Graphics::ISampler> sampler;
-	std::shared_ptr<AE::Core::Graphics::ITextureResource> textureResource;
+	std::shared_ptr<AE::Graphics::IShaderResourceView> shaderResourceView;
+	std::shared_ptr<AE::Graphics::ISampler> sampler;
+	std::shared_ptr<AE::Graphics::ITextureResource> textureResource;
 };

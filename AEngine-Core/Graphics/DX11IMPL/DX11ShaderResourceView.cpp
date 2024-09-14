@@ -1,7 +1,7 @@
 #include "DX11ShaderResourceView.h"
 #include "../Debug.h"
 
-using namespace AE::Core::Graphics;
+using namespace AE::Graphics;
 
 DX11ShaderResourceView::DX11ShaderResourceView(Microsoft::WRL::ComPtr<ID3D11DeviceContext>deviceContext, Microsoft::WRL::ComPtr <ID3D11Device> device, ID3D11Resource* texture, D3D11_SRV_DIMENSION viewDimension) :
     m_deviceContext(deviceContext),

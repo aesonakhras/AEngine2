@@ -4,7 +4,7 @@
 
 #include "../ISampler.h"
 
-namespace AE::Core::Graphics {
+namespace AE::Graphics {
 
     class DX11Sampler : public ISampler
     {

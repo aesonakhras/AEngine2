@@ -8,21 +8,12 @@
 #include <vector>
 
 //AEngine Specific
-#include "../VertexShader.h"
-
 #include "../StaticMesh.h"
 #include "../Camera.h"
 
 #include "../Texture.h"
 
 #include "../FileImporter.h"
-
-//TempIncludes and other hacks to remove later
-#include "../AEngineVertexTypes.h"
-using namespace AEngineVertexTypes;
-
-#include "../AEngineConstants.h"
-using namespace AEngineConstants;
 
 #include "../DeviceCreateInfo.h"
 
@@ -34,14 +25,16 @@ using namespace AEngineConstants;
 
 #include "../Graphics/IFragmentShader.h"
 
+#include "../Graphics/CommonVerticies.h"
+
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
 
 namespace Core {
-    AECore::GraphicsManager g_GraphicsManager;
+    AE::Graphics::GraphicsManager g_GraphicsManager;
 
-    std::shared_ptr<VertexShader> vertexShader = nullptr;
-    std::shared_ptr<IFragmentShader> fragmentShader = nullptr;
+    std::shared_ptr<AE::Graphics::IVertexShader> vertexShader = nullptr;
+    std::shared_ptr<AE::Graphics::IFragmentShader> fragmentShader = nullptr;
 
     std::vector<StaticMesh*> meshes;
 
@@ -54,8 +47,8 @@ namespace Core {
     void ImportMesh(std::string fileName) {
         MeshData meshData = FileImporter::ImportMesh(fileName);
 
-        auto vertexBuffer = g_GraphicsManager.CreateBuffer((void*)meshData.vertexData, meshData.vertexCount, sizeof(VERTEX), AEngine::Graphics::BufferType::Vertex);
-        auto indexBuffer = g_GraphicsManager.CreateBuffer((void*)meshData.indexData, meshData.indexCount, sizeof(unsigned int), AEngine::Graphics::BufferType::Index);
+        auto vertexBuffer = g_GraphicsManager.CreateBuffer((void*)meshData.vertexData, meshData.vertexCount, sizeof(AE::Graphics::StandardVertex), AE::Graphics::BufferType::Vertex);
+        auto indexBuffer = g_GraphicsManager.CreateBuffer((void*)meshData.indexData, meshData.indexCount, sizeof(unsigned int), AE::Graphics::BufferType::Index);
 
         Transform transform{
             {0.0f, 0.0f, 1.0f, 0.0f}, //pos
@@ -67,11 +60,11 @@ namespace Core {
     }
 
     void textureSetup() {
-        AE::Core::Graphics::TextureCreateInfo textureData = FileImporter::ImportTexture(std::string("CatTP.png"));
+        AE::Graphics::TextureCreateInfo textureData = FileImporter::ImportTexture(std::string("CatTP.png"));
         
         textureData.depth = 1;
         textureData.mipLevels = 1;
-        textureData.bindFlags = AE::Core::Graphics::ShaderResource;
+        textureData.bindFlags = AE::Graphics::ShaderResource;
         textureData.generateMipMaps = false;
         textureData.arraySize = 1;
         textureData.sampleCount = 1;
@@ -82,15 +75,8 @@ namespace Core {
     }
 
     void SetupScene() {
-        VextexLayout defaultLayout = {
-            {
-                {"POSITION", 0, AE_R32B32G32, 0},
-                {"UV", 0, AE_R32B32G32, 12},
-            },
-            sizeof(VERTEX)
-        };
+        vertexShader = g_GraphicsManager.CreateVertexShader("shaders.shader", AE::Graphics::StandardVertexDescription::Get());
 
-        vertexShader = std::make_shared<VertexShader>(g_GraphicsManager.GetDeviceContext(), g_GraphicsManager.GetDevice(), L"shaders.shader", DirectX::XMFLOAT4{1.0f, 0.0f, 0.0f, 0.0f}, defaultLayout);
         fragmentShader = g_GraphicsManager.CreateFragmentShader("shaders.shader");
 
         Transform transform{

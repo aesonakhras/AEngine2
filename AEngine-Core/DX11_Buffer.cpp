@@ -3,8 +3,14 @@
 #include <cassert>
 
 using Microsoft::WRL::ComPtr;
+using namespace AE::Graphics;
 
-DX11_Buffer::DX11_Buffer(ComPtr<ID3D11Device> device, ComPtr <ID3D11DeviceContext> context, size_t size, size_t stride, const void* data, AEngine::Graphics::BufferType bufferType) :
+DX11_Buffer::DX11_Buffer(ComPtr<ID3D11Device> device,
+    ComPtr <ID3D11DeviceContext> context,
+    size_t size,
+    size_t stride,
+    const void* data, 
+    BufferType bufferType) :
     IBuffer( size ), m_device(device), m_deviceContext(context), m_bufferType(ConvertToDX11Buffer(bufferType)), m_stride(stride) {
     
     D3D11_BUFFER_DESC bufferDesc;
@@ -59,18 +65,18 @@ void DX11_Buffer::UnBind() const {
     //Not required for DX11
 }
 
-D3D11_BIND_FLAG DX11_Buffer::ConvertToDX11Buffer(AEngine::Graphics::BufferType bufferType) {
+D3D11_BIND_FLAG DX11_Buffer::ConvertToDX11Buffer(BufferType bufferType) {
     D3D11_BIND_FLAG d3dBufferFlag;
     
     switch (bufferType)
     {
-    case AEngine::Graphics::BufferType::Index:
+    case BufferType::Index:
         return D3D11_BIND_INDEX_BUFFER;
         break;
-    case AEngine::Graphics::BufferType::Vertex:
+    case BufferType::Vertex:
         return D3D11_BIND_VERTEX_BUFFER;
         break;
-    case AEngine::Graphics::BufferType::Uniform:
+    case BufferType::Uniform:
         return D3D11_BIND_CONSTANT_BUFFER;
         break;
     default:

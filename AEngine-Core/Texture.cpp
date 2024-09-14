@@ -1,11 +1,11 @@
 #include "Texture.h"
 #include <iostream>
 
-using namespace AE::Core::Graphics;
+using namespace AE::Graphics;
 
-Texture::Texture(std::shared_ptr<AE::Core::Graphics::IShaderResourceView> _shaderResourceView,
-				std::shared_ptr<AE::Core::Graphics::ISampler> _sampler,
-				std::shared_ptr<AE::Core::Graphics::ITextureResource> _textureResource): shaderResourceView(_shaderResourceView),
+Texture::Texture(std::shared_ptr<AE::Graphics::IShaderResourceView> _shaderResourceView,
+				std::shared_ptr<AE::Graphics::ISampler> _sampler,
+				std::shared_ptr<AE::Graphics::ITextureResource> _textureResource): shaderResourceView(_shaderResourceView),
 																						sampler(_sampler),
 																						textureResource(_textureResource){
 	

@@ -2,7 +2,7 @@
 #include <Windows.h>
 
 using AECore::Debug;
-using namespace AE::Core::System;
+using namespace AE::Graphics;
 
 DX11ShaderObject::DX11ShaderObject(Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext, Microsoft::WRL::ComPtr<ID3D11Device> device, const void* data, size_t dataSize, std::string entryPoint, std::string shaderTarget) :
 	m_deviceContext(deviceContext), m_device(device) {
@@ -33,7 +33,6 @@ DX11ShaderObject::DX11ShaderObject(Microsoft::WRL::ComPtr<ID3D11DeviceContext> d
 		&m_shaderBlob,
 		&pErrorBlob);
 
-
 	if (FAILED(hr)) {
 		Debug::LogError("Shader Creation Failed");
 
@@ -41,9 +40,6 @@ DX11ShaderObject::DX11ShaderObject(Microsoft::WRL::ComPtr<ID3D11DeviceContext> d
 			OutputDebugStringA((LPCSTR)pErrorBlob->GetBufferPointer());
 		}
 	}
-
-	//hr = device->CreateVertexShader(m_shaderBlob->GetBufferPointer(), m_shaderBlob->GetBufferSize(), NULL, &m_shader.VS);
-	//hr = device->CreatePixelShader(m_shaderBlob->GetBufferPointer(), m_shaderBlob->GetBufferSize(), NULL, &m_shader.FS);
 }
 
 void* DX11ShaderObject::GetRawObject() {

@@ -19,8 +19,13 @@
 #include "Graphics/IFragmentShader.h"
 #include "Graphics/IVertexShader.h" 
 
+
+
 //TODO: Must refactor, this is a D3D11 class.  need to determine abstraction
-namespace AECore {
+namespace AE::Graphics {
+	//forward declares
+	struct VertexAttribute;
+
 	class IGLI {
 	public:
 		//Temp Solution, ensure that any API specific code is out of this soon
@@ -34,14 +39,18 @@ namespace AECore {
 		virtual void Clear() = 0;
 		virtual void Swap() = 0;
 
-		virtual std::shared_ptr <IBuffer> CreateBuffer(const void* data, size_t count, size_t stride, AEngine::Graphics::BufferType bufferType) = 0;
+		virtual std::shared_ptr <IBuffer> CreateBuffer(const void* data, size_t count, size_t stride, BufferType bufferType) = 0;
 
-		virtual std::shared_ptr<IVertexShader> CreateVertexShader(std::shared_ptr<IShader>) = 0;
-		virtual std::shared_ptr<IFragmentShader> CreateFragmentShader(const void* data, size_t dataSize) = 0;
+		virtual std::shared_ptr<IVertexShader> CreateVertexShader(
+			const void* data,
+			size_t dataSize,
+			const std::vector<VertexAttribute>& attributes) = 0;
 
-		virtual std::shared_ptr<AE::Core::Graphics::IShaderResourceView> CreateShaderResourceView(const std::shared_ptr<AE::Core::Graphics::ITextureResource> textureResource) = 0;
-		virtual std::shared_ptr<AE::Core::Graphics::ISampler> CreateSampler() = 0;
-		virtual std::shared_ptr<AE::Core::Graphics::ITextureResource> CreateTextureResource(const AE::Core::Graphics::TextureCreateInfo& createInfo) = 0;
+		virtual std::shared_ptr<IFragmentShader> CreateFragmentShader(const void* data,size_t dataSize) = 0;
+
+		virtual std::shared_ptr<AE::Graphics::IShaderResourceView> CreateShaderResourceView(const std::shared_ptr<AE::Graphics::ITextureResource> textureResource) = 0;
+		virtual std::shared_ptr<AE::Graphics::ISampler> CreateSampler() = 0;
+		virtual std::shared_ptr<AE::Graphics::ITextureResource> CreateTextureResource(const AE::Graphics::TextureCreateInfo& createInfo) = 0;
 		
 		//Binding
 		virtual void BindBuffer(const std::shared_ptr<IBuffer>& ib) = 0;

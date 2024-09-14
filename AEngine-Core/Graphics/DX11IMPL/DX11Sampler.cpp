@@ -1,7 +1,7 @@
 #include "../DX11IMPL/DX11Sampler.h"
 #include "../Debug.h"
 
-using namespace AE::Core::Graphics;
+using namespace AE::Graphics;
 
 DX11Sampler::DX11Sampler(Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext, Microsoft::WRL::ComPtr <ID3D11Device> device) : m_deviceContext(deviceContext) {
     // Create the sample state

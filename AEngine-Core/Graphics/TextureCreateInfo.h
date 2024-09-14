@@ -1,18 +1,9 @@
 #pragma once
 #include <memory>
 #include "TextureFormat.h"
+#include "TextureBindFlag.h"
 
-
-namespace AE::Core::Graphics {
-	enum TextureBindFlag : uint32_t
-	{
-		None = 0,
-		ShaderResource = 1,
-		RenderTarget = 1 << 1,
-		DepthStencil = 1 << 2,
-	};
-
-	
+namespace AE::Graphics {
 	//TODO: Move this to graphics folder, maybe in a common folder??
 	struct TextureCreateInfo {
 		const void* data = nullptr;

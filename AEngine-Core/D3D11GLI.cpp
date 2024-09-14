@@ -10,26 +10,27 @@
 #include "Graphics/DX11IMPL/DX11ShaderResourceView.h"
 #include "Graphics/DX11IMPL/DX11TextureResource.h"
 #include "Graphics/DX11IMPL/DX11FragmentShader.h"
+#include "Graphics/DX11IMPL/DX11VertexShader.h"
 
 //TODO: you must remove this
-using namespace AE::Core::Graphics;
+using namespace AE::Graphics;
 
-void AECore::D3D11GLI::PrintHResult(HRESULT result) {
+void D3D11GLI::PrintHResult(HRESULT result) {
     _com_error err(result);
     LPCTSTR errMsg = err.ErrorMessage();
 
     std::wcout << errMsg << std::endl;
 }
 
-Microsoft::WRL::ComPtr <ID3D11Device> AECore::D3D11GLI::GetDevice() {
+Microsoft::WRL::ComPtr <ID3D11Device> D3D11GLI::GetDevice() {
     return m_device;
 }
 
-Microsoft::WRL::ComPtr <ID3D11DeviceContext> AECore::D3D11GLI::GetDeviceContext() {
+Microsoft::WRL::ComPtr <ID3D11DeviceContext> D3D11GLI::GetDeviceContext() {
     return m_deviceContext;
 }
 
-void AECore::D3D11GLI::Init(AECore::DeviceCreateInfo info) {
+void D3D11GLI::Init(AECore::DeviceCreateInfo info) {
     DXGI_SWAP_CHAIN_DESC desc;
 
     //TODO: Is this very c++ like
@@ -117,7 +118,7 @@ void AECore::D3D11GLI::Init(AECore::DeviceCreateInfo info) {
     std::cout << "Graphics initalized" << std::endl;
 }
 
-void AECore::D3D11GLI::setupDepthStencilState() {
+void D3D11GLI::setupDepthStencilState() {
     D3D11_DEPTH_STENCIL_DESC dsDesc;
 
     // Depth test parameters
@@ -148,7 +149,7 @@ void AECore::D3D11GLI::setupDepthStencilState() {
     m_deviceContext->OMSetDepthStencilState(NULL, 0);
 }
 
-ID3D11Texture2D* AECore::D3D11GLI::CreateTextureD3D(void* data, unsigned int height, unsigned int width, unsigned int miplevel,
+ID3D11Texture2D* D3D11GLI::CreateTextureD3D(void* data, unsigned int height, unsigned int width, unsigned int miplevel,
     DXGI_FORMAT format, unsigned int sampleCount, unsigned int BindFlags) {
     ID3D11Texture2D* texture = nullptr;
 
@@ -185,16 +186,16 @@ ID3D11Texture2D* AECore::D3D11GLI::CreateTextureD3D(void* data, unsigned int hei
     return texture;
 }
 
-void AECore::D3D11GLI::Clear() {
+void D3D11GLI::Clear() {
     m_deviceContext->ClearRenderTargetView(m_backBuffer.Get(), RGBA{0.0f, 0.2f, 0.4f, 1.0f});
     m_deviceContext->ClearDepthStencilView(m_pDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 }
 
-void AECore::D3D11GLI::Swap() {
+void D3D11GLI::Swap() {
     m_swapChain->Present(0, 0);
 }
 
-void AECore::D3D11GLI::D3DCreateCall(HRESULT hresult, std::string failInfo) {
+void D3D11GLI::D3DCreateCall(HRESULT hresult, std::string failInfo) {
     if (FAILED(hresult)) {
         std::cout << failInfo << std::endl;
         PrintHResult(hresult);
@@ -202,15 +203,15 @@ void AECore::D3D11GLI::D3DCreateCall(HRESULT hresult, std::string failInfo) {
 }
 
 //Only Creates index buffers
-std::shared_ptr<IBuffer> AECore::D3D11GLI::CreateBuffer(const void* data, size_t count, size_t stride, AEngine::Graphics::BufferType bufferType) {
+std::shared_ptr<IBuffer> D3D11GLI::CreateBuffer(const void* data, size_t count, size_t stride, BufferType bufferType) {
     return std::make_shared<DX11_Buffer>(m_device.Get(), m_deviceContext.Get(), count, stride, data, bufferType);
 }
 
-std::shared_ptr<DX11ShaderObject> AECore::D3D11GLI::CreateShaderObject(const void* data, size_t dataSize, std::string entryPoint, std::string shaderTarget) {
+std::shared_ptr<DX11ShaderObject> D3D11GLI::CreateShaderObject(const void* data, size_t dataSize, std::string entryPoint, std::string shaderTarget) {
     return std::make_shared<DX11ShaderObject>(m_deviceContext.Get(), m_device.Get(), data, dataSize, entryPoint, shaderTarget);
 }
 
-std::shared_ptr<AE::Core::Graphics::IShaderResourceView> AECore::D3D11GLI::CreateShaderResourceView(const std::shared_ptr<AE::Core::Graphics::ITextureResource> textureResource) {
+std::shared_ptr<AE::Graphics::IShaderResourceView> D3D11GLI::CreateShaderResourceView(const std::shared_ptr<AE::Graphics::ITextureResource> textureResource) {
     return std::make_shared<DX11ShaderResourceView>(
             m_deviceContext, 
             m_device, 
@@ -219,20 +220,28 @@ std::shared_ptr<AE::Core::Graphics::IShaderResourceView> AECore::D3D11GLI::Creat
     );
 }
 
-std::shared_ptr<AE::Core::Graphics::ISampler> AECore::D3D11GLI::CreateSampler() {
+std::shared_ptr<AE::Graphics::ISampler> D3D11GLI::CreateSampler() {
     return std::make_shared<DX11Sampler>(
             m_deviceContext,
             m_device
     );
 }
 
-std::shared_ptr<AE::Core::Graphics::ITextureResource> AECore::D3D11GLI::CreateTextureResource(const TextureCreateInfo& createInfo) {
+std::shared_ptr<AE::Graphics::ITextureResource> D3D11GLI::CreateTextureResource(const TextureCreateInfo& createInfo) {
     return std::make_shared<DX11TextureResource>(
         m_deviceContext, m_device, createInfo
         );
 }
 
-std::shared_ptr<IFragmentShader> AECore::D3D11GLI::CreateFragmentShader(const void* data, size_t dataSize) {
+std::shared_ptr<IVertexShader> D3D11GLI::CreateVertexShader(const void* data, size_t dataSize, const std::vector<VertexAttribute>& attributes) {
+    auto shaderObject = CreateShaderObject(data, dataSize, "VShader", "vs_4_0");
+
+    //TODO: Error check here, creation could fail look into tactics for RAII failure error should have alread been logged
+    //Should probably attach a standard pink shader
+    return std::make_shared<DX11VertexShader>(m_deviceContext, m_device, shaderObject, attributes);
+};
+
+std::shared_ptr<IFragmentShader> D3D11GLI::CreateFragmentShader(const void* data, size_t dataSize) {
     auto shaderObject = CreateShaderObject(data, dataSize, "PShader", "ps_4_0");
 
     //TODO: Error check here, creation could fail look into tactics for RAII failure error should have alread been logged
@@ -243,14 +252,10 @@ std::shared_ptr<IFragmentShader> AECore::D3D11GLI::CreateFragmentShader(const vo
 
 
 //Binding
-void AECore::D3D11GLI::BindBuffer(const std::shared_ptr<IBuffer>& ib) {
+void D3D11GLI::BindBuffer(const std::shared_ptr<IBuffer>& ib) {
     ib->Bind();
 }
 
-void AECore::D3D11GLI::ShutDown() {
+void D3D11GLI::ShutDown() {
 
 }
-
-std::shared_ptr<IVertexShader> AECore::D3D11GLI::CreateVertexShader(std::shared_ptr<IShader>) {
-    return nullptr;
-};

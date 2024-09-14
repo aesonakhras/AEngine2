@@ -1,6 +1,6 @@
 #pragma once
 
-namespace AE::Core::Graphics {
+namespace AE::Graphics {
     class ITextureResource {
         public:
             virtual ~ITextureResource() = default;

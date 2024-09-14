@@ -1,7 +1,9 @@
+#include <d3d11.h>
+
 #include "DX11FragmentShader.h"
-
-
 #include "../DX11IMPL/DX11ShaderObject.h"
+
+using namespace AE::Graphics;
 
 DX11FragmentShader::DX11FragmentShader(Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext, 
 	Microsoft::WRL::ComPtr<ID3D11Device> device, 
@@ -17,8 +19,6 @@ DX11FragmentShader::DX11FragmentShader(Microsoft::WRL::ComPtr<ID3D11DeviceContex
 		NULL,
 		m_pixelShader.GetAddressOf());
 }
-
-
 
 
 void DX11FragmentShader::Bind() {

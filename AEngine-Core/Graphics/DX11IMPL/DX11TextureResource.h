@@ -7,7 +7,7 @@
 #include "../Debug.h"
 #include "../DX11IMPL/DX11Utils.h"
 
-namespace AE::Core::Graphics {
+namespace AE::Graphics {
 	class DX11TextureResource : public ITextureResource {
 		public:
 

@@ -3,6 +3,8 @@
 #include <dxgidebug.h>
 
 #include <string>
+#include <vector>
+#include <memory>
 
 #include "IGLI.h"
 
@@ -13,10 +15,10 @@
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "D3DCompiler.lib")
 
-//forward declare of classes
-class DX11ShaderObject;
+namespace AE::Graphics {
+	//forward declare of classes
+	class DX11ShaderObject;
 
-namespace AECore {
 	class D3D11GLI : public IGLI {
 
 	public:
@@ -31,15 +33,18 @@ namespace AECore {
 		virtual void Swap() final override;
 
 		//Creation
-		virtual std::shared_ptr <IBuffer> CreateBuffer(const void* data, size_t count, size_t stride, AEngine::Graphics::BufferType bufferType) final override;
+		virtual std::shared_ptr <IBuffer> CreateBuffer(const void* data, size_t count, size_t stride, BufferType bufferType) final override;
 		
 
-		virtual std::shared_ptr<AE::Core::Graphics::IShaderResourceView> CreateShaderResourceView(const std::shared_ptr<AE::Core::Graphics::ITextureResource> textureResource) final override;
-		virtual std::shared_ptr<AE::Core::Graphics::ISampler> CreateSampler() final override;
-		virtual std::shared_ptr<AE::Core::Graphics::ITextureResource> CreateTextureResource(const AE::Core::Graphics::TextureCreateInfo& createInfo) final override;
+		virtual std::shared_ptr<AE::Graphics::IShaderResourceView> CreateShaderResourceView(const std::shared_ptr<AE::Graphics::ITextureResource> textureResource) final override;
+		virtual std::shared_ptr<AE::Graphics::ISampler> CreateSampler() final override;
+		virtual std::shared_ptr<AE::Graphics::ITextureResource> CreateTextureResource(const AE::Graphics::TextureCreateInfo& createInfo) final override;
 
 		
-		virtual std::shared_ptr<IVertexShader> CreateVertexShader(std::shared_ptr<IShader>) final override;
+		virtual std::shared_ptr<IVertexShader> CreateVertexShader(const void* data,
+			size_t dataSize,
+			const std::vector<VertexAttribute>& attributes) final override;
+
 		virtual std::shared_ptr<IFragmentShader> CreateFragmentShader(const void* data, size_t dataSize) final override;
 
 		//Binding
@@ -57,8 +62,6 @@ namespace AECore {
 
 		//TODO: Find another solution for this
 		typedef float RGBA[4];
-
-		//debugging
 
 		Microsoft::WRL::ComPtr <ID3D11Device> m_device = nullptr;
 		Microsoft::WRL::ComPtr <ID3D11DeviceContext> m_deviceContext = nullptr;

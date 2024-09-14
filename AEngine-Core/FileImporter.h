@@ -5,7 +5,7 @@
 
 class FileImporter {
 public:
-	static AE::Core::Graphics::TextureCreateInfo ImportTexture(std::string textureName);
+	static AE::Graphics::TextureCreateInfo ImportTexture(std::string textureName);
 	static MeshData ImportMesh(std::string fileName);
 
 	

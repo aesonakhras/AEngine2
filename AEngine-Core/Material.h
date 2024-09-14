@@ -1,17 +1,24 @@
 #pragma once
 #include <memory>
 #include <vector>
-#include <../IBuffer.h>
-#include <../Graphics/IShaderObject.h>
-#include <../IInputLayout.h>
 
-namespace AEngine {
-    namespace Graphics {
+namespace AE::Graphics {
 
-        class Material {
+    //forward declares
+    class ISampler;
+    class IShaderResourceView;
+    class ITextureResource;
+    class IVertexShader;
+    class IFragmentShader;
+
+    class Material {
         public:
-            //uhhh will focus on later
-        };
 
-    }
+        private:
+            std::shared_ptr<ISampler> sampler;
+            std::shared_ptr<IShaderResourceView> shaderResourceView;
+            std::shared_ptr<ITextureResource> textureResource;
+            std::shared_ptr<IVertexShader> vertexShader;
+            std::shared_ptr<IFragmentShader> fragmentShader;
+    };
 }
