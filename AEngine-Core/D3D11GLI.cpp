@@ -4,7 +4,7 @@
 
 #include <comdef.h>
 
-#include "DX11_Buffer.h"
+#include "Graphics/DX11IMPL/DX11Buffer.h"
 #include "Graphics/DX11IMPL/DX11ShaderObject.h"
 #include "Graphics/DX11IMPL/DX11Sampler.h"
 #include "Graphics/DX11IMPL/DX11ShaderResourceView.h"
@@ -204,7 +204,7 @@ void D3D11GLI::D3DCreateCall(HRESULT hresult, std::string failInfo) {
 
 //Only Creates index buffers
 std::shared_ptr<IBuffer> D3D11GLI::CreateBuffer(const void* data, size_t count, size_t stride, BufferType bufferType) {
-    return std::make_shared<DX11_Buffer>(m_device.Get(), m_deviceContext.Get(), count, stride, data, bufferType);
+    return std::make_shared<DX11Buffer>(m_device.Get(), m_deviceContext.Get(), count, stride, data, bufferType);
 }
 
 std::shared_ptr<DX11ShaderObject> D3D11GLI::CreateShaderObject(const void* data, size_t dataSize, std::string entryPoint, std::string shaderTarget) {

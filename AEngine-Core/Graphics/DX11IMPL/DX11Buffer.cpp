@@ -1,11 +1,11 @@
-#include "DX11_Buffer.h"
-#include "Debug.h"
+#include "DX11Buffer.h"
+#include "../Debug.h"
 #include <cassert>
 
 using Microsoft::WRL::ComPtr;
 using namespace AE::Graphics;
 
-DX11_Buffer::DX11_Buffer(ComPtr<ID3D11Device> device,
+DX11Buffer::DX11Buffer(ComPtr<ID3D11Device> device,
     ComPtr <ID3D11DeviceContext> context,
     size_t size,
     size_t stride,
@@ -44,7 +44,7 @@ DX11_Buffer::DX11_Buffer(ComPtr<ID3D11Device> device,
     }    
 }
 
-void DX11_Buffer::Bind() const {
+void DX11Buffer::Bind() const {
     switch (m_bufferType)
     {
     case D3D11_BIND_INDEX_BUFFER:
@@ -61,11 +61,11 @@ void DX11_Buffer::Bind() const {
     }
 }
 
-void DX11_Buffer::UnBind() const {
+void DX11Buffer::UnBind() const {
     //Not required for DX11
 }
 
-D3D11_BIND_FLAG DX11_Buffer::ConvertToDX11Buffer(BufferType bufferType) {
+D3D11_BIND_FLAG DX11Buffer::ConvertToDX11Buffer(BufferType bufferType) {
     D3D11_BIND_FLAG d3dBufferFlag;
     
     switch (bufferType)
@@ -89,7 +89,7 @@ D3D11_BIND_FLAG DX11_Buffer::ConvertToDX11Buffer(BufferType bufferType) {
     return D3D11_BIND_INDEX_BUFFER;
 }
 
-void DX11_Buffer::Update(const void* data, size_t size) {
+void DX11Buffer::Update(const void* data, size_t size) {
     HRESULT hr;
     D3D11_MAPPED_SUBRESOURCE ms;
 

@@ -4,13 +4,13 @@
 #include <iostream>
 #include <d3d11.h>
 #include <wrl/client.h>
-#include "Graphics/IBuffer.h"
+#include "../Graphics/IBuffer.h"
 
 
 namespace AE::Graphics {
-	class DX11_Buffer : public IBuffer {
+	class DX11Buffer : public IBuffer {
 	public:
-		DX11_Buffer(Microsoft::WRL::ComPtr<ID3D11Device> device,
+		DX11Buffer(Microsoft::WRL::ComPtr<ID3D11Device> device,
 			Microsoft::WRL::ComPtr <ID3D11DeviceContext> context,
 			size_t size,
 			size_t stride,
@@ -20,7 +20,7 @@ namespace AE::Graphics {
 		virtual void Bind() const final;
 		virtual void UnBind() const final;
 		virtual void Update(const void* data, size_t size) final;
-		~DX11_Buffer() final { };
+		~DX11Buffer() final { };
 
 	private:
 		Microsoft::WRL::ComPtr<ID3D11Device> m_device;
