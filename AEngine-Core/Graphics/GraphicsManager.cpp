@@ -2,18 +2,18 @@
 #include <iostream>
 #include <comdef.h>
 
-#include "FileManagment/FileManager.h"
-#include "../Graphics/Material.h"
+#include "../FileManagment/FileManager.h"
+#include "Material.h"
 
 #ifdef D3D11_MODE
-    #include "D3D11GLI.h"
+    #include "DX11IMPL/DX11GLI.h"
 #endif // D3D11_MODE
 
 using namespace AE::Graphics;
 
-bool GraphicsManager::Initialize(AECore::DeviceCreateInfo info) {
+bool GraphicsManager::Initialize(const DeviceCreateInfo& info) {
 #ifdef D3D11_MODE
-    m_GLI = std::make_unique<D3D11GLI>();
+    m_GLI = std::make_unique<DX11GLI>();
 #endif // D3D11_MODE
     if (m_GLI == nullptr) {
         std::cout << "GLI has not initalized, this is a fatal error";
@@ -29,18 +29,9 @@ void GraphicsManager::ShutDown() {
 	return;
 }
 
-Microsoft::WRL::ComPtr <ID3D11Device> GraphicsManager::GetDevice() {
-    return m_GLI->GetDevice();
-}
-
-Microsoft::WRL::ComPtr <ID3D11DeviceContext> GraphicsManager::GetDeviceContext() {
-    return m_GLI->GetDeviceContext();
-}
-
 void GraphicsManager::DrawMesh(StaticMesh& mesh, DirectX::XMMATRIX VP) {
     mesh.Bind(VP);
-    
-    m_GLI->GetDeviceContext()->DrawIndexed(mesh.GetCount(), 0, 0);
+    m_GLI->Draw(mesh.GetCount());
 }
 
 std::shared_ptr<IBuffer> GraphicsManager::CreateBuffer(const void* data, size_t count, size_t stride, BufferType bufferType) {

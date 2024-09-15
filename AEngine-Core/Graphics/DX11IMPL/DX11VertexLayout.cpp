@@ -2,7 +2,7 @@
 #include "../Graphics/VertexAttribute.h"
 #include "../DX11IMPL/DX11Utils.h"
 #include "../Graphics/IVertexDescription.h"
-#include "../Debug.h"
+#include "../Core/Debug.h"
 
 using namespace AE::Graphics;
 
@@ -17,7 +17,7 @@ DX11VertexLayout::DX11VertexLayout(
 
 void DX11VertexLayout::Build(const std::vector<VertexAttribute>& vertexAttributes) {
 	if ((vertexAttributes.size() == 0)) {
-		AECore::Debug::LogError("Cannot create vertexLayout with no attributes");
+		AE::Core::Debug::LogError("Cannot create vertexLayout with no attributes");
 		return;
 	}
 

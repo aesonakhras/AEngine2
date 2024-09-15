@@ -3,7 +3,7 @@
 
 #include "../Graphics/TextureFormat.h"
 #include "../Graphics/TextureBindFlag.h"
-#include "../Debug.h"
+#include "../Core/Debug.h"
 
 namespace AE::Graphics {
 	//TODO: Consider a dx11 namespace, also make sure the converted formats make actual sense for later on
@@ -26,7 +26,7 @@ namespace AE::Graphics {
 			return DXGI_FORMAT_R32G32B32A32_FLOAT;
 			break;
 		default:
-			AECore::Debug::LogWarning("Unsupported texture format used");
+			AE::Core::Debug::LogWarning("Unsupported texture format used");
 			break;
 		}
 	}

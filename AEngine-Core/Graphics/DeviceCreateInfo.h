@@ -2,7 +2,7 @@
 
 #include "../Window/IWindow.h"
 
-namespace AECore {
+namespace AE::Graphics {
 	struct DeviceCreateInfo
 	{
 		unsigned int ScreenWidth;

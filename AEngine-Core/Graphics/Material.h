@@ -11,7 +11,7 @@
 #include "IBuffer.h"
 #include "../Graphics/Texture.h"
 #include "../Graphics/ISampler.h"
-#include "../Debug.h"
+#include "../Core/Debug.h"
 
 namespace AE::Graphics {
     class Material {

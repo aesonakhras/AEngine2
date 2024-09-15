@@ -13,8 +13,6 @@ Camera::Camera(DirectX::FXMVECTOR position, float fov, float aspectRatio, float 
 
 DirectX::XMMATRIX Camera::GetVP() {
 	return m_VP;
-
-	//return DirectX::XMMatrixIdentity();
 }
 
 Camera::~Camera() {

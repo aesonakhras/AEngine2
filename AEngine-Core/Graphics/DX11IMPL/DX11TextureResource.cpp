@@ -34,7 +34,7 @@ DX11TextureResource::DX11TextureResource(Microsoft::WRL::ComPtr<ID3D11DeviceCont
 	}
 
 	if (FAILED(hr)) {
-		AECore::Debug::LogError("Unable to create DX11 Texture resource");
+		AE::Core::Debug::LogError("Unable to create DX11 Texture resource");
 	}
 }
 

@@ -1,5 +1,5 @@
 #include "DX11ShaderResourceView.h"
-#include "../Debug.h"
+#include "../Core/Debug.h"
 
 using namespace AE::Graphics;
 
@@ -18,7 +18,7 @@ DX11ShaderResourceView::DX11ShaderResourceView(Microsoft::WRL::ComPtr<ID3D11Devi
         auto hr = device->CreateShaderResourceView(texture, NULL, m_shaderResourceView.GetAddressOf());
 
         if (FAILED(hr)) {
-            AECore::Debug::LogError("Unable to create shader resource view");
+            AE::Core::Debug::LogError("Unable to create shader resource view");
         }
 }
 

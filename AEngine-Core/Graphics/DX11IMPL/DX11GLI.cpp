@@ -1,36 +1,28 @@
 #include <iostream>
-
-#include  "D3D11GLI.h"
-
 #include <comdef.h>
 
-#include "Graphics/DX11IMPL/DX11Buffer.h"
-#include "Graphics/DX11IMPL/DX11ShaderObject.h"
-#include "Graphics/DX11IMPL/DX11Sampler.h"
-#include "Graphics/DX11IMPL/DX11ShaderResourceView.h"
-#include "Graphics/DX11IMPL/DX11TextureResource.h"
-#include "Graphics/DX11IMPL/DX11FragmentShader.h"
-#include "Graphics/DX11IMPL/DX11VertexShader.h"
+#include "../Graphics/DeviceCreateInfo.h"
+
+#include "../Graphics/DX11IMPL/DX11GLI.h"
+#include "../Graphics/DX11IMPL/DX11Buffer.h"
+#include "../Graphics/DX11IMPL/DX11ShaderObject.h"
+#include "../Graphics/DX11IMPL/DX11Sampler.h"
+#include "../Graphics/DX11IMPL/DX11ShaderResourceView.h"
+#include "../Graphics/DX11IMPL/DX11TextureResource.h"
+#include "../Graphics/DX11IMPL/DX11FragmentShader.h"
+#include "../Graphics/DX11IMPL/DX11VertexShader.h"
 
 //TODO: you must remove this
 using namespace AE::Graphics;
 
-void D3D11GLI::PrintHResult(HRESULT result) {
+void DX11GLI::PrintHResult(HRESULT result) {
     _com_error err(result);
     LPCTSTR errMsg = err.ErrorMessage();
 
     std::wcout << errMsg << std::endl;
 }
 
-Microsoft::WRL::ComPtr <ID3D11Device> D3D11GLI::GetDevice() {
-    return m_device;
-}
-
-Microsoft::WRL::ComPtr <ID3D11DeviceContext> D3D11GLI::GetDeviceContext() {
-    return m_deviceContext;
-}
-
-void D3D11GLI::Init(AECore::DeviceCreateInfo info) {
+void DX11GLI::Init(const DeviceCreateInfo& info) {
     DXGI_SWAP_CHAIN_DESC desc;
 
     //TODO: Is this very c++ like
@@ -118,7 +110,7 @@ void D3D11GLI::Init(AECore::DeviceCreateInfo info) {
     std::cout << "Graphics initalized" << std::endl;
 }
 
-void D3D11GLI::setupDepthStencilState() {
+void DX11GLI::setupDepthStencilState() {
     D3D11_DEPTH_STENCIL_DESC dsDesc;
 
     // Depth test parameters
@@ -149,7 +141,7 @@ void D3D11GLI::setupDepthStencilState() {
     m_deviceContext->OMSetDepthStencilState(NULL, 0);
 }
 
-ID3D11Texture2D* D3D11GLI::CreateTextureD3D(void* data, unsigned int height, unsigned int width, unsigned int miplevel,
+ID3D11Texture2D* DX11GLI::CreateTextureD3D(void* data, unsigned int height, unsigned int width, unsigned int miplevel,
     DXGI_FORMAT format, unsigned int sampleCount, unsigned int BindFlags) {
     ID3D11Texture2D* texture = nullptr;
 
@@ -186,32 +178,36 @@ ID3D11Texture2D* D3D11GLI::CreateTextureD3D(void* data, unsigned int height, uns
     return texture;
 }
 
-void D3D11GLI::Clear() {
+void DX11GLI::Clear() {
     m_deviceContext->ClearRenderTargetView(m_backBuffer.Get(), RGBA{0.0f, 0.2f, 0.4f, 1.0f});
     m_deviceContext->ClearDepthStencilView(m_pDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 }
 
-void D3D11GLI::Swap() {
+void DX11GLI::Swap() {
     m_swapChain->Present(0, 0);
 }
 
-void D3D11GLI::D3DCreateCall(HRESULT hresult, std::string failInfo) {
+void DX11GLI::D3DCreateCall(HRESULT hresult, std::string failInfo) {
     if (FAILED(hresult)) {
         std::cout << failInfo << std::endl;
         PrintHResult(hresult);
     }
 }
 
+void DX11GLI::Draw(unsigned int size) {
+    m_deviceContext->DrawIndexed(size, 0, 0);
+}
+
 //Only Creates index buffers
-std::shared_ptr<IBuffer> D3D11GLI::CreateBuffer(const void* data, size_t count, size_t stride, BufferType bufferType) {
+std::shared_ptr<IBuffer> DX11GLI::CreateBuffer(const void* data, size_t count, size_t stride, BufferType bufferType) {
     return std::make_shared<DX11Buffer>(m_device.Get(), m_deviceContext.Get(), count, stride, data, bufferType);
 }
 
-std::shared_ptr<DX11ShaderObject> D3D11GLI::CreateShaderObject(const void* data, size_t dataSize, std::string entryPoint, std::string shaderTarget) {
+std::shared_ptr<DX11ShaderObject> DX11GLI::CreateShaderObject(const void* data, size_t dataSize, std::string entryPoint, std::string shaderTarget) {
     return std::make_shared<DX11ShaderObject>(m_deviceContext.Get(), m_device.Get(), data, dataSize, entryPoint, shaderTarget);
 }
 
-std::shared_ptr<AE::Graphics::IShaderResourceView> D3D11GLI::CreateShaderResourceView(const std::shared_ptr<AE::Graphics::ITextureResource> textureResource) {
+std::shared_ptr<AE::Graphics::IShaderResourceView> DX11GLI::CreateShaderResourceView(const std::shared_ptr<AE::Graphics::ITextureResource> textureResource) {
     return std::make_shared<DX11ShaderResourceView>(
             m_deviceContext, 
             m_device, 
@@ -220,20 +216,20 @@ std::shared_ptr<AE::Graphics::IShaderResourceView> D3D11GLI::CreateShaderResourc
     );
 }
 
-std::shared_ptr<AE::Graphics::ISampler> D3D11GLI::CreateSampler() {
+std::shared_ptr<AE::Graphics::ISampler> DX11GLI::CreateSampler() {
     return std::make_shared<DX11Sampler>(
             m_deviceContext,
             m_device
     );
 }
 
-std::shared_ptr<AE::Graphics::ITextureResource> D3D11GLI::CreateTextureResource(const TextureCreateInfo& createInfo) {
+std::shared_ptr<AE::Graphics::ITextureResource> DX11GLI::CreateTextureResource(const TextureCreateInfo& createInfo) {
     return std::make_shared<DX11TextureResource>(
         m_deviceContext, m_device, createInfo
         );
 }
 
-std::shared_ptr<IVertexShader> D3D11GLI::CreateVertexShader(const void* data, size_t dataSize, const std::vector<VertexAttribute>& attributes) {
+std::shared_ptr<IVertexShader> DX11GLI::CreateVertexShader(const void* data, size_t dataSize, const std::vector<VertexAttribute>& attributes) {
     auto shaderObject = CreateShaderObject(data, dataSize, "VShader", "vs_4_0");
 
     //TODO: Error check here, creation could fail look into tactics for RAII failure error should have alread been logged
@@ -241,7 +237,7 @@ std::shared_ptr<IVertexShader> D3D11GLI::CreateVertexShader(const void* data, si
     return std::make_shared<DX11VertexShader>(m_deviceContext, m_device, shaderObject, attributes);
 };
 
-std::shared_ptr<IFragmentShader> D3D11GLI::CreateFragmentShader(const void* data, size_t dataSize) {
+std::shared_ptr<IFragmentShader> DX11GLI::CreateFragmentShader(const void* data, size_t dataSize) {
     auto shaderObject = CreateShaderObject(data, dataSize, "PShader", "ps_4_0");
 
     //TODO: Error check here, creation could fail look into tactics for RAII failure error should have alread been logged
@@ -252,10 +248,10 @@ std::shared_ptr<IFragmentShader> D3D11GLI::CreateFragmentShader(const void* data
 
 
 //Binding
-void D3D11GLI::BindBuffer(const std::shared_ptr<IBuffer>& ib) {
+void DX11GLI::BindBuffer(const std::shared_ptr<IBuffer>& ib) {
     ib->Bind();
 }
 
-void D3D11GLI::ShutDown() {
+void DX11GLI::ShutDown() {
 
 }

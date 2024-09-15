@@ -1,5 +1,5 @@
 #include "../DX11IMPL/DX11Sampler.h"
-#include "../Debug.h"
+#include "../Core/Debug.h"
 
 using namespace AE::Graphics;
 
@@ -18,7 +18,7 @@ DX11Sampler::DX11Sampler(Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceConte
     HRESULT hr = device->CreateSamplerState(&sampDesc, m_pSampler.GetAddressOf());
 
     if (FAILED(hr)) {
-        AECore::Debug::LogError("Unable to create sampler, invalid");
+        AE::Core::Debug::LogError("Unable to create sampler, invalid");
     }
 }
 

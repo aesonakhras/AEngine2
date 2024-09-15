@@ -1,21 +1,14 @@
 #pragma once
-
-//TODO: until I implement openGL, Vulkam, or DX12 directX11 will live here
-//not the cleanest solution but I literally spent a day trying to design
-//a system just guessing what I will need.  Also doing this will avoid a Virtual
-
-//TODO: This needs to be replaced with Legit error code,
-//but for not lets just use IOStream until I implement that code
-#include <iostream>
-#include <d3d11.h>
-#include "DeviceCreateInfo.h"
-#include "StaticMesh.h"
 #include <vector>
 #include <string>
-#include "../Graphics/Texture.h"
 
+#include <iostream>
+
+
+#include "../Graphics/StaticMesh.h"
+#include "../Graphics/Texture.h"
 #include "IGLI.h"
-#include "Graphics/TextureCreateInfo.h"
+#include "TextureCreateInfo.h"
 
 namespace AE::Graphics {
 
@@ -24,6 +17,7 @@ namespace AE::Graphics {
 	class IVertexShader;
 	struct VertexAttribute;
 	class Material;
+	struct DeviceCreateInfo;
 
 	class GraphicsManager {
 
@@ -31,12 +25,9 @@ namespace AE::Graphics {
 		GraphicsManager() {/* intentianlly left blank Init will initialize, this is to allow start up to be done in programmer order*/ };
 		~GraphicsManager() {/*same as above*/ }
 
-		bool Initialize(AECore::DeviceCreateInfo info);
+		bool Initialize(const DeviceCreateInfo& info);
 		void DrawFrame(std::vector<StaticMesh*> meshes, DirectX::XMMATRIX VP);
 		void ShutDown();
-
-		Microsoft::WRL::ComPtr <ID3D11Device> GetDevice();
-		Microsoft::WRL::ComPtr <ID3D11DeviceContext> GetDeviceContext();
 
 		//CreateBuffer
 		std::shared_ptr<IBuffer> CreateBuffer(const void* data, size_t count, size_t stride, BufferType bufferType);
@@ -65,6 +56,6 @@ namespace AE::Graphics {
 
 		std::unique_ptr<IGLI> m_GLI = nullptr;
 
-		UINT m_offset = 0;
+		unsigned int m_offset = 0;
 	};
 }

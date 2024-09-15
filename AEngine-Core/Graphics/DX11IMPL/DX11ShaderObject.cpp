@@ -1,7 +1,7 @@
 #include "DX11ShaderObject.h"
 #include <Windows.h>
 
-using AECore::Debug;
+using AE::Core::Debug;
 using namespace AE::Graphics;
 
 DX11ShaderObject::DX11ShaderObject(Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext, Microsoft::WRL::ComPtr<ID3D11Device> device, const void* data, size_t dataSize, std::string entryPoint, std::string shaderTarget) :

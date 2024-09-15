@@ -4,7 +4,7 @@
 
 #include "../ITextureResource.h"
 #include "../TextureCreateInfo.h"
-#include "../Debug.h"
+#include "../Core/Debug.h"
 #include "../DX11IMPL/DX11Utils.h"
 
 namespace AE::Graphics {

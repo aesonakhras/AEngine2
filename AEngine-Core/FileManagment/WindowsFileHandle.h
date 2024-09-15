@@ -1,7 +1,7 @@
 #pragma once
 #include "../FileManagment/IFileHandle.h"
 #include <Windows.h>
-#include "../Debug.h"
+#include "../Core/Debug.h"
 
 namespace AE::Core::System {
 	class WindowsFileHandle : public IFileHandle {

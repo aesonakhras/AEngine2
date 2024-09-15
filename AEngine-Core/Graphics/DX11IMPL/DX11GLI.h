@@ -6,10 +6,10 @@
 #include <vector>
 #include <memory>
 
-#include "IGLI.h"
+#include "../IGLI.h"
 
 #include <wrl/client.h>
-#include "Graphics/TextureCreateInfo.h"
+#include "../Graphics/TextureCreateInfo.h"
 
 //TODO: Lmao what is this
 #pragma comment(lib, "d3d11.lib")
@@ -19,28 +19,25 @@ namespace AE::Graphics {
 	//forward declare of classes
 	class DX11ShaderObject;
 
-	class D3D11GLI : public IGLI {
+	class DX11GLI : public IGLI {
 
 	public:
-
 		///////////////////////////From the IGLI
-		virtual void Init(AECore::DeviceCreateInfo info) final override;
+		virtual void Init(const DeviceCreateInfo& info) final override;
 		virtual void ShutDown() final override;
 
-		virtual Microsoft::WRL::ComPtr <ID3D11Device> GetDevice() final override;
-		virtual Microsoft::WRL::ComPtr <ID3D11DeviceContext> GetDeviceContext() final override;
 		virtual void Clear() final override;
 		virtual void Swap() final override;
+
+		virtual void Draw(unsigned int size) final override;
 
 		//Creation
 		virtual std::shared_ptr <IBuffer> CreateBuffer(const void* data, size_t count, size_t stride, BufferType bufferType) final override;
 		
-
 		virtual std::shared_ptr<AE::Graphics::IShaderResourceView> CreateShaderResourceView(const std::shared_ptr<AE::Graphics::ITextureResource> textureResource) final override;
 		virtual std::shared_ptr<AE::Graphics::ISampler> CreateSampler() final override;
 		virtual std::shared_ptr<AE::Graphics::ITextureResource> CreateTextureResource(const AE::Graphics::TextureCreateInfo& createInfo) final override;
 
-		
 		virtual std::shared_ptr<IVertexShader> CreateVertexShader(const void* data,
 			size_t dataSize,
 			const std::vector<VertexAttribute>& attributes) final override;

@@ -17,7 +17,7 @@ fileHandle(INVALID_HANDLE_VALUE), writeMode(op == FileOperation::Write){
 									);
 
 	if (fileHandle == INVALID_HANDLE_VALUE) {
-		AECore::Debug::LogError("Unable to Open File: " + fileName);
+		AE::Core::Debug::LogError("Unable to Open File: " + fileName);
 	}
 
 }
@@ -30,7 +30,7 @@ std::vector<char> WindowsFileHandle::ReadAll() {
 	LARGE_INTEGER filesize;
 
 	if (!GetFileSizeEx(fileHandle, &filesize)) {
-		AECore::Debug::LogError("Unable to get file size.");
+		AE::Core::Debug::LogError("Unable to get file size.");
 		return{};
 	}
 	else {
@@ -42,7 +42,7 @@ std::vector<char> WindowsFileHandle::Read(size_t size) {
 	std::vector<char> buffer;
 	
 	if (fileHandle == INVALID_HANDLE_VALUE || writeMode) {
-		AECore::Debug::LogError("File not open, or incorrect File Operation");
+		AE::Core::Debug::LogError("File not open, or incorrect File Operation");
 		buffer;
 	}
 
@@ -57,7 +57,7 @@ std::vector<char> WindowsFileHandle::Read(size_t size) {
 	}
 	else {
 		buffer.clear();
-		AECore::Debug::LogError("Error in reading file");
+		AE::Core::Debug::LogError("Error in reading file");
 	}
 
 	return buffer;
@@ -65,14 +65,14 @@ std::vector<char> WindowsFileHandle::Read(size_t size) {
 
 void WindowsFileHandle::Write(const std::vector<char>& data) {
 	if (fileHandle == INVALID_HANDLE_VALUE || !writeMode) {
-		AECore::Debug::LogError("File not open, or incorrect File Operation");
+		AE::Core::Debug::LogError("File not open, or incorrect File Operation");
 	}
 
 	DWORD bytesWritten;
 	bool result = WriteFile(fileHandle, data.data(), static_cast<DWORD>(data.size()), &bytesWritten, NULL);
 
 	if (!result) {
-		AECore::Debug::LogError("Failed to write to file");
+		AE::Core::Debug::LogError("Failed to write to file");
 	}
 }
 

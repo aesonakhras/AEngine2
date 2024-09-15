@@ -1,5 +1,5 @@
 #include "DX11Buffer.h"
-#include "../Debug.h"
+#include "../Core/Debug.h"
 #include <cassert>
 
 using Microsoft::WRL::ComPtr;
@@ -40,7 +40,7 @@ DX11Buffer::DX11Buffer(ComPtr<ID3D11Device> device,
     HRESULT hr = device->CreateBuffer(&bufferDesc, &InitData, &m_Resource);
 
     if (FAILED(hr)) {
-        AECore::Debug::LogError("Buffer creation failed.");
+        AE::Core::Debug::LogError("Buffer creation failed.");
     }    
 }
 

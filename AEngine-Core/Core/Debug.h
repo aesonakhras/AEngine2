@@ -4,7 +4,7 @@
 
 #define ENUM_TO_STRING(name) #name
 
-namespace AECore {
+namespace AE::Core {
 	class Debug {
 	//Note: private members are first here
 	private:

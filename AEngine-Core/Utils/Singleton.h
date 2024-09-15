@@ -1,6 +1,6 @@
 #pragma once
 #include <memory>
-#include "../Debug.h"
+#include "../Core/Debug.h"
 
 namespace AE::Utils {
 	template <typename T>

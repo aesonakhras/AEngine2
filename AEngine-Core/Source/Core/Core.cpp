@@ -1,21 +1,19 @@
 #include "Core.h"
-#include "../GraphicsManager.h"
+#include "../Graphics/GraphicsManager.h"
 
-//I want to see most of the below #include GONE
-//for fun
 #include <memory.h>
 #include <string>
 #include <vector>
 
 //AEngine Specific
-#include "../StaticMesh.h"
-#include "../Camera.h"
+#include "../Graphics/StaticMesh.h"
+#include "../Graphics/Camera.h"
 
 #include "../Graphics/Texture.h"
 
-#include "../FileImporter.h"
+#include "../FileManagment/FileImporter.h"
 
-#include "../DeviceCreateInfo.h"
+#include "../Graphics/DeviceCreateInfo.h"
 
 #include "../FileManagment/FileManager.h"
 
@@ -135,7 +133,7 @@ namespace Core {
 
         window = AE::Core::System::WindowFactory::Create(windowCreateInfo);
 
-        AECore::DeviceCreateInfo createInfo { SCREEN_HEIGHT, SCREEN_WIDTH, *window};
+        AE::Graphics::DeviceCreateInfo createInfo { SCREEN_HEIGHT, SCREEN_WIDTH, *window};
 
         ///////////////////////////////////Set Up Direct X related stuff////////////////////////////////////
         g_GraphicsManager.Initialize(createInfo);

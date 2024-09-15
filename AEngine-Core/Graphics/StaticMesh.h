@@ -1,6 +1,6 @@
 #pragma once
-#include "Graphics/IBuffer.h"
-#include "../Transform.h"
+#include "../Graphics/IBuffer.h"
+#include "../Core/Transform.h"
 #include "../Graphics/Material.h"
 #include "../Core/WorldObject.h"
 

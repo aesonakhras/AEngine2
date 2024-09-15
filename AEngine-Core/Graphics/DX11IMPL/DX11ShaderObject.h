@@ -4,7 +4,7 @@
 #include <d3d11.h>
 #include <string>
 #include "d3dcompiler.h"
-#include "../Debug.h"
+#include "../Core/Debug.h"
 #include "../FileManagment/FileManager.h"
 
 
