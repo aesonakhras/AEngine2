@@ -12,7 +12,7 @@
 #include "StaticMesh.h"
 #include <vector>
 #include <string>
-#include "Texture.h"
+#include "../Graphics/Texture.h"
 
 #include "IGLI.h"
 #include "Graphics/TextureCreateInfo.h"
@@ -54,6 +54,8 @@ namespace AE::Graphics {
 
 		//Pass in the data to the texture, call it make texture
 		std::shared_ptr<Texture> CreateTexture(const AE::Graphics::TextureCreateInfo& info);
+
+		std::shared_ptr<ISampler> CreateSampler();
 
 	private:
 		void DrawMesh(StaticMesh& mesh, DirectX::XMMATRIX VP);

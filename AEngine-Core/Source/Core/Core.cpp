@@ -11,7 +11,7 @@
 #include "../StaticMesh.h"
 #include "../Camera.h"
 
-#include "../Texture.h"
+#include "../Graphics/Texture.h"
 
 #include "../FileImporter.h"
 
@@ -26,9 +26,10 @@
 #include "../Graphics/CommonVerticies.h"
 
 #include "../Core/WorldObject.h"
+#include "../Graphics/ISampler.h" 
 
-#define SCREEN_WIDTH 800
-#define SCREEN_HEIGHT 600
+#define SCREEN_WIDTH 1920
+#define SCREEN_HEIGHT 1080
 
 namespace Core {
     struct MVP_ONLY_BUFFER
@@ -39,8 +40,6 @@ namespace Core {
     AE::Graphics::GraphicsManager g_GraphicsManager;
 
     std::vector<StaticMesh*> meshes;
-
-    std::shared_ptr<Texture> texture;
 
     Camera camera = { {0.0f, 0.0f, -1.0f, 0.0f}, 1.0472f, (float)SCREEN_WIDTH/(float)SCREEN_HEIGHT, 0.01f, 1000.0f };
 
@@ -60,7 +59,7 @@ namespace Core {
     }
 
     void textureSetup() {
-        AE::Graphics::TextureCreateInfo textureData = FileImporter::ImportTexture(std::string("CatTP.png"));
+        AE::Graphics::TextureCreateInfo textureData = FileImporter::ImportTexture(std::string("part1.png"));
         
         textureData.depth = 1;
         textureData.mipLevels = 1;
@@ -69,15 +68,28 @@ namespace Core {
         textureData.arraySize = 1;
         textureData.sampleCount = 1;
         
-        texture = g_GraphicsManager.CreateTexture(textureData);
+        std::shared_ptr<AE::Graphics::Texture> texture1 = g_GraphicsManager.CreateTexture(textureData);
 
-        texture->Bind();
+        AE::Graphics::TextureCreateInfo textureData2 = FileImporter::ImportTexture(std::string("part2.png"));
+
+        textureData2.depth = 1;
+        textureData2.mipLevels = 1;
+        textureData2.bindFlags = AE::Graphics::ShaderResource;
+        textureData2.generateMipMaps = false;
+        textureData2.arraySize = 1;
+        textureData2.sampleCount = 1;
+
+        std::shared_ptr<AE::Graphics::Texture> texture2 = g_GraphicsManager.CreateTexture(textureData2);
+
+        std::shared_ptr<AE::Graphics::ISampler> sampler = g_GraphicsManager.CreateSampler();
+
+        material->SetTexture("diffuse1", 0, texture1, sampler);
+        material->SetTexture("diffuse2", 1, texture2, sampler);
     }
 
     void SetupScene() {
         MVP_ONLY_BUFFER mvp;
         mvp.mWorldViewProj =  DirectX::XMMatrixIdentity();
-
 
         material = g_GraphicsManager.CreateMaterial(
             "shaders.shader", 
@@ -104,8 +116,7 @@ namespace Core {
 
         mesh->m_worldObject->SetPosition({ 0 , -1.0f, 100, 1.0f });
         mesh->m_worldObject->SetRotation({ 1.5f, y, 0.0f, 0.0f });
-            
-        //texture->Bind();
+
         g_GraphicsManager.DrawFrame(meshes, camera.GetVP());
     }
 

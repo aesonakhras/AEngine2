@@ -25,9 +25,10 @@ public:
 
         auto mvp = modelMatrix * vp;
         //Thank you DirectX very nice
+        //TODO: AHHHHHHH this needs to go into the dx11 impl somewhere
         auto tMVP = DirectX::XMMatrixTranspose(mvp);
 
-        m_material->SetMVP(&tMVP, sizeof(DirectX::XMMATRIX));
+        m_material->SetUBO(&tMVP, sizeof(DirectX::XMMATRIX));
         m_material->Bind();
     }
 

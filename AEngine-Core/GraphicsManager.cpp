@@ -99,7 +99,13 @@ std::shared_ptr<Texture> GraphicsManager::CreateTexture(const AE::Graphics::Text
     auto textureResource = m_GLI->CreateTextureResource(info);
     
     auto shaderResourceView = m_GLI->CreateShaderResourceView(textureResource);
+    
+
+    return std::make_shared<Texture>(shaderResourceView, textureResource);
+}
+
+std::shared_ptr<ISampler> GraphicsManager::CreateSampler() {
     auto sampler = m_GLI->CreateSampler();
 
-    return std::make_shared<Texture>(shaderResourceView, sampler, textureResource);
+    return sampler;
 }

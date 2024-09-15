@@ -1,11 +1,17 @@
 #pragma once
 #include <memory>
-#include <vector>
+#include <unordered_map>
+#include <utility>
+#include <string>
+
 #include <DirectXMath.h>
 
 #include "IFragmentShader.h"
 #include "IVertexShader.h"
 #include "IBuffer.h"
+#include "../Graphics/Texture.h"
+#include "../Graphics/ISampler.h"
+#include "../Debug.h"
 
 namespace AE::Graphics {
     class Material {
@@ -16,12 +22,20 @@ namespace AE::Graphics {
                 //uniform buffer all we need to do is specify a size?
             }
 
-            void SetMVP(void* data, size_t size) {
+            void SetUBO(void* data, size_t size) {
+                assert(size == m_ubo->Count && "Trying to adjust UBO with incorrectly sized data");
+
                 m_ubo->Update(data, size);
+            }
+
+            void SetTexture(std::string name, unsigned int bindPoint, std::shared_ptr<Texture> texture, std::shared_ptr<ISampler> sampler) {
+                m_textures[name] = std::pair<std::shared_ptr<Texture>, unsigned int>(texture, bindPoint);
+                m_samplers[name] = std::pair<std::shared_ptr<ISampler>, unsigned int>(sampler, bindPoint);
             }
 
             void Bind() {
                 m_ubo->Bind();
+                bindTextures();
                 m_vertexShader->Bind();
                 m_fragmentShader->Bind();
             }
@@ -33,11 +47,25 @@ namespace AE::Graphics {
             }
 
         private:
-            //std::vector<Texture>
+            void bindTextures() {
+                for (const auto& mapEntry : m_textures) {
+                    //get the bind point and texture pointer pair
+                    auto textureName = mapEntry.first;
+
+
+                    auto texturePTR = mapEntry.second.first;
+                    auto textureBindPoint = mapEntry.second.second;
+
+                    texturePTR->Bind(textureBindPoint);
+                    m_samplers[textureName].first->Bind(textureBindPoint);
+                }
+            }
+            
             std::shared_ptr<IVertexShader> m_vertexShader;
             std::shared_ptr<IFragmentShader> m_fragmentShader;
             std::shared_ptr<IBuffer> m_ubo;
-            //multiple textures
-
+            
+            std::unordered_map <std::string, std::pair<std::shared_ptr<Texture>, unsigned int>> m_textures {};
+            std::unordered_map <std::string, std::pair<std::shared_ptr<ISampler>, unsigned int>> m_samplers {};
     };
 }
