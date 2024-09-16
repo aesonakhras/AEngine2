@@ -1,30 +1,27 @@
-#include "Core.h"
-#include "../Graphics/GraphicsManager.h"
+
 
 #include <memory.h>
 #include <string>
 #include <vector>
 
 //AEngine Specific
-#include "../Graphics/StaticMesh.h"
-#include "../Graphics/Camera.h"
 
-#include "../Graphics/Texture.h"
+#include "Core.h"
+#include "Core/WorldObject.h"
 
-#include "../FileManagment/FileImporter.h"
+#include "Graphics/ISampler.h" 
+#include "Graphics/GraphicsManager.h"
+#include "Graphics/StaticMesh.h"
+#include "Graphics/Camera.h"
+#include "Graphics/Texture.h"
+#include "Graphics/DeviceCreateInfo.h"
+#include "Graphics/TextureCreateInfo.h"
+#include "Graphics/CommonVerticies.h"
 
-#include "../Graphics/DeviceCreateInfo.h"
+#include "FileManagment/FileManager.h"
+#include "FileManagment/FileImporter.h"
 
-#include "../FileManagment/FileManager.h"
-
-#include "../Window/WindowFactory.h"
-
-#include "../Graphics/TextureCreateInfo.h"
-
-#include "../Graphics/CommonVerticies.h"
-
-#include "../Core/WorldObject.h"
-#include "../Graphics/ISampler.h" 
+#include "Window/WindowFactory.h"
 
 #define SCREEN_WIDTH 1920
 #define SCREEN_HEIGHT 1080
