@@ -23,8 +23,8 @@
 
 #include "Window/WindowFactory.h"
 
-#define SCREEN_WIDTH 1920
-#define SCREEN_HEIGHT 1080
+#define SCREEN_WIDTH 1280
+#define SCREEN_HEIGHT 720
 
 namespace Core {
     struct MVP_ONLY_BUFFER
@@ -54,7 +54,7 @@ namespace Core {
     }
 
     void textureSetup() {
-        AE::Graphics::TextureCreateInfo textureData = FileImporter::ImportTexture(std::string("part1.png"));
+        AE::Graphics::TextureCreateInfo textureData = FileImporter::ImportTexture(std::string("Assets/part1.png"));
         
         textureData.depth = 1;
         textureData.mipLevels = 1;
@@ -65,7 +65,7 @@ namespace Core {
         
         std::shared_ptr<AE::Graphics::Texture> texture1 = g_GraphicsManager.CreateTexture(textureData);
 
-        AE::Graphics::TextureCreateInfo textureData2 = FileImporter::ImportTexture(std::string("part2.png"));
+        AE::Graphics::TextureCreateInfo textureData2 = FileImporter::ImportTexture(std::string("Assets/part2.png"));
 
         textureData2.depth = 1;
         textureData2.mipLevels = 1;
@@ -87,18 +87,16 @@ namespace Core {
         mvp.mWorldViewProj =  DirectX::XMMatrixIdentity();
 
         material = g_GraphicsManager.CreateMaterial(
-            "shaders.shader", 
+            "Assets/shaders.shader", 
             AE::Graphics::StandardVertexDescription::Get(),
             &mvp,
             sizeof(MVP_ONLY_BUFFER)
         );
 
         textureSetup();
-        ImportMesh(std::string("Cat.obj"));
+        ImportMesh(std::string("Assets/Cat.obj"));
     }
 
-    //oooh not very good, this is quite stinky
-    //but for now we will pass it references to the things that we need
     void renderFrame() {
         static float y = 0;
         float zPos = 1;

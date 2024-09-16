@@ -23,6 +23,11 @@ project "AEngine-App"
    targetdir ("../Binaries/" .. OutputDir .. "/%{prj.name}")
    objdir ("../Binaries/Intermediates/" .. OutputDir .. "/%{prj.name}")
 
+      -- move the assets into the build folder
+      postbuildcommands {
+        "{COPYDIR} \"../AEngine-App/Assets\" \"%{cfg.targetdir}/Assets\""
+     }
+
    filter "system:windows"
        systemversion "latest"
        defines { "WINDOWS" }
