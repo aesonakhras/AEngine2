@@ -64,9 +64,9 @@ std::shared_ptr<IFragmentShader> GraphicsManager::CreateFragmentShader(std::stri
 
 std::vector<char> GraphicsManager::LoadShaderRaw(std::string fileName) {
     //Load File
-    AE::Core::System::FileManager& fileManager = AE::Core::System::FileManager::GetInstance();
+    AE::System::FileManager& fileManager = AE::System::FileManager::GetInstance();
 
-    auto fileHandle = fileManager.GetFile(fileName, AE::Core::System::FileOperation::Read);
+    auto fileHandle = fileManager.GetFile(fileName, AE::System::FileOperation::Read);
 
     return fileHandle->ReadAll();
 }

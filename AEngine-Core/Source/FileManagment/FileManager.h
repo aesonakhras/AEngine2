@@ -10,10 +10,10 @@
 #include "Platforms/WindowsFilePlatform.h"
 #endif
 
-namespace AE::Core::System {
+namespace AE::System {
 	class FileManager : public AE::Utils::Singleton<FileManager> {
 		public:
-			std::shared_ptr<AE::Core::System::IFileHandle> GetFile(std::string fileName, FileOperation op);
+			std::shared_ptr<IFileHandle> GetFile(std::string fileName, FileOperation op);
 			bool FileExists(std::string fileName);
 
 	protected:
@@ -27,7 +27,7 @@ namespace AE::Core::System {
 			void OnInitialize() override {};
 			void OnShutdown() override {};
 
-			friend class AE::Utils::Singleton<AE::Core::System::FileManager>;
+			friend class AE::Utils::Singleton<AE::System::FileManager>;
 
 	};
 }

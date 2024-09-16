@@ -4,7 +4,7 @@
 #include "FileManagment/Platforms/IFilePlatform.h"
 #include "FileManagment/WindowsFileHandle.h"
 
-namespace AE::Core::System {
+namespace AE::System {
 	class WindowsFilePlatform : public IFilePlatform
 	{
 	public:

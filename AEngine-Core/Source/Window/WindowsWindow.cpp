@@ -1,6 +1,6 @@
 #include "WindowsWindow.h"
 
-using namespace AE::Core::System;
+using namespace AE::System;
 
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {

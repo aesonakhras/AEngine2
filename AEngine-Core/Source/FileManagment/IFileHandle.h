@@ -2,7 +2,7 @@
 #include <vector>
 #include <string>
 
-namespace AE::Core::System {
+namespace AE::System {
 	enum class FileOperation {
 		Read,
 		Write

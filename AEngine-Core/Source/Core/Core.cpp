@@ -8,6 +8,7 @@
 
 #include "Core.h"
 #include "Core/WorldObject.h"
+#include "Core/Common.h"
 
 #include "Graphics/ISampler.h" 
 #include "Graphics/GraphicsManager.h"
@@ -26,115 +27,115 @@
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
 
-namespace Core {
-    struct MVP_ONLY_BUFFER
-    {
-        DirectX::XMMATRIX mWorldViewProj;
-    };
+using namespace AE::Core;
 
-    AE::Graphics::GraphicsManager g_GraphicsManager;
+struct MVP_ONLY_BUFFER
+{
+    DirectX::XMMATRIX mWorldViewProj;
+};
 
-    std::vector<StaticMesh*> meshes;
+AE::Graphics::GraphicsManager g_GraphicsManager;
 
-    Camera camera = { {0.0f, 0.0f, -1.0f, 0.0f}, 1.0472f, (float)SCREEN_WIDTH/(float)SCREEN_HEIGHT, 0.01f, 1000.0f };
+std::vector<StaticMesh*> meshes;
 
-    std::unique_ptr<AE::Core::System::IWindow> window;
+Camera camera = { {0.0f, 0.0f, -1.0f, 0.0f}, 1.0472f, (float)SCREEN_WIDTH/(float)SCREEN_HEIGHT, 0.01f, 1000.0f };
 
-    std::shared_ptr < AE::Graphics::Material> material;
+UniquePtr<AE::System::IWindow> window;
 
-    void ImportMesh(std::string fileName) {
-        MeshData meshData = FileImporter::ImportMesh(fileName);
+RefCountPtr<AE::Graphics::Material> material;
 
-        auto vertexBuffer = g_GraphicsManager.CreateBuffer((void*)meshData.vertexData, meshData.vertexCount, sizeof(AE::Graphics::StandardVertex), AE::Graphics::BufferType::Vertex);
-        auto indexBuffer = g_GraphicsManager.CreateBuffer((void*)meshData.indexData, meshData.indexCount, sizeof(unsigned int), AE::Graphics::BufferType::Index);
+void ImportMesh(std::string fileName) {
+    MeshData meshData = FileImporter::ImportMesh(fileName);
 
-        std::shared_ptr<AE::Core::WorldObject> worldObj = std::make_shared<AE::Core::WorldObject>();
+    auto vertexBuffer = g_GraphicsManager.CreateBuffer((void*)meshData.vertexData, meshData.vertexCount, sizeof(AE::Graphics::StandardVertex), AE::Graphics::BufferType::Vertex);
+    auto indexBuffer = g_GraphicsManager.CreateBuffer((void*)meshData.indexData, meshData.indexCount, sizeof(unsigned int), AE::Graphics::BufferType::Index);
 
-        meshes.push_back(new StaticMesh{ vertexBuffer, indexBuffer, material, worldObj });
-    }
+    RefCountPtr<AE::Core::WorldObject> worldObj = MakeRef<AE::Core::WorldObject>();
 
-    void textureSetup() {
-        AE::Graphics::TextureCreateInfo textureData = FileImporter::ImportTexture(std::string("Assets/part1.png"));
+    meshes.push_back(new StaticMesh{ vertexBuffer, indexBuffer, material, worldObj });
+}
+
+void textureSetup() {
+    AE::Graphics::TextureCreateInfo textureData = FileImporter::ImportTexture(std::string("Assets/part1.png"));
         
-        textureData.depth = 1;
-        textureData.mipLevels = 1;
-        textureData.bindFlags = AE::Graphics::ShaderResource;
-        textureData.generateMipMaps = false;
-        textureData.arraySize = 1;
-        textureData.sampleCount = 1;
+    textureData.depth = 1;
+    textureData.mipLevels = 1;
+    textureData.bindFlags = AE::Graphics::ShaderResource;
+    textureData.generateMipMaps = false;
+    textureData.arraySize = 1;
+    textureData.sampleCount = 1;
         
-        std::shared_ptr<AE::Graphics::Texture> texture1 = g_GraphicsManager.CreateTexture(textureData);
+    std::shared_ptr<AE::Graphics::Texture> texture1 = g_GraphicsManager.CreateTexture(textureData);
 
-        AE::Graphics::TextureCreateInfo textureData2 = FileImporter::ImportTexture(std::string("Assets/part2.png"));
+    AE::Graphics::TextureCreateInfo textureData2 = FileImporter::ImportTexture(std::string("Assets/part2.png"));
 
-        textureData2.depth = 1;
-        textureData2.mipLevels = 1;
-        textureData2.bindFlags = AE::Graphics::ShaderResource;
-        textureData2.generateMipMaps = false;
-        textureData2.arraySize = 1;
-        textureData2.sampleCount = 1;
+    textureData2.depth = 1;
+    textureData2.mipLevels = 1;
+    textureData2.bindFlags = AE::Graphics::ShaderResource;
+    textureData2.generateMipMaps = false;
+    textureData2.arraySize = 1;
+    textureData2.sampleCount = 1;
 
-        std::shared_ptr<AE::Graphics::Texture> texture2 = g_GraphicsManager.CreateTexture(textureData2);
+    std::shared_ptr<AE::Graphics::Texture> texture2 = g_GraphicsManager.CreateTexture(textureData2);
 
-        std::shared_ptr<AE::Graphics::ISampler> sampler = g_GraphicsManager.CreateSampler();
+    std::shared_ptr<AE::Graphics::ISampler> sampler = g_GraphicsManager.CreateSampler();
 
-        material->SetTexture("diffuse1", 0, texture1, sampler);
-        material->SetTexture("diffuse2", 1, texture2, sampler);
+    material->SetTexture("diffuse1", 0, texture1, sampler);
+    material->SetTexture("diffuse2", 1, texture2, sampler);
+}
+
+void SetupScene() {
+    MVP_ONLY_BUFFER mvp;
+    mvp.mWorldViewProj =  DirectX::XMMatrixIdentity();
+
+    material = g_GraphicsManager.CreateMaterial(
+        "Assets/shaders.shader", 
+        AE::Graphics::StandardVertexDescription::Get(),
+        &mvp,
+        sizeof(MVP_ONLY_BUFFER)
+    );
+
+    textureSetup();
+    ImportMesh(std::string("Assets/Cat.obj"));
+}
+
+void renderFrame() {
+    static float y = 0;
+    float zPos = 1;
+    y += 0.0001f;
+    if (y > 6.28) {
+        y = 0.0f;
     }
+    // y = 5.0f;
+    auto mesh = meshes[0];
 
-    void SetupScene() {
-        MVP_ONLY_BUFFER mvp;
-        mvp.mWorldViewProj =  DirectX::XMMatrixIdentity();
+    mesh->m_worldObject->SetPosition({ 0 , -1.0f, 100, 1.0f });
+    mesh->m_worldObject->SetRotation({ 1.5f, y, 0.0f, 0.0f });
 
-        material = g_GraphicsManager.CreateMaterial(
-            "Assets/shaders.shader", 
-            AE::Graphics::StandardVertexDescription::Get(),
-            &mvp,
-            sizeof(MVP_ONLY_BUFFER)
-        );
+    g_GraphicsManager.DrawFrame(meshes, camera.GetVP());
+}
 
-        textureSetup();
-        ImportMesh(std::string("Assets/Cat.obj"));
+void Simulate() {
+    while (!window->ShouldEngineExit()) {
+        renderFrame();
     }
+}
 
-    void renderFrame() {
-        static float y = 0;
-        float zPos = 1;
-        y += 0.0001f;
-        if (y > 6.28) {
-            y = 0.0f;
-        }
-       // y = 5.0f;
-        auto mesh = meshes[0];
+void AE::Core::Start() {
+    AE::System::FileManager& fileManager = AE::System::FileManager::GetInstance();
 
-        mesh->m_worldObject->SetPosition({ 0 , -1.0f, 100, 1.0f });
-        mesh->m_worldObject->SetRotation({ 1.5f, y, 0.0f, 0.0f });
+    std::string windowName = "AEngine";
 
-        g_GraphicsManager.DrawFrame(meshes, camera.GetVP());
-    }
+    AE::System::WindowCreateInfo windowCreateInfo{ SCREEN_WIDTH, SCREEN_HEIGHT, windowName };
 
-    void Simulate() {
-        while (!window->ShouldEngineExit()) {
-            renderFrame();
-        }
-    }
+    window = AE::System::WindowFactory::Create(windowCreateInfo);
 
-    void Start() {
-        AE::Core::System::FileManager& fileManager = AE::Core::System::FileManager::GetInstance();
+    AE::Graphics::DeviceCreateInfo createInfo { SCREEN_HEIGHT, SCREEN_WIDTH, *window};
 
-        std::string windowName = "AEngine";
+    ///////////////////////////////////Set Up Direct X related stuff////////////////////////////////////
+    g_GraphicsManager.Initialize(createInfo);
+    SetupScene();
+    Simulate();
 
-        AE::Core::System::WindowCreateInfo windowCreateInfo{ SCREEN_WIDTH, SCREEN_HEIGHT, windowName };
-
-        window = AE::Core::System::WindowFactory::Create(windowCreateInfo);
-
-        AE::Graphics::DeviceCreateInfo createInfo { SCREEN_HEIGHT, SCREEN_WIDTH, *window};
-
-        ///////////////////////////////////Set Up Direct X related stuff////////////////////////////////////
-        g_GraphicsManager.Initialize(createInfo);
-        SetupScene();
-        Simulate();
-
-        g_GraphicsManager.ShutDown();
-    }
+    g_GraphicsManager.ShutDown();
 }

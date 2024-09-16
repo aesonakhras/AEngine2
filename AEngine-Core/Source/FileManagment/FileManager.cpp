@@ -1,12 +1,12 @@
 #include "FileManager.h"
 
-using namespace AE::Core::System;
+using namespace AE::System;
 
 FileManager::FileManager() {
 	CreateFilePlatform();
 }
 
-std::shared_ptr<AE::Core::System::IFileHandle> FileManager::GetFile(std::string fileName, FileOperation op) {
+std::shared_ptr<IFileHandle> FileManager::GetFile(std::string fileName, FileOperation op) {
 	return platformFile->OpenFile(fileName, op);
 }
 

@@ -7,7 +7,7 @@
 #include "WindowsWindow.h"
 #endif
 
-namespace AE::Core::System {
+namespace AE::System {
 	class WindowFactory {
 	public:
 		static std::unique_ptr<IWindow> Create(WindowCreateInfo info) {

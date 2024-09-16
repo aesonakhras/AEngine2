@@ -5,7 +5,7 @@
 #include "Core/Debug.h"
 
 
-namespace AE::Core::System {
+namespace AE::System {
 	class WindowsFileHandle : public IFileHandle {
 	public:
 		WindowsFileHandle(const std::string fileName, FileOperation op);

@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 
-namespace AE::Core::System {
+namespace AE::System {
 	struct WindowCreateInfo {
 		size_t x;
 		size_t y;

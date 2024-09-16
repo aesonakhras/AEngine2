@@ -1,6 +1,6 @@
 #include "FileManagment/WindowsFileHandle.h"
 
-using namespace AE::Core::System;
+using namespace AE::System;
 
 WindowsFileHandle::WindowsFileHandle(const std::string fileName, FileOperation op) :
 fileHandle(INVALID_HANDLE_VALUE), writeMode(op == FileOperation::Write){

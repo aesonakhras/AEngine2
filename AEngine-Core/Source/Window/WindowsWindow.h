@@ -2,7 +2,7 @@
 #include "IWindow.h"
 #include <Windows.h>
 
-namespace AE::Core::System {
+namespace AE::System {
 	//haha funny name
 	class WindowsWindow : public IWindow {
 		public:

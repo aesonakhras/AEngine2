@@ -1,7 +1,7 @@
 #include <Windows.h>
 
 #include "FileManagment/Platforms/WindowsFilePlatform.h"
-using namespace AE::Core::System;
+using namespace AE::System;
 
 std::shared_ptr<IFileHandle> WindowsFilePlatform::OpenFile(const std::string& fileName, FileOperation op) {
 	return std::make_shared<WindowsFileHandle>(fileName, op);

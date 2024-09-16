@@ -5,7 +5,7 @@
 
 int main()
 {		
-	Core::Start();
+	AE::Core::Start();
 	
 	// return 0 to Windows
 	return 0;

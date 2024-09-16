@@ -3,7 +3,7 @@
 #include <string>
 #include "FileManagment/IFileHandle.h"
 
-namespace AE::Core::System {
+namespace AE::System {
 	class IFilePlatform {
 		public:
 			virtual ~IFilePlatform() = default;

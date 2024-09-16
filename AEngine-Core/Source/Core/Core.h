@@ -1,9 +1,5 @@
 #pragma once
 
-namespace Core {
-
-	void PrintHelloWorld();
-
+namespace AE::Core {
 	void Start();
-
 }
