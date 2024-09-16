@@ -1,12 +1,11 @@
 #include "FileImporter.h"
 
-
 #include <assimp/Importer.hpp>      // C++ importer interface
 #include <assimp/scene.h>           // Output data structure
 #include <assimp/postprocess.h>     // Post processing flags
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "Core/stb_image.h"
+#include "../ThirdParty/stbi/include/stb_image.h"
 
 #include <iostream>
 #include <string>
