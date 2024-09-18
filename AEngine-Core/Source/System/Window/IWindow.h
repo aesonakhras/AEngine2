@@ -1,10 +1,15 @@
 #pragma once
 #include <string>
+#include "Core/Common.h"
 
 namespace AE::System {
 	struct WindowCreateInfo {
-		size_t x;
-		size_t y;
+		AE::Core::int32 x;
+		AE::Core::int32 y;
+
+		AE::Core::int32 width;
+		AE::Core::int32 height;
+
 		std::string& windowName;
 	};
 

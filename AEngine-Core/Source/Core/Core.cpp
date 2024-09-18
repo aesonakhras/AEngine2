@@ -22,7 +22,10 @@
 #include "FileManagment/FileManager.h"
 #include "FileManagment/FileImporter.h"
 
-#include "Window/WindowFactory.h"
+#include "System/Window/WindowFactory.h"
+
+#define WINDOW_START_X 300
+#define WINDOW_START_Y 300
 
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
@@ -126,7 +129,13 @@ void AE::Core::Start() {
 
     std::string windowName = "AEngine";
 
-    AE::System::WindowCreateInfo windowCreateInfo{ SCREEN_WIDTH, SCREEN_HEIGHT, windowName };
+    AE::System::WindowCreateInfo windowCreateInfo{
+        WINDOW_START_X,
+        WINDOW_START_Y,
+        SCREEN_WIDTH,
+        SCREEN_HEIGHT,
+        windowName
+    };
 
     window = AE::System::WindowFactory::Create(windowCreateInfo);
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Window/IWindow.h"
+#include "System/Window/IWindow.h"
 
 namespace AE::Graphics {
 	struct DeviceCreateInfo
