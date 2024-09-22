@@ -32,17 +32,13 @@ void SDLWindow::ShutDown() {
 }
 
 
-bool SDLWindow::ShouldEngineExit() {
-	SDL_Event event{};
-
-	while (SDL_PollEvent(&event)) {
-		if (event.type == SDL_QUIT) {
-			return true;
-		}
-	}
-
-	return false;
+bool SDLWindow::GetShouldEngineExit() {
+	return m_shouldExit;
 }
+
+void SDLWindow::SetShouldEngineExit(bool shouldExit) {
+	m_shouldExit = true;
+};
 
 void SDLWindow::Poll() {
 

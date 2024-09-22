@@ -17,7 +17,7 @@ namespace AE::Core {
 
 		static void _Log(std::string message, Severity severity = AE_ALL) {
 			if (severity < SEVERITY_COUNT) {
-				if (severity >= m_severity) {
+				if (severity <= m_severity) {
 					std::cout << SeverityNames[severity] << ": " << message << std::endl;
 				}
 			}

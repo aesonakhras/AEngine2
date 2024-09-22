@@ -23,6 +23,8 @@
 #include "FileManagment/FileImporter.h"
 
 #include "System/Window/WindowFactory.h"
+#include "System/Input/InputManager.h"
+#include "System/Time/DeltaTimeManager.h"
 
 #define WINDOW_START_X 300
 #define WINDOW_START_Y 300
@@ -43,9 +45,15 @@ std::vector<StaticMesh*> meshes;
 
 Camera camera = { {0.0f, 0.0f, -1.0f, 0.0f}, 1.0472f, (float)SCREEN_WIDTH/(float)SCREEN_HEIGHT, 0.01f, 1000.0f };
 
-UniquePtr<AE::System::IWindow> window;
+RefCountPtr<AE::System::IWindow> window;
 
 RefCountPtr<AE::Graphics::Material> material;
+
+AE::System::InputManager inputManager;
+
+AE::System::DeltaTimeManager timeManager = { 144 };
+
+float32 deltaTime = 0.0f;
 
 void ImportMesh(std::string fileName) {
     MeshData meshData = FileImporter::ImportMesh(fileName);
@@ -103,9 +111,9 @@ void SetupScene() {
 }
 
 void renderFrame() {
-    static float y = 0;
-    float zPos = 1;
-    y += 0.0001f;
+    static float32 y = 0;
+    float32 zPos = 1;
+    y += 1.0f * deltaTime;
     if (y > 6.28) {
         y = 0.0f;
     }
@@ -119,10 +127,31 @@ void renderFrame() {
 }
 
 void Simulate() {
-    while (!window->ShouldEngineExit()) {
+    while (!window->GetShouldEngineExit()) {
+        timeManager.StartFrame();
+        deltaTime = timeManager.GetDeltaTime();
+
+        inputManager.Update();
         renderFrame();
+
+        timeManager.LimitFrameRate();
     }
 }
+
+class TestClass {
+public:
+    void Pressed() {
+        Debug::Log("Pressed");
+    }
+
+    void Released() {
+        Debug::Log("Released");
+    }
+
+    void Held() {
+        Debug::Log("Held");
+    }
+};
 
 void AE::Core::Start() {
     AE::System::FileManager& fileManager = AE::System::FileManager::GetInstance();
@@ -138,6 +167,11 @@ void AE::Core::Start() {
     };
 
     window = AE::System::WindowFactory::Create(windowCreateInfo);
+    inputManager.Initialize(window);
+
+    TestClass daBaby{};
+
+    inputManager.RegisterButtonEvent(AE::System::Button::W, AE::System::InputState::Pressed, std::bind(&TestClass::Pressed, daBaby));
 
     AE::Graphics::DeviceCreateInfo createInfo { SCREEN_HEIGHT, SCREEN_WIDTH, *window};
 

@@ -19,7 +19,8 @@ namespace AE::System {
 			virtual void Init(WindowCreateInfo info) = 0;
 			virtual void ShutDown() = 0;
 
-			virtual bool ShouldEngineExit() = 0;
+			virtual bool GetShouldEngineExit() = 0;
+			virtual void SetShouldEngineExit(bool shouldExit) = 0;
 			virtual void Poll() = 0;
 
 			template<typename T>

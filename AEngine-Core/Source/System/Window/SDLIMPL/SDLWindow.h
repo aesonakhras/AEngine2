@@ -12,7 +12,8 @@ namespace AE::System {
 			virtual void Init(WindowCreateInfo info) override;
 			virtual void ShutDown() override;
 
-			virtual bool ShouldEngineExit() override;
+			virtual bool GetShouldEngineExit() override;
+			virtual void SetShouldEngineExit(bool shouldExit) override;
 			virtual void Poll() override;
 
 		protected:
@@ -21,6 +22,8 @@ namespace AE::System {
 		private:
 			//AE::Core::RefCountPtr<SDL_Window> m_window;
 			SDL_Window* m_window;
+
+			bool m_shouldExit;
 	};
 
 }
