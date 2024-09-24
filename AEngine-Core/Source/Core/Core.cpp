@@ -25,6 +25,7 @@
 #include "System/Window/WindowFactory.h"
 #include "System/Input/InputManager.h"
 #include "System/Time/DeltaTimeManager.h"
+#include "System/Audio/AudioManager.h"
 
 #define WINDOW_START_X 300
 #define WINDOW_START_Y 300
@@ -52,6 +53,8 @@ RefCountPtr<AE::Graphics::Material> material;
 AE::System::InputManager inputManager;
 
 AE::System::DeltaTimeManager timeManager = { 144 };
+
+AE::System::AudioManager audioManager;
 
 float32 deltaTime = 0.0f;
 
@@ -138,27 +141,18 @@ void Simulate() {
     }
 }
 
-class TestClass {
-public:
-    void Pressed() {
-        Debug::Log("Pressed");
-    }
 
-    void Released() {
-        Debug::Log("Released");
-    }
+void OnPressed() {
+    audioManager.PlayAudio("gunshot");
 
-    void Held() {
-        Debug::Log("Held");
-    }
-};
+}
 
 void AE::Core::Start() {
-    AE::System::FileManager& fileManager = AE::System::FileManager::GetInstance();
+    AE::System::FileManager::Initialize();
 
     std::string windowName = "AEngine";
 
-    AE::System::WindowCreateInfo windowCreateInfo{
+    AE::System::WindowCreateInfo windowCreateInfo {
         WINDOW_START_X,
         WINDOW_START_Y,
         SCREEN_WIDTH,
@@ -169,14 +163,14 @@ void AE::Core::Start() {
     window = AE::System::WindowFactory::Create(windowCreateInfo);
     inputManager.Initialize(window);
 
-    TestClass daBaby{};
-
-    inputManager.RegisterButtonEvent(AE::System::Button::W, AE::System::InputState::Pressed, std::bind(&TestClass::Pressed, daBaby));
+    inputManager.RegisterButtonEvent(AE::System::Button::W, AE::System::InputState::Pressed, OnPressed);
 
     AE::Graphics::DeviceCreateInfo createInfo { SCREEN_HEIGHT, SCREEN_WIDTH, *window};
 
-    ///////////////////////////////////Set Up Direct X related stuff////////////////////////////////////
     g_GraphicsManager.Initialize(createInfo);
+
+    audioManager.LoadAudioClip("Assets/Sound/gunshot.wav", "gunshot");
+
     SetupScene();
     Simulate();
 

@@ -10,26 +10,40 @@ namespace AE::Utils {
 			Singleton(const Singleton& singleton) = delete;
 			Singleton& operator=(const Singleton& singleton) = delete;
 
+			template <typename... Args>
+			static void Initialize(Args&&... args) {
+				if (!initialized) {
+					instance.initialize(std::forward<Args>(args)...);
+					initialized = true;
+				}
+			}
 
 			static T& GetInstance() {
-				static T instance;
+				if (!initialized)
+				{
+					AE::Core::Debug::LogError("Singleton called before being initialized, call Initialize first.");
+				}
+
 				return instance;
 			}
 
-			static void Initialize() {
-				GetInstance().OnInitialize();
-			}
-
 			static void ShutDown() {
-				GetInstance().ShutDown();
+				if (initialized) {
+					instance.shutDown();
+					initialized = false;
+				}
 			}
 
 		protected:
-
 			Singleton() = default;
-			virtual ~Singleton() = default;
-
-			virtual void OnInitialize() {}
-			virtual void OnShutdown() {}
+			~Singleton() = default;
+		private:
+			static bool initialized;
+			static T instance;
 	};
+	template <typename T>
+	bool Singleton<T>::initialized = false;
+
+	template <typename T>
+	T Singleton<T>::instance;
 }

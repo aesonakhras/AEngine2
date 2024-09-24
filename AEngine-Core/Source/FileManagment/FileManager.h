@@ -16,18 +16,20 @@ namespace AE::System {
 			std::shared_ptr<IFileHandle> GetFile(std::string fileName, FileOperation op);
 			bool FileExists(std::string fileName);
 
-	protected:
+		protected:
+
+
 		private:
 			void CreateFilePlatform();
 			std::shared_ptr<IFilePlatform> platformFile;
 
+			void initialize() {};
+			void shutdown() {};
+
 			FileManager();
 			~FileManager() = default;
 
-			void OnInitialize() override {};
-			void OnShutdown() override {};
-
-			friend class AE::Utils::Singleton<AE::System::FileManager>;
+			friend class AE::Utils::Singleton<FileManager>;
 
 	};
 }

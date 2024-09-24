@@ -12,7 +12,8 @@ project "AEngine-Core"
       "Source",
       "ThirdParty/stbi/include",
       "ThirdParty/assimp/include",
-      "ThirdParty/SDL2.0/include"
+      "ThirdParty/SDL2.0/include",
+      "ThirdParty/entt/include"
    }
 
    targetdir ("../Binaries/" .. OutputDir .. "/%{prj.name}")
