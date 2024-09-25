@@ -23,9 +23,11 @@
 #include "FileManagment/FileImporter.h"
 
 #include "System/Window/WindowFactory.h"
-#include "System/Input/InputManager.h"
+
 #include "System/Time/DeltaTimeManager.h"
+#include "System/Input/InputManager.h"
 #include "System/Audio/AudioManager.h"
+
 
 #define WINDOW_START_X 300
 #define WINDOW_START_Y 300
@@ -35,119 +37,29 @@
 
 using namespace AE::Core;
 
-struct MVP_ONLY_BUFFER
-{
-    DirectX::XMMATRIX mWorldViewProj;
-};
-
-AE::Graphics::GraphicsManager g_GraphicsManager;
-
-std::vector<StaticMesh*> meshes;
-
-Camera camera = { {0.0f, 0.0f, -1.0f, 0.0f}, 1.0472f, (float)SCREEN_WIDTH/(float)SCREEN_HEIGHT, 0.01f, 1000.0f };
-
 RefCountPtr<AE::System::IWindow> window;
-
-RefCountPtr<AE::Graphics::Material> material;
-
-AE::System::InputManager inputManager;
-
-AE::System::DeltaTimeManager timeManager = { 144 };
-
-AE::System::AudioManager audioManager;
 
 float32 deltaTime = 0.0f;
 
-void ImportMesh(std::string fileName) {
-    MeshData meshData = FileImporter::ImportMesh(fileName);
+std::function<void(float32)> appUpdate;
 
-    auto vertexBuffer = g_GraphicsManager.CreateBuffer((void*)meshData.vertexData, meshData.vertexCount, sizeof(AE::Graphics::StandardVertex), AE::Graphics::BufferType::Vertex);
-    auto indexBuffer = g_GraphicsManager.CreateBuffer((void*)meshData.indexData, meshData.indexCount, sizeof(unsigned int), AE::Graphics::BufferType::Index);
-
-    RefCountPtr<AE::Core::WorldObject> worldObj = MakeRef<AE::Core::WorldObject>();
-
-    meshes.push_back(new StaticMesh{ vertexBuffer, indexBuffer, material, worldObj });
-}
-
-void textureSetup() {
-    AE::Graphics::TextureCreateInfo textureData = FileImporter::ImportTexture(std::string("Assets/part1.png"));
-        
-    textureData.depth = 1;
-    textureData.mipLevels = 1;
-    textureData.bindFlags = AE::Graphics::ShaderResource;
-    textureData.generateMipMaps = false;
-    textureData.arraySize = 1;
-    textureData.sampleCount = 1;
-        
-    std::shared_ptr<AE::Graphics::Texture> texture1 = g_GraphicsManager.CreateTexture(textureData);
-
-    AE::Graphics::TextureCreateInfo textureData2 = FileImporter::ImportTexture(std::string("Assets/part2.png"));
-
-    textureData2.depth = 1;
-    textureData2.mipLevels = 1;
-    textureData2.bindFlags = AE::Graphics::ShaderResource;
-    textureData2.generateMipMaps = false;
-    textureData2.arraySize = 1;
-    textureData2.sampleCount = 1;
-
-    std::shared_ptr<AE::Graphics::Texture> texture2 = g_GraphicsManager.CreateTexture(textureData2);
-
-    std::shared_ptr<AE::Graphics::ISampler> sampler = g_GraphicsManager.CreateSampler();
-
-    material->SetTexture("diffuse1", 0, texture1, sampler);
-    material->SetTexture("diffuse2", 1, texture2, sampler);
-}
-
-void SetupScene() {
-    MVP_ONLY_BUFFER mvp;
-    mvp.mWorldViewProj =  DirectX::XMMatrixIdentity();
-
-    material = g_GraphicsManager.CreateMaterial(
-        "Assets/shaders.shader", 
-        AE::Graphics::StandardVertexDescription::Get(),
-        &mvp,
-        sizeof(MVP_ONLY_BUFFER)
-    );
-
-    textureSetup();
-    ImportMesh(std::string("Assets/Cat.obj"));
-}
-
-void renderFrame() {
-    static float32 y = 0;
-    float32 zPos = 1;
-    y += 1.0f * deltaTime;
-    if (y > 6.28) {
-        y = 0.0f;
-    }
-    // y = 5.0f;
-    auto mesh = meshes[0];
-
-    mesh->m_worldObject->SetPosition({ 0 , -1.0f, 100, 1.0f });
-    mesh->m_worldObject->SetRotation({ 1.5f, y, 0.0f, 0.0f });
-
-    g_GraphicsManager.DrawFrame(meshes, camera.GetVP());
-}
-
-void Simulate() {
+void AE::Core::Run() {
     while (!window->GetShouldEngineExit()) {
-        timeManager.StartFrame();
-        deltaTime = timeManager.GetDeltaTime();
+        AE::System::DeltaTimeManager::GetInstance().StartFrame();
+        deltaTime = AE::System::DeltaTimeManager::GetInstance().GetDeltaTime();
 
-        inputManager.Update();
-        renderFrame();
+        AE::System::InputManager::GetInstance().Update();
+        appUpdate(deltaTime);
 
-        timeManager.LimitFrameRate();
+        AE::System::DeltaTimeManager::GetInstance().LimitFrameRate();
     }
 }
 
 
-void OnPressed() {
-    audioManager.PlayAudio("gunshot");
 
-}
+void AE::Core::Start(std::function<void(float32)> cb) {
+    appUpdate = cb;
 
-void AE::Core::Start() {
     AE::System::FileManager::Initialize();
 
     std::string windowName = "AEngine";
@@ -161,18 +73,23 @@ void AE::Core::Start() {
     };
 
     window = AE::System::WindowFactory::Create(windowCreateInfo);
-    inputManager.Initialize(window);
 
-    inputManager.RegisterButtonEvent(AE::System::Button::W, AE::System::InputState::Pressed, OnPressed);
+    AE::System::InputManager::Initialize(window);
 
     AE::Graphics::DeviceCreateInfo createInfo { SCREEN_HEIGHT, SCREEN_WIDTH, *window};
 
-    g_GraphicsManager.Initialize(createInfo);
+    AE::Graphics::GraphicsManager::Initialize(createInfo);
 
-    audioManager.LoadAudioClip("Assets/Sound/gunshot.wav", "gunshot");
+    AE::System::AudioManager::Initialize();
 
-    SetupScene();
-    Simulate();
+    AE::System::DeltaTimeManager::Initialize(144);
+}
 
-    g_GraphicsManager.ShutDown();
+
+void AE::Core::ShutDown() {
+    AE::System::FileManager::ShutDown();
+    AE::System::InputManager::ShutDown();
+    AE::Graphics::GraphicsManager::ShutDown();
+    AE::System::AudioManager::ShutDown();
+    AE::System::DeltaTimeManager::ShutDown();
 }

@@ -4,6 +4,8 @@
 #include <vector>
 #include <memory>
 
+#include "Utils/Singleton.h"
+
 #include "System/Input/InputEvent.h"
 
 namespace AE::System {
@@ -11,10 +13,9 @@ namespace AE::System {
 	class IRawInputHandler;
 	class IWindow;
 	
-	class InputManager {
+	class InputManager : public AE::Utils::Singleton<InputManager> {
 		public:
 			InputManager();
-			void Initialize(std::shared_ptr<IWindow> window);
 
 			void Update();
 			
@@ -28,7 +29,7 @@ namespace AE::System {
 
 			struct InputStateHandle
 			{
-				InputState currState;
+				InputState currState = InputState::Invalid;
 				std::vector<InputActionBinding> actionBinding;
 			};
 
@@ -39,5 +40,10 @@ namespace AE::System {
 			//button map
 			std::unordered_map<Button, InputStateHandle> m_buttonMap;
 			std::shared_ptr<IRawInputHandler> m_inputHandler;
+
+			friend class AE::Utils::Singleton<InputManager>;
+
+			void initialize(std::shared_ptr<IWindow> window);
+			void shutdown();
 	};
 }

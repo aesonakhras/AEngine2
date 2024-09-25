@@ -9,6 +9,7 @@
 
 #include "IGLI.h"
 #include "TextureCreateInfo.h"
+#include "Utils/Singleton.h"
 
 namespace AE::Graphics {
 
@@ -19,15 +20,13 @@ namespace AE::Graphics {
 	class Material;
 	struct DeviceCreateInfo;
 
-	class GraphicsManager {
+	class GraphicsManager : public AE::Utils::Singleton<GraphicsManager> {
 
 	public:
 		GraphicsManager() {/* intentianlly left blank Init will initialize, this is to allow start up to be done in programmer order*/ };
 		~GraphicsManager() {/*same as above*/ }
-
-		bool Initialize(const DeviceCreateInfo& info);
-		void DrawFrame(std::vector<StaticMesh*> meshes, DirectX::XMMATRIX VP);
-		void ShutDown();
+		
+		void DrawFrame(std::vector<std::shared_ptr<StaticMesh>> meshes, DirectX::XMMATRIX VP);
 
 		//CreateBuffer
 		std::shared_ptr<IBuffer> CreateBuffer(const void* data, size_t count, size_t stride, BufferType bufferType);
@@ -48,6 +47,10 @@ namespace AE::Graphics {
 
 		std::shared_ptr<ISampler> CreateSampler();
 
+	protected:
+		bool initialize(const DeviceCreateInfo& info);
+		void shutdown();
+
 	private:
 		void DrawMesh(StaticMesh& mesh, DirectX::XMMATRIX VP);
 
@@ -57,5 +60,7 @@ namespace AE::Graphics {
 		std::unique_ptr<IGLI> m_GLI = nullptr;
 
 		unsigned int m_offset = 0;
+
+		friend class AE::Utils::Singleton<GraphicsManager>;
 	};
 }

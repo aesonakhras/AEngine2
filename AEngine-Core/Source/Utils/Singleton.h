@@ -29,7 +29,7 @@ namespace AE::Utils {
 
 			static void ShutDown() {
 				if (initialized) {
-					instance.shutDown();
+					instance.shutdown();
 					initialized = false;
 				}
 			}

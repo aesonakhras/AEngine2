@@ -10,8 +10,12 @@ InputManager::InputManager() {
 	
 }
 
-void InputManager::Initialize(std::shared_ptr<IWindow> window) {
+void InputManager::initialize(std::shared_ptr<IWindow> window) {
 	m_inputHandler = std::make_shared<SDLInputHandler>(window);
+}
+
+void InputManager::shutdown() {
+
 }
 
 void InputManager::Update() {

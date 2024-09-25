@@ -12,7 +12,7 @@
 
 using namespace AE::Graphics;
 
-bool GraphicsManager::Initialize(const DeviceCreateInfo& info) {
+bool GraphicsManager::initialize(const DeviceCreateInfo& info) {
 #ifdef D3D11_MODE
     m_GLI = std::make_unique<DX11GLI>();
 #endif // D3D11_MODE
@@ -25,7 +25,7 @@ bool GraphicsManager::Initialize(const DeviceCreateInfo& info) {
 }
 
 
-void GraphicsManager::ShutDown() {
+void GraphicsManager::shutdown() {
     m_GLI->ShutDown();
 	return;
 }
@@ -39,7 +39,7 @@ std::shared_ptr<IBuffer> GraphicsManager::CreateBuffer(const void* data, size_t 
     return m_GLI->CreateBuffer(data, count, stride, bufferType);
 }
 
-void GraphicsManager::DrawFrame(std::vector<StaticMesh*> meshes, DirectX::XMMATRIX VP) {
+void GraphicsManager::DrawFrame(std::vector<std::shared_ptr<StaticMesh>> meshes, DirectX::XMMATRIX VP) {
     m_GLI->Clear();
 
     // select which vertex buffer to display
