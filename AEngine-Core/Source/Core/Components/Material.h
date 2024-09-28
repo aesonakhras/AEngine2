@@ -8,11 +8,11 @@
 
 #include "Core/Debug.h"
 
-#include "IFragmentShader.h"
-#include "IVertexShader.h"
-#include "IBuffer.h"
-#include "Texture.h"
-#include "ISampler.h"
+#include "Graphics/IFragmentShader.h"
+#include "Graphics/IVertexShader.h"
+#include "Graphics/IBuffer.h"
+#include "Graphics/Texture.h"
+#include "Graphics/ISampler.h"
 
 namespace AE::Graphics {
     class Material {

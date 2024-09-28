@@ -1,5 +1,7 @@
 #pragma once
 #include <functional>
+#include <DirectXMath.h>
+#include "entt/entt.hpp"
 
 #include "Core/Common.h"
 

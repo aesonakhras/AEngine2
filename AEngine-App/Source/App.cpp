@@ -1,20 +1,25 @@
 #include <memory>
 #include <vector>
 
+#include <entt/entt.hpp>
+
 #include "Core/Core.h"
 
 //TODO: determine if this should just be in a common.h or core.h or something
 #include "Graphics/GraphicsManager.h"
-#include "Graphics/StaticMesh.h"
-#include "Graphics/Material.h"
+
+#include "Core/Components/Material.h"
 #include "Graphics/CommonVerticies.h"
-#include "Graphics/Camera.h"
+#include "Core/Scene/SceneManager.h"
 
 #include "FileManagment/MeshData.h"
 #include "FileManagment/FileImporter.h"
 
 #include "System/Audio/AudioManager.h"
 #include "System/Input/InputManager.h"
+
+#include "Core/Factories/StaticMeshFactory.h"
+#include "Core/Factories/CameraFactory.h"
 
 #include <iostream>
 
@@ -26,38 +31,29 @@ struct MVP_ONLY_BUFFER
     DirectX::XMMATRIX mWorldViewProj;
 };
 
-std::shared_ptr<Material> material;
-
-std::vector<std::shared_ptr<StaticMesh>> meshes;
-
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
 
-Camera camera = { {0.0f, 0.0f, -1.0f, 0.0f}, 1.0472f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.01f, 1000.0f };
+//Camera variables
+float fov = 1.0472f;
+float aspectRatio = (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT;
+float nearZ = 0.01f;
+float farZ = 1000.0f;
+DirectX::XMVECTOR Lookat = { 0.0f, 0.0f, -1.0f, 0.0f };
 
-void ImportMesh(std::string fileName) {
-    GraphicsManager& graphicsManager = GraphicsManager::GetInstance();
+//set up necessary stuff for now, will create resource managers soon
+std::shared_ptr<IBuffer> CatVB = nullptr;
+std::shared_ptr <IBuffer> CatIB = nullptr;
 
-    MeshData meshData = FileImporter::ImportMesh(fileName);
+std::shared_ptr <Material> CatMat1 = nullptr;
+std::shared_ptr <Material> CatMat2 = nullptr;
 
-    auto vertexBuffer = graphicsManager.CreateBuffer(
-        (void*)meshData.vertexData,
-        meshData.vertexCount,
-        sizeof(AE::Graphics::StandardVertex),
-        AE::Graphics::BufferType::Vertex
-    );
+std::shared_ptr <Texture> CatTexture1 = nullptr;
+std::shared_ptr <Texture> CatTexture2 = nullptr;
 
-    auto indexBuffer = graphicsManager.CreateBuffer(
-        (void*)meshData.indexData,
-        meshData.indexCount,
-        sizeof(unsigned int),
-        AE::Graphics::BufferType::Index
-    );
+std::shared_ptr<AE::Graphics::ISampler> CatSampler = nullptr;
 
-    RefCountPtr<AE::Core::WorldObject> worldObj = MakeRef<AE::Core::WorldObject>();
-
-    meshes.push_back(std::make_shared<StaticMesh>( vertexBuffer, indexBuffer, material, worldObj ));
-}
+entt::entity camera;
 
 void textureSetup() {
     GraphicsManager& graphicsManager = GraphicsManager::GetInstance();
@@ -71,7 +67,7 @@ void textureSetup() {
     textureData.arraySize = 1;
     textureData.sampleCount = 1;
 
-    std::shared_ptr<AE::Graphics::Texture> texture1 = graphicsManager.CreateTexture(textureData);
+    CatTexture1 = graphicsManager.CreateTexture(textureData);
 
     AE::Graphics::TextureCreateInfo textureData2 = FileImporter::ImportTexture(std::string("Assets/part2.png"));
 
@@ -82,29 +78,91 @@ void textureSetup() {
     textureData2.arraySize = 1;
     textureData2.sampleCount = 1;
 
-    std::shared_ptr<AE::Graphics::Texture> texture2 = graphicsManager.CreateTexture(textureData2);
+    CatTexture2 = graphicsManager.CreateTexture(textureData2);
 
-    std::shared_ptr<AE::Graphics::ISampler> sampler = graphicsManager.CreateSampler();
-
-    material->SetTexture("diffuse1", 0, texture1, sampler);
-    material->SetTexture("diffuse2", 1, texture2, sampler);
+    CatSampler = graphicsManager.CreateSampler();
 }
 
-void SetupScene() {
+void loadCommonResoureces() {
     GraphicsManager& graphicsManager = GraphicsManager::GetInstance();
+    MeshData meshData = FileImporter::ImportMesh(std::string("Assets/Cat.obj"));
+
+    //buffers
+    CatVB = graphicsManager.CreateBuffer(
+        (void*)meshData.vertexData,
+        meshData.vertexCount,
+        sizeof(AE::Graphics::StandardVertex),
+        AE::Graphics::BufferType::Vertex
+    );
+
+    CatIB = graphicsManager.CreateBuffer(
+        (void*)meshData.indexData,
+        meshData.indexCount,
+        sizeof(unsigned int),
+        AE::Graphics::BufferType::Index
+    );
 
     MVP_ONLY_BUFFER mvp;
     mvp.mWorldViewProj = DirectX::XMMatrixIdentity();
 
-    material = graphicsManager.CreateMaterial(
+    CatMat1 = graphicsManager.CreateMaterial(
         "Assets/shaders.shader",
         AE::Graphics::StandardVertexDescription::Get(),
         &mvp,
         sizeof(MVP_ONLY_BUFFER)
     );
 
+    CatMat2 = graphicsManager.CreateMaterial(
+        "Assets/shaders.shader",
+        AE::Graphics::StandardVertexDescription::Get(),
+        &mvp,
+        sizeof(MVP_ONLY_BUFFER)
+    );
+
+    //textures
     textureSetup();
-    ImportMesh(std::string("Assets/Cat.obj"));
+
+    CatMat1->SetTexture("diffuse1", 0, CatTexture1, CatSampler);
+    CatMat1->SetTexture("diffuse2", 1, CatTexture2, CatSampler);
+
+    CatMat2->SetTexture("diffuse1", 0, CatTexture1, CatSampler);
+    CatMat2->SetTexture("diffuse2", 1, CatTexture2, CatSampler);
+}
+
+void SetupScene() {
+    //get scene ref
+    AE::Core::SceneManager& sceneManager = AE::Core::SceneManager::GetInstance();
+
+    camera = AE::Core::CameraFactory::Create(
+        sceneManager.Registry,
+        fov,
+        aspectRatio,
+        nearZ,
+        farZ,
+        {0.0, 0.0, 0.0},
+        Lookat
+    );
+
+    loadCommonResoureces();
+
+    //add the two kitty cats
+    Transform cat1Start = {
+        { 0 , -20.0f, 100, 1.0f },
+        DirectX::XMQuaternionRotationRollPitchYawFromVector({ 1.5f, 0.0f, 0.0f, 0.0f }),
+        {1.0f, 1.0f, 1.0f} 
+    };
+
+    Transform cat2Start = {
+        { 0 , 20.0f, 100, 1.0f },
+        DirectX::XMQuaternionRotationRollPitchYawFromVector({ 1.5f, 0.0f, 0.0f, 0.0f }),
+        {1.0f, 1.0f, 1.0f}
+    };
+
+    Mesh catMesh = { CatVB, CatIB };
+
+    auto mesh1 = StaticMeshFactory::CreateStaticMesh(sceneManager.Registry, catMesh, *CatMat1.get(), cat1Start);
+
+    auto mesh2 = StaticMeshFactory::CreateStaticMesh(sceneManager.Registry, catMesh, *CatMat2.get(), cat2Start);
 }
 
 void OnPressed() {
@@ -112,21 +170,7 @@ void OnPressed() {
 }
 
 void Update(float32 deltaTime) {
-    GraphicsManager& graphicsManager = GraphicsManager::GetInstance();
-
-    static float32 y = 0;
-    float32 zPos = 1;
-    y += 1.0f * deltaTime;
-    if (y > 6.28) {
-        y = 0.0f;
-    }
-    // y = 5.0f;
-    auto mesh = meshes[0];
-
-    mesh->m_worldObject->SetPosition({ 0 , -1.0f, 100, 1.0f });
-    mesh->m_worldObject->SetRotation({ 1.5f, y, 0.0f, 0.0f });
-
-    graphicsManager.DrawFrame(meshes, camera.GetVP());
+    //:)
 }
 
 //startup

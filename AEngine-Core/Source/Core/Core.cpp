@@ -7,14 +7,11 @@
 //AEngine Specific
 
 #include "Core.h"
-#include "Core/WorldObject.h"
 #include "Core/Common.h"
 
-#include "Graphics/ISampler.h" 
+
 #include "Graphics/GraphicsManager.h"
-#include "Graphics/StaticMesh.h"
-#include "Graphics/Camera.h"
-#include "Graphics/Texture.h"
+
 #include "Graphics/DeviceCreateInfo.h"
 #include "Graphics/TextureCreateInfo.h"
 #include "Graphics/CommonVerticies.h"
@@ -28,6 +25,8 @@
 #include "System/Input/InputManager.h"
 #include "System/Audio/AudioManager.h"
 
+#include "Core/Systems/RenderSystem.h"
+#include "Core/Scene/SceneManager.h"
 
 #define WINDOW_START_X 300
 #define WINDOW_START_Y 300
@@ -43,6 +42,10 @@ float32 deltaTime = 0.0f;
 
 std::function<void(float32)> appUpdate;
 
+RenderSystem renderSystem;
+
+entt::registry* g_sceneRegistry;
+
 void AE::Core::Run() {
     while (!window->GetShouldEngineExit()) {
         AE::System::DeltaTimeManager::GetInstance().StartFrame();
@@ -51,11 +54,12 @@ void AE::Core::Run() {
         AE::System::InputManager::GetInstance().Update();
         appUpdate(deltaTime);
 
+        //here
+        renderSystem.Render();
+
         AE::System::DeltaTimeManager::GetInstance().LimitFrameRate();
     }
 }
-
-
 
 void AE::Core::Start(std::function<void(float32)> cb) {
     appUpdate = cb;
@@ -83,10 +87,13 @@ void AE::Core::Start(std::function<void(float32)> cb) {
     AE::System::AudioManager::Initialize();
 
     AE::System::DeltaTimeManager::Initialize(144);
+
+    AE::Core::SceneManager::Initialize();
 }
 
 
 void AE::Core::ShutDown() {
+    AE::Core::SceneManager::ShutDown();
     AE::System::FileManager::ShutDown();
     AE::System::InputManager::ShutDown();
     AE::Graphics::GraphicsManager::ShutDown();

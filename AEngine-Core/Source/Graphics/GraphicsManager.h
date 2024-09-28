@@ -3,9 +3,9 @@
 #include <string>
 #include <iostream>
 
-
-#include "StaticMesh.h"
 #include "Texture.h"
+
+#include "Core/Common.h"
 
 #include "IGLI.h"
 #include "TextureCreateInfo.h"
@@ -26,7 +26,10 @@ namespace AE::Graphics {
 		GraphicsManager() {/* intentianlly left blank Init will initialize, this is to allow start up to be done in programmer order*/ };
 		~GraphicsManager() {/*same as above*/ }
 		
-		void DrawFrame(std::vector<std::shared_ptr<StaticMesh>> meshes, DirectX::XMMATRIX VP);
+		void Draw(AE::Core::uint32 count);
+		
+		void Clear();
+		void Swap();
 
 		//CreateBuffer
 		std::shared_ptr<IBuffer> CreateBuffer(const void* data, size_t count, size_t stride, BufferType bufferType);
@@ -52,7 +55,6 @@ namespace AE::Graphics {
 		void shutdown();
 
 	private:
-		void DrawMesh(StaticMesh& mesh, DirectX::XMMATRIX VP);
 
 		//TODO: Do not like this on the graphics manager
 		std::vector<char> LoadShaderRaw(std::string fileName);

@@ -4,7 +4,7 @@
 
 #include "FileManagment/FileManager.h"
 
-#include "Material.h"
+#include "Core/Components/Material.h"
 
 #ifdef D3D11_MODE
     #include "DX11IMPL/DX11GLI.h"
@@ -30,23 +30,19 @@ void GraphicsManager::shutdown() {
 	return;
 }
 
-void GraphicsManager::DrawMesh(StaticMesh& mesh, DirectX::XMMATRIX VP) {
-    mesh.Bind(VP);
-    m_GLI->Draw(mesh.GetCount());
-}
-
 std::shared_ptr<IBuffer> GraphicsManager::CreateBuffer(const void* data, size_t count, size_t stride, BufferType bufferType) {
     return m_GLI->CreateBuffer(data, count, stride, bufferType);
 }
 
-void GraphicsManager::DrawFrame(std::vector<std::shared_ptr<StaticMesh>> meshes, DirectX::XMMATRIX VP) {
+void GraphicsManager::Draw(AE::Core::uint32 count) {
+    m_GLI->Draw(count);
+}
+
+void GraphicsManager::Clear() {
     m_GLI->Clear();
+}
 
-    // select which vertex buffer to display
-    for (auto mesh : meshes) {
-        DrawMesh(*mesh, VP);
-    }
-
+void GraphicsManager::Swap() {
     m_GLI->Swap();
 }
 
