@@ -14,7 +14,6 @@ DX11ShaderResourceView::DX11ShaderResourceView(Microsoft::WRL::ComPtr<ID3D11Devi
         shaderViewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
         shaderViewDesc.ViewDimension = viewDimension;
 
-
         auto hr = device->CreateShaderResourceView(texture, NULL, m_shaderResourceView.GetAddressOf());
 
         if (FAILED(hr)) {

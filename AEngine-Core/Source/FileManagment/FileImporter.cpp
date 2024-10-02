@@ -81,19 +81,35 @@ MeshData FileImporter::ImportMesh(std::string fileName) {
         }
     }
 
-    //assume user wants vertex and a uv coord
-    size_t size = scene->mMeshes[0]->mNumVertices * 5;
+    //assume user wants vertex, normal, tangent, bitangent, and uv so 8
+    size_t size = scene->mMeshes[0]->mNumVertices * 14;
 
     float* vertexData = new float[size];
 
     lazyCounter = 0;
     for (int i = 0; i < scene->mMeshes[0]->mNumVertices; i++) {
         auto vertex = scene->mMeshes[0]->mVertices[i];
+        auto normal = scene->mMeshes[0]->mNormals[i];
+        auto tanget = scene->mMeshes[0]->mTangents[i];
+        auto bitangent = scene->mMeshes[0]->mBitangents[i];
         auto uv = scene->mMeshes[0]->mTextureCoords[0][i];
 
         vertexData[lazyCounter++] = vertex.x;
         vertexData[lazyCounter++] = vertex.y;
         vertexData[lazyCounter++] = vertex.z;
+
+        vertexData[lazyCounter++] = normal.x;
+        vertexData[lazyCounter++] = normal.y;
+        vertexData[lazyCounter++] = normal.z;
+
+        vertexData[lazyCounter++] = tanget.x;
+        vertexData[lazyCounter++] = tanget.y;
+        vertexData[lazyCounter++] = tanget.z;
+
+        vertexData[lazyCounter++] = bitangent.x;
+        vertexData[lazyCounter++] = bitangent.y;
+        vertexData[lazyCounter++] = bitangent.z;
+
         vertexData[lazyCounter++] = uv.x;
         vertexData[lazyCounter++] = uv.y;
     }

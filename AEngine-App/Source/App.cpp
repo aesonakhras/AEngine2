@@ -10,6 +10,8 @@
 
 #include "Core/Components/Material.h"
 #include "Graphics/CommonVerticies.h"
+#include "Graphics/CommonUBOs.h"
+
 #include "Core/Scene/SceneManager.h"
 
 #include "FileManagment/MeshData.h"
@@ -21,15 +23,14 @@
 #include "Core/Factories/StaticMeshFactory.h"
 #include "Core/Factories/CameraFactory.h"
 
+#include "Systems/PlayerSystem.h"
+#include "Factories/PlayerFactory.h"
+
 #include <iostream>
 
 using namespace AE::Core;
 using namespace AE::Graphics;
-
-struct MVP_ONLY_BUFFER
-{
-    DirectX::XMMATRIX mWorldViewProj;
-};
+using namespace AE::App;
 
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
@@ -55,10 +56,12 @@ std::shared_ptr<AE::Graphics::ISampler> CatSampler = nullptr;
 
 entt::entity camera;
 
+AE::App::PlayerSystem playerSystem;
+
 void textureSetup() {
     GraphicsManager& graphicsManager = GraphicsManager::GetInstance();
 
-    AE::Graphics::TextureCreateInfo textureData = FileImporter::ImportTexture(std::string("Assets/part1.png"));
+    AE::Graphics::TextureCreateInfo textureData = FileImporter::ImportTexture(std::string("Assets/Rock/basecolor.png"));
 
     textureData.depth = 1;
     textureData.mipLevels = 1;
@@ -69,7 +72,7 @@ void textureSetup() {
 
     CatTexture1 = graphicsManager.CreateTexture(textureData);
 
-    AE::Graphics::TextureCreateInfo textureData2 = FileImporter::ImportTexture(std::string("Assets/part2.png"));
+    AE::Graphics::TextureCreateInfo textureData2 = FileImporter::ImportTexture(std::string("Assets/Rock/normal.png"));
 
     textureData2.depth = 1;
     textureData2.mipLevels = 1;
@@ -85,7 +88,7 @@ void textureSetup() {
 
 void loadCommonResoureces() {
     GraphicsManager& graphicsManager = GraphicsManager::GetInstance();
-    MeshData meshData = FileImporter::ImportMesh(std::string("Assets/Cat.obj"));
+    MeshData meshData = FileImporter::ImportMesh(std::string("Assets/Rock/rock.obj"));
 
     //buffers
     CatVB = graphicsManager.CreateBuffer(
@@ -102,21 +105,21 @@ void loadCommonResoureces() {
         AE::Graphics::BufferType::Index
     );
 
-    MVP_ONLY_BUFFER mvp;
+    StandardUniformBuffer mvp;
     mvp.mWorldViewProj = DirectX::XMMatrixIdentity();
 
     CatMat1 = graphicsManager.CreateMaterial(
         "Assets/shaders.shader",
         AE::Graphics::StandardVertexDescription::Get(),
         &mvp,
-        sizeof(MVP_ONLY_BUFFER)
+        sizeof(StandardUniformBuffer)
     );
 
     CatMat2 = graphicsManager.CreateMaterial(
         "Assets/shaders.shader",
         AE::Graphics::StandardVertexDescription::Get(),
         &mvp,
-        sizeof(MVP_ONLY_BUFFER)
+        sizeof(StandardUniformBuffer)
     );
 
     //textures
@@ -147,30 +150,36 @@ void SetupScene() {
 
     //add the two kitty cats
     Transform cat1Start = {
-        { 0 , -20.0f, 100, 1.0f },
+        { 0 , 0.0f, 1 , 1.0f },
         DirectX::XMQuaternionRotationRollPitchYawFromVector({ 1.5f, 0.0f, 0.0f, 0.0f }),
         {1.0f, 1.0f, 1.0f} 
     };
 
     Transform cat2Start = {
-        { 0 , 20.0f, 100, 1.0f },
+        { 0 , 0.0f, 15.0f, 1.0f },
         DirectX::XMQuaternionRotationRollPitchYawFromVector({ 1.5f, 0.0f, 0.0f, 0.0f }),
         {1.0f, 1.0f, 1.0f}
     };
 
     Mesh catMesh = { CatVB, CatIB };
 
-    auto mesh1 = StaticMeshFactory::CreateStaticMesh(sceneManager.Registry, catMesh, *CatMat1.get(), cat1Start);
+    //auto mesh1 = StaticMeshFactory::CreateStaticMesh(sceneManager.Registry, catMesh, *CatMat1.get(), cat1Start);
 
-    auto mesh2 = StaticMeshFactory::CreateStaticMesh(sceneManager.Registry, catMesh, *CatMat2.get(), cat2Start);
+    auto player = PlayerFactory::Create(sceneManager.Registry, catMesh, *CatMat2.get(), cat2Start);
+    //auto mesh2 = StaticMeshFactory::CreateStaticMesh(sceneManager.Registry, catMesh, *CatMat2.get(), cat2Start);
 }
 
 void OnPressed() {
     AE::System::AudioManager::GetInstance().PlayAudio("gunshot");
 }
 
-void Update(float32 deltaTime) {
-    //:)
+void Update(float32 deltaTime,
+    AE::Core::JobSystem& jobSystem,
+    AE::Core::CommandBuffer& commandBuffer
+) {
+    AE::Core::SceneManager& sceneManager = AE::Core::SceneManager::GetInstance();
+
+    playerSystem.Update(deltaTime, sceneManager.Registry, jobSystem, commandBuffer);
 }
 
 //startup

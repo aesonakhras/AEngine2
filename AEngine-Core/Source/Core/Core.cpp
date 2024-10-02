@@ -9,7 +9,6 @@
 #include "Core.h"
 #include "Core/Common.h"
 
-
 #include "Graphics/GraphicsManager.h"
 
 #include "Graphics/DeviceCreateInfo.h"
@@ -31,8 +30,8 @@
 #define WINDOW_START_X 300
 #define WINDOW_START_Y 300
 
-#define SCREEN_WIDTH 1280
-#define SCREEN_HEIGHT 720
+#define SCREEN_WIDTH 1920
+#define SCREEN_HEIGHT 1080
 
 using namespace AE::Core;
 
@@ -40,11 +39,15 @@ RefCountPtr<AE::System::IWindow> window;
 
 float32 deltaTime = 0.0f;
 
-std::function<void(float32)> appUpdate;
+std::function<void(float32, JobSystem&, CommandBuffer&)> appUpdate;
 
 RenderSystem renderSystem;
 
 entt::registry* g_sceneRegistry;
+
+JobSystem jobSystem{8};
+
+CommandBuffer commandBuffer {};
 
 void AE::Core::Run() {
     while (!window->GetShouldEngineExit()) {
@@ -52,16 +55,21 @@ void AE::Core::Run() {
         deltaTime = AE::System::DeltaTimeManager::GetInstance().GetDeltaTime();
 
         AE::System::InputManager::GetInstance().Update();
-        appUpdate(deltaTime);
+        appUpdate(deltaTime, jobSystem, commandBuffer);
 
-        //here
+        //execute jobs
+        jobSystem.WaitForCompletion();
+
+        //execute command buffer for shared variable data in order
+        commandBuffer.Execute();
+
         renderSystem.Render();
 
         AE::System::DeltaTimeManager::GetInstance().LimitFrameRate();
     }
 }
 
-void AE::Core::Start(std::function<void(float32)> cb) {
+void AE::Core::Start(std::function<void(float32, JobSystem&, CommandBuffer&)> cb) {
     appUpdate = cb;
 
     AE::System::FileManager::Initialize();

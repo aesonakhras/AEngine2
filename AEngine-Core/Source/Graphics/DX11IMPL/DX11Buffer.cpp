@@ -55,6 +55,7 @@ void DX11Buffer::Bind() const {
         break;
     case D3D11_BIND_CONSTANT_BUFFER:
         m_deviceContext->VSSetConstantBuffers(0, 1, m_Resource.GetAddressOf());
+        m_deviceContext->PSSetConstantBuffers(0, 1, m_Resource.GetAddressOf());
         break;
     default:
         break;

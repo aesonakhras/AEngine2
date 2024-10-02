@@ -23,24 +23,59 @@ void DX11GLI::PrintHResult(HRESULT result) {
 }
 
 void DX11GLI::Init(const DeviceCreateInfo& info) {
-    DXGI_SWAP_CHAIN_DESC desc;
+    D3D_FEATURE_LEVEL featureLevel;
+    HRESULT hr = D3D11CreateDevice(
+        nullptr,
+        D3D_DRIVER_TYPE_HARDWARE,
+        nullptr,
+        D3D11_CREATE_DEVICE_DEBUG,
+        nullptr,
+        0,
+        D3D11_SDK_VERSION,
+        &m_device,
+        &featureLevel,
+        &m_deviceContext
+    );
+    
+    if (FAILED(hr)) {
+        std::cerr << "Failed to create Direct3D 11 device.\n";
+        return;
+    }
 
-    //TODO: Is this very c++ like
-    ZeroMemory(&desc, sizeof(DXGI_SWAP_CHAIN_DESC));
+    UINT sampleQuality;
+    m_device->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, 4, &sampleQuality);
+    if (sampleQuality == 0) {
+        std::cerr << "Multisampling is not supported with the requested sample count.\n";
+        return;
+    }
+    
+    DXGI_SWAP_CHAIN_DESC desc = {};
 
-    desc.BufferCount = 1;
+    desc.BufferCount = 2;
+    desc.BufferDesc.Width = info.ScreenWidth;
+    desc.BufferDesc.Height = info.ScreenHeight;
     desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-    desc.BufferDesc.Width = info.ScreenWidth;                    // set the back buffer width
-    desc.BufferDesc.Height = info.ScreenHeight;                  // set the back buffer height
     desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    desc.OutputWindow = info.Window.GetWindowHandle<HWND>();;
+    desc.OutputWindow = info.Window.GetWindowHandle<HWND>();
     desc.SampleDesc.Count = 4;
+    desc.SampleDesc.Quality = sampleQuality - 1;
     desc.Windowed = TRUE;
     desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
-    //TODO: This is generating a warning, go ahead and fix this
-    D3DCreateCall(D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, D3D11_CREATE_DEVICE_DEBUG,
-        NULL, NULL, D3D11_SDK_VERSION, &desc, &m_swapChain, &m_device, NULL, &m_deviceContext), "DX11 has failed to start\n");
+    Microsoft::WRL::ComPtr<IDXGIDevice> dxgiDevice;
+    m_device->QueryInterface(__uuidof(IDXGIDevice), &dxgiDevice);
+
+    Microsoft::WRL::ComPtr<IDXGIAdapter> adapter;
+    dxgiDevice->GetAdapter(&adapter);
+
+    Microsoft::WRL::ComPtr<IDXGIFactory> factory;
+    adapter->GetParent(__uuidof(IDXGIFactory), &factory);
+
+    hr = factory->CreateSwapChain(m_device.Get(), &desc, &m_swapChain);
+    if (FAILED(hr)) {
+        std::cerr << "Failed to create swap chain.\n";
+        return;
+    }
 
     //Depth
     D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
@@ -106,6 +141,8 @@ void DX11GLI::Init(const DeviceCreateInfo& info) {
     setupDepthStencilState();
 
     m_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+    SetProcessDPIAware();
 
     std::cout << "Graphics initalized" << std::endl;
 }

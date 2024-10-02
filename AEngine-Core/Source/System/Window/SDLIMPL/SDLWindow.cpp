@@ -7,6 +7,8 @@ using namespace AE::System;
 using namespace AE::Core;
 
 void SDLWindow::Init(WindowCreateInfo info) {
+	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
+
 	if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) {
 		Debug::LogError("Unable to Initalize SDL.");
 	}
@@ -17,12 +19,18 @@ void SDLWindow::Init(WindowCreateInfo info) {
 			info.y,
 			info.width,
 			info.height,
-			SDL_WINDOW_SHOWN
+			SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI
 		);
 
 		if (m_window == nullptr) {
 			Debug::LogError("Unable to Initalize SDL Window.");
 		}
+
+		int windowWidth, windowHeight;
+		SDL_GetWindowSize(m_window, &windowWidth, &windowHeight);
+		//SDL_RenderSetLogicalSize(renderer, windowWidth, windowHeight);
+		if (m_window == nullptr);
+
 	}
 }
 
