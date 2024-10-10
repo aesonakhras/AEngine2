@@ -38,12 +38,11 @@ void GraphicsManager::Draw(AE::Core::uint32 count) {
     m_GLI->Draw(count);
 }
 
-void GraphicsManager::Clear() {
-    m_GLI->Clear();
+void GraphicsManager::StartFrame() {
+    m_GLI->StartFrame();
 }
-
-void GraphicsManager::Swap() {
-    m_GLI->Swap();
+void GraphicsManager::PresentFrame() {
+    m_GLI->PresentFrame();
 }
 
 std::shared_ptr<IVertexShader> GraphicsManager::CreateVertexShader(std::string fileName, const std::vector<VertexAttribute>& attributes) {

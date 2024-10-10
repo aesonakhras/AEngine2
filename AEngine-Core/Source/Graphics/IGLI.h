@@ -26,8 +26,8 @@ namespace AE::Graphics {
 		virtual void Init(const DeviceCreateInfo& info) = 0;
 		virtual void ShutDown() = 0;
 
-		virtual void Clear() = 0;
-		virtual void Swap() = 0;
+		virtual void StartFrame() = 0;
+		virtual void PresentFrame() = 0;
 
 		virtual void Draw(unsigned int size) = 0;
 

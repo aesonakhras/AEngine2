@@ -27,9 +27,9 @@ namespace AE::Graphics {
 		~GraphicsManager() {/*same as above*/ }
 		
 		void Draw(AE::Core::uint32 count);
-		
-		void Clear();
-		void Swap();
+
+		void StartFrame();
+		void PresentFrame();
 
 		//CreateBuffer
 		std::shared_ptr<IBuffer> CreateBuffer(const void* data, size_t count, size_t stride, BufferType bufferType);

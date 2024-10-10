@@ -38,13 +38,18 @@ void DX11VertexLayout::Build(const std::vector<VertexAttribute>& vertexAttribute
 		elementDescs.push_back(desc);
 	}
 
+
 	//set up the layout
-	m_device->CreateInputLayout(
+	HRESULT hr = m_device->CreateInputLayout(
 		elementDescs.data(),
 		elementDescs.size(),
 		m_shaderBlob->GetBufferPointer(),
 		m_shaderBlob->GetBufferSize(),
 		m_layout.GetAddressOf());
+
+	if (FAILED(hr)) {
+		AE::Core::Debug::LogError("Failed to create layout");
+	}
 };
 
 void DX11VertexLayout::Bind() {

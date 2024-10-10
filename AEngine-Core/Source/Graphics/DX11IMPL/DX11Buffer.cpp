@@ -13,9 +13,7 @@ DX11Buffer::DX11Buffer(ComPtr<ID3D11Device> device,
     BufferType bufferType) :
     IBuffer( size ), m_device(device), m_deviceContext(context), m_bufferType(ConvertToDX11Buffer(bufferType)), m_stride(stride) {
     
-    D3D11_BUFFER_DESC bufferDesc{};
-
-    ZeroMemory(&bufferDesc, sizeof(bufferDesc));
+    D3D11_BUFFER_DESC bufferDesc {};
 
     bufferDesc.BindFlags = m_bufferType;
     if (m_bufferType & D3D11_BIND_CONSTANT_BUFFER) {

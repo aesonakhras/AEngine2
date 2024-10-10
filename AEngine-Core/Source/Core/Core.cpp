@@ -88,7 +88,7 @@ void AE::Core::Start(std::function<void(float32, JobSystem&, CommandBuffer&)> cb
 
     AE::System::InputManager::Initialize(window);
 
-    AE::Graphics::DeviceCreateInfo createInfo { SCREEN_HEIGHT, SCREEN_WIDTH, *window};
+    AE::Graphics::DeviceCreateInfo createInfo { SCREEN_WIDTH, SCREEN_HEIGHT, *window};
 
     AE::Graphics::GraphicsManager::Initialize(createInfo);
 

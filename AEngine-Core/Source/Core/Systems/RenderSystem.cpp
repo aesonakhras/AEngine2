@@ -20,7 +20,8 @@ void RenderSystem::Render() {
     SceneManager& sceneManager = SceneManager::GetInstance();
     GraphicsManager& graphicsManager = GraphicsManager::GetInstance();
 
-    graphicsManager.Clear();
+    graphicsManager.StartFrame();
+
     //before this grab the camera
     auto cameraView = sceneManager.Registry.view<Camera, Transform>();
     
@@ -72,8 +73,8 @@ void RenderSystem::Render() {
 
         graphicsManager.Draw(mesh.IndexBuffer->Count);
 
-        graphicsManager;
+        //graphicsManager;
 	}
 
-    graphicsManager.Swap();
+    graphicsManager.PresentFrame();
 }
