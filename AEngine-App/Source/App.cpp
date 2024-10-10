@@ -108,18 +108,28 @@ void loadCommonResoureces() {
     StandardUniformBuffer mvp;
     mvp.mWorldViewProj = DirectX::XMMatrixIdentity();
 
+    std::vector<AE::Graphics::UniformDescription> uniformDescription = {
+        {"MVP", sizeof(DirectX::XMMATRIX)},
+        {"Model", sizeof(DirectX::XMMATRIX)},
+        {"ViewDir", sizeof(DirectX::XMVECTOR)},
+        {"DirLight", sizeof(DirectX::XMVECTOR)}
+    };
+
+
     CatMat1 = graphicsManager.CreateMaterial(
         "Assets/shaders.shader",
         AE::Graphics::StandardVertexDescription::Get(),
         &mvp,
-        sizeof(StandardUniformBuffer)
+        sizeof(StandardUniformBuffer),
+        uniformDescription
     );
 
     CatMat2 = graphicsManager.CreateMaterial(
         "Assets/shaders.shader",
         AE::Graphics::StandardVertexDescription::Get(),
         &mvp,
-        sizeof(StandardUniformBuffer)
+        sizeof(StandardUniformBuffer),
+        uniformDescription
     );
 
     //textures

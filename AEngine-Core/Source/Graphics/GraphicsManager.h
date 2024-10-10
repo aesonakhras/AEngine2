@@ -18,6 +18,7 @@ namespace AE::Graphics {
 	class IVertexShader;
 	struct VertexAttribute;
 	class Material;
+	struct UniformDescription;
 	struct DeviceCreateInfo;
 
 	class GraphicsManager : public AE::Utils::Singleton<GraphicsManager> {
@@ -42,7 +43,8 @@ namespace AE::Graphics {
 			std::string shaderName,
 			const std::vector<VertexAttribute>& attributes,
 			const void* initalData,
-			size_t intialDataSize
+			size_t intialDataSize,
+			std::vector<UniformDescription> uniformDescription
 		);
 
 		//Pass in the data to the texture, call it make texture

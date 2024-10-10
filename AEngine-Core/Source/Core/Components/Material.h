@@ -7,6 +7,7 @@
 #include <DirectXMath.h>
 
 #include "Core/Debug.h"
+#include "Core/Common.h"
 
 #include "Graphics/IFragmentShader.h"
 #include "Graphics/IVertexShader.h"
@@ -15,18 +16,47 @@
 #include "Graphics/ISampler.h"
 
 namespace AE::Graphics {
+    struct UniformDescription {
+        std::string name;
+        AE::Core::uint32 size;  //size of data
+    };
+
     class Material {
         public:
             Material(std::shared_ptr<IVertexShader> vertexShader,
                 std::shared_ptr<IFragmentShader> fragmentShader,
-                std::shared_ptr<IBuffer> ubo) : m_vertexShader(vertexShader),m_fragmentShader(fragmentShader), m_ubo(ubo) {
+                std::shared_ptr<IBuffer> ubo,
+                const std::vector<UniformDescription>& uniformlayout) : m_vertexShader(vertexShader),m_fragmentShader(fragmentShader), m_ubo(ubo) {
                 //uniform buffer all we need to do is specify a size?
+                
+                AE::Core::uint32 totalSize  = 0;
+
+                for (const auto& uniform : uniformlayout) {
+                    m_uniformDataLayout[uniform.name] = totalSize;
+                    totalSize += uniform.size;
+                }
+
+                m_uniformData = new char[totalSize]();
             }
 
-            void SetUBO(void* data, size_t size) {
-                assert(size == m_ubo->Count && "Trying to adjust UBO with incorrectly sized data");
+            ~Material() {
+                if (m_uniformData == nullptr) {
+                    delete[] m_uniformData;
+                    m_uniformData = nullptr;
+                }
+            }
 
-                m_ubo->Update(data, size);
+            template<typename T>
+            void SetUniform(const std::string name, const T& value) {
+                m_uniformNeedsUpdate = true;
+
+                if (m_uniformDataLayout.contains(name)) {
+                    int offset = m_uniformDataLayout[name];
+                    std::memcpy(m_uniformData + offset, &value, sizeof(T));
+                }
+                else {
+                    AE::Core::Debug::LogWarning("Uniform for material does not exist.");
+                }
             }
 
             void SetTexture(std::string name, unsigned int bindPoint, std::shared_ptr<Texture> texture, std::shared_ptr<ISampler> sampler) {
@@ -35,6 +65,8 @@ namespace AE::Graphics {
             }
 
             void Bind() {
+                m_ubo->Update(m_uniformData, m_ubo->Count);
+                m_uniformNeedsUpdate = false;
                 m_ubo->Bind();
                 bindTextures();
                 m_vertexShader->Bind();
@@ -64,9 +96,15 @@ namespace AE::Graphics {
             
             std::shared_ptr<IVertexShader> m_vertexShader;
             std::shared_ptr<IFragmentShader> m_fragmentShader;
+            //gpu resource
             std::shared_ptr<IBuffer> m_ubo;
             
             std::unordered_map <std::string, std::pair<std::shared_ptr<Texture>, unsigned int>> m_textures {};
             std::unordered_map <std::string, std::pair<std::shared_ptr<ISampler>, unsigned int>> m_samplers {};
+            
+            //cpu side
+            std::unordered_map <std::string, AE::Core::uint32> m_uniformDataLayout;
+            char* m_uniformData;
+            bool m_uniformNeedsUpdate = true;
     };
 }

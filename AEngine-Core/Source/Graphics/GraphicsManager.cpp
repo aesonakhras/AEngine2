@@ -70,7 +70,8 @@ std::shared_ptr<Material> GraphicsManager::CreateMaterial(
     std::string shaderName,
     const std::vector<VertexAttribute>& attributes,
     const void* initalData,
-    size_t intialDataSize
+    size_t intialDataSize,
+    std::vector<UniformDescription> uniformDescription
 ) 
 {
     auto vShader = CreateVertexShader(shaderName, attributes);
@@ -78,7 +79,7 @@ std::shared_ptr<Material> GraphicsManager::CreateMaterial(
     auto ubo = CreateBuffer(initalData, intialDataSize, 0, BufferType::Uniform);
     
 
-    return std::make_shared<Material>(vShader, pShader, ubo);
+    return std::make_shared<Material>(vShader, pShader, ubo, uniformDescription);
 }
 
 

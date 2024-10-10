@@ -67,8 +67,15 @@ void RenderSystem::Render() {
             {0,1,0,0}
         };
 
+        DirectX::XMVECTOR dirLight = { 0,1,0,0 };
+
         //TODO: Material needs to be data only
-        material.SetUBO(&ubo, sizeof(StandardUniformBuffer));
+        //material.SetUBO(&ubo, sizeof(StandardUniformBuffer));
+        material.SetUniform("MVP", tMVP);
+        material.SetUniform("Model", modelMatrix);
+        material.SetUniform("ViewDir", viewDir);
+        material.SetUniform("DirLight", dirLight);
+
         material.Bind();
 
         graphicsManager.Draw(mesh.IndexBuffer->Count);
