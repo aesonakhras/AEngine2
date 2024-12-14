@@ -8,14 +8,14 @@
 
 #include "Core/Components/Transform.h"
 #include "Core/Components/Material.h"
-#include "Core/Components/Mesh.h"
+#include "Graphics/Mesh.h"
 
 namespace AE::Core {	
 	class StaticMeshFactory {
 		public:
 			static entt::entity CreateStaticMesh(
 				entt::registry& registry,
-				Mesh meshName,
+				AE::Graphics::Mesh meshName,
 				AE::Graphics::Material material,
 				Transform transform
 			);

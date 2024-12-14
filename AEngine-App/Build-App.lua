@@ -12,7 +12,8 @@ project "AEngine-App"
       "Source",
 
 	  -- Include Core
-	  "../AEngine-Core/Source"
+	  "../AEngine-Core/Source",
+      "../AEngine-Core/ThirdParty/entt/include"
    }
 
    links

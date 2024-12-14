@@ -4,7 +4,7 @@
 
 #include "Core/Components/Material.h"
 #include "Core/Components/Transform.h"
-#include "Core/Components/Mesh.h"
+#include "Graphics/Mesh.h"
 #include "Core/Components/Camera.h"
 
 #include "Graphics/GraphicsManager.h"
@@ -36,7 +36,7 @@ void RenderSystem::Render() {
 
     auto vp2 = view * projection;
 
-	auto staticMeshView = sceneManager.Registry.view<AE::Graphics::Material, Mesh, Transform>();
+	auto staticMeshView = sceneManager.Registry.view<AE::Graphics::Material, AE::Graphics::Mesh, Transform>();
 
     DirectX::XMVECTOR forward = DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
 
@@ -45,7 +45,7 @@ void RenderSystem::Render() {
 	for (auto entity : staticMeshView) {
 		//get the model matrix and transform into the necessary thing
 
-        auto& mesh = staticMeshView.get<Mesh>(entity);
+        auto& mesh = staticMeshView.get<AE::Graphics::Mesh>(entity);
         auto& material = staticMeshView.get<AE::Graphics::Material>(entity);
         auto& transform = staticMeshView.get<Transform>(entity);
 

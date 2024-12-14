@@ -20,11 +20,12 @@
 #include "System/Audio/AudioManager.h"
 #include "System/Input/InputManager.h"
 
-#include "Core/Factories/StaticMeshFactory.h"
 #include "Core/Factories/CameraFactory.h"
 
 #include "Systems/PlayerSystem.h"
 #include "Factories/PlayerFactory.h"
+
+#include "Resources/ResourceManager.h"
 
 #include <iostream>
 
@@ -42,15 +43,14 @@ float nearZ = 0.01f;
 float farZ = 1000.0f;
 DirectX::XMVECTOR Lookat = { 0.0f, 0.0f, -1.0f, 0.0f };
 
-//set up necessary stuff for now, will create resource managers soon
-std::shared_ptr<IBuffer> CatVB = nullptr;
-std::shared_ptr <IBuffer> CatIB = nullptr;
-
 std::shared_ptr <Material> CatMat1 = nullptr;
 std::shared_ptr <Material> CatMat2 = nullptr;
 
-std::shared_ptr <Texture> CatTexture1 = nullptr;
-std::shared_ptr <Texture> CatTexture2 = nullptr;
+//std::shared_ptr <Texture> CatTexture1 = nullptr;
+std::shared_ptr<Texture> CatTexture1 = nullptr;
+std::shared_ptr<Texture> CatTexture2 = nullptr;
+
+std::shared_ptr<Mesh> CatMesh = nullptr;
 
 std::shared_ptr<AE::Graphics::ISampler> CatSampler = nullptr;
 
@@ -61,49 +61,16 @@ AE::App::PlayerSystem playerSystem;
 void textureSetup() {
     GraphicsManager& graphicsManager = GraphicsManager::GetInstance();
 
-    AE::Graphics::TextureCreateInfo textureData = FileImporter::ImportTexture(std::string("Assets/Rock/basecolor.png"));
-
-    textureData.depth = 1;
-    textureData.mipLevels = 1;
-    textureData.bindFlags = AE::Graphics::ShaderResource;
-    textureData.generateMipMaps = false;
-    textureData.arraySize = 1;
-    textureData.sampleCount = 1;
-
-    CatTexture1 = graphicsManager.CreateTexture(textureData);
-
-    AE::Graphics::TextureCreateInfo textureData2 = FileImporter::ImportTexture(std::string("Assets/Rock/normal.png"));
-
-    textureData2.depth = 1;
-    textureData2.mipLevels = 1;
-    textureData2.bindFlags = AE::Graphics::ShaderResource;
-    textureData2.generateMipMaps = false;
-    textureData2.arraySize = 1;
-    textureData2.sampleCount = 1;
-
-    CatTexture2 = graphicsManager.CreateTexture(textureData2);
+    CatTexture1 = ResourceManager::GetInstance().GetTexture(std::string("Assets/Rock/basecolor.png"));
+    CatTexture2 = ResourceManager::GetInstance().GetTexture(std::string("Assets/Rock/normal.png"));
 
     CatSampler = graphicsManager.CreateSampler();
 }
 
 void loadCommonResoureces() {
+    CatMesh = ResourceManager::GetInstance().GetStaticMesh(std::string("Assets/Rock/rock.obj"));
+
     GraphicsManager& graphicsManager = GraphicsManager::GetInstance();
-    MeshData meshData = FileImporter::ImportMesh(std::string("Assets/Rock/rock.obj"));
-
-    //buffers
-    CatVB = graphicsManager.CreateBuffer(
-        (void*)meshData.vertexData,
-        meshData.vertexCount,
-        sizeof(AE::Graphics::StandardVertex),
-        AE::Graphics::BufferType::Vertex
-    );
-
-    CatIB = graphicsManager.CreateBuffer(
-        (void*)meshData.indexData,
-        meshData.indexCount,
-        sizeof(unsigned int),
-        AE::Graphics::BufferType::Index
-    );
 
     StandardUniformBuffer mvp;
     mvp.mWorldViewProj = DirectX::XMMatrixIdentity();
@@ -171,12 +138,7 @@ void SetupScene() {
         {1.0f, 1.0f, 1.0f}
     };
 
-    Mesh catMesh = { CatVB, CatIB };
-
-    //auto mesh1 = StaticMeshFactory::CreateStaticMesh(sceneManager.Registry, catMesh, *CatMat1.get(), cat1Start);
-
-    auto player = PlayerFactory::Create(sceneManager.Registry, catMesh, *CatMat2.get(), cat2Start);
-    //auto mesh2 = StaticMeshFactory::CreateStaticMesh(sceneManager.Registry, catMesh, *CatMat2.get(), cat2Start);
+    auto player = PlayerFactory::Create(sceneManager.Registry, *CatMesh.get(), *CatMat2.get(), cat2Start);
 }
 
 void OnPressed() {

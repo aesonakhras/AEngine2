@@ -21,7 +21,19 @@ namespace AE::Graphics {
         AE::Core::uint32 size;  //size of data
     };
 
+
     class Material {
+    private:
+        struct TextureBinding {
+            std::shared_ptr<Texture> texture;
+            unsigned int bindPoint;
+        };
+
+        struct SamplerBinding {
+            std::shared_ptr<ISampler> sampler;
+            unsigned int bindPoint;
+        };
+    
         public:
             Material(std::shared_ptr<IVertexShader> vertexShader,
                 std::shared_ptr<IFragmentShader> fragmentShader,
@@ -40,8 +52,8 @@ namespace AE::Graphics {
             }
 
             ~Material() {
-                if (m_uniformData == nullptr) {
-                    delete[] m_uniformData;
+                if (m_uniformData != nullptr) {
+                    delete m_uniformData;
                     m_uniformData = nullptr;
                 }
             }
@@ -59,9 +71,13 @@ namespace AE::Graphics {
                 }
             }
 
-            void SetTexture(std::string name, unsigned int bindPoint, std::shared_ptr<Texture> texture, std::shared_ptr<ISampler> sampler) {
-                m_textures[name] = std::pair<std::shared_ptr<Texture>, unsigned int>(texture, bindPoint);
-                m_samplers[name] = std::pair<std::shared_ptr<ISampler>, unsigned int>(sampler, bindPoint);
+            void SetTexture(std::string name, 
+                unsigned int bindPoint, 
+                std::shared_ptr<Texture> texture,
+                std::shared_ptr<ISampler> sampler) {
+                m_textures[name] = { texture, bindPoint };
+
+                m_samplers[name] = { sampler, bindPoint };
             }
 
             void Bind() {
@@ -86,11 +102,11 @@ namespace AE::Graphics {
                     auto textureName = mapEntry.first;
 
 
-                    auto texturePTR = mapEntry.second.first;
-                    auto textureBindPoint = mapEntry.second.second;
+                    auto texturePTR = mapEntry.second.texture;
+                    auto textureBindPoint = mapEntry.second.bindPoint;
 
                     texturePTR->Bind(textureBindPoint);
-                    m_samplers[textureName].first->Bind(textureBindPoint);
+                    m_samplers[textureName].sampler->Bind(textureBindPoint);
                 }
             }
             
@@ -99,12 +115,12 @@ namespace AE::Graphics {
             //gpu resource
             std::shared_ptr<IBuffer> m_ubo;
             
-            std::unordered_map <std::string, std::pair<std::shared_ptr<Texture>, unsigned int>> m_textures {};
-            std::unordered_map <std::string, std::pair<std::shared_ptr<ISampler>, unsigned int>> m_samplers {};
+            std::unordered_map <std::string, TextureBinding> m_textures {};
+            std::unordered_map <std::string, SamplerBinding> m_samplers {};
             
             //cpu side
             std::unordered_map <std::string, AE::Core::uint32> m_uniformDataLayout;
-            char* m_uniformData;
+            char* m_uniformData = nullptr;
             bool m_uniformNeedsUpdate = true;
     };
 }

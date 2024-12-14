@@ -50,6 +50,8 @@ namespace AE::Graphics {
 		//Pass in the data to the texture, call it make texture
 		std::shared_ptr<Texture> CreateTexture(const AE::Graphics::TextureCreateInfo& info);
 
+		Texture CreateTextureUnsafe(const AE::Graphics::TextureCreateInfo& info);
+
 		std::shared_ptr<ISampler> CreateSampler();
 
 	protected:

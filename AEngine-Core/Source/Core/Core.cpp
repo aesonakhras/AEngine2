@@ -27,6 +27,8 @@
 #include "Core/Systems/RenderSystem.h"
 #include "Core/Scene/SceneManager.h"
 
+#include "Resources/ResourceManager.h"
+
 #define WINDOW_START_X 300
 #define WINDOW_START_Y 300
 
@@ -92,6 +94,8 @@ void AE::Core::Start(std::function<void(float32, JobSystem&, CommandBuffer&)> cb
 
     AE::Graphics::GraphicsManager::Initialize(createInfo);
 
+    AE::Core::ResourceManager::Initialize();
+
     AE::System::AudioManager::Initialize();
 
     AE::System::DeltaTimeManager::Initialize(144);
@@ -104,6 +108,7 @@ void AE::Core::ShutDown() {
     AE::Core::SceneManager::ShutDown();
     AE::System::FileManager::ShutDown();
     AE::System::InputManager::ShutDown();
+    AE::Core::ResourceManager::ShutDown();
     AE::Graphics::GraphicsManager::ShutDown();
     AE::System::AudioManager::ShutDown();
     AE::System::DeltaTimeManager::ShutDown();
