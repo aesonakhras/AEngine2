@@ -10,7 +10,7 @@
 
 #include "Core/Components/Material.h"
 #include "Graphics/CommonVerticies.h"
-#include "Graphics/CommonUBOs.h"
+
 
 #include "Core/Scene/SceneManager.h"
 
@@ -44,7 +44,6 @@ float farZ = 1000.0f;
 DirectX::XMVECTOR Lookat = { 0.0f, 0.0f, -1.0f, 0.0f };
 
 std::shared_ptr <Material> CatMat1 = nullptr;
-std::shared_ptr <Material> CatMat2 = nullptr;
 
 //std::shared_ptr <Texture> CatTexture1 = nullptr;
 std::shared_ptr<Texture> CatTexture1 = nullptr;
@@ -70,43 +69,14 @@ void textureSetup() {
 void loadCommonResoureces() {
     CatMesh = ResourceManager::GetInstance().GetStaticMesh(std::string("Assets/Rock/rock.obj"));
 
-    GraphicsManager& graphicsManager = GraphicsManager::GetInstance();
-
-    StandardUniformBuffer mvp;
-    mvp.mWorldViewProj = DirectX::XMMatrixIdentity();
-
-    std::vector<AE::Graphics::UniformDescription> uniformDescription = {
-        {"MVP", sizeof(DirectX::XMMATRIX)},
-        {"Model", sizeof(DirectX::XMMATRIX)},
-        {"ViewDir", sizeof(DirectX::XMVECTOR)},
-        {"DirLight", sizeof(DirectX::XMVECTOR)}
-    };
-
-
-    CatMat1 = graphicsManager.CreateMaterial(
-        "Assets/shaders.shader",
-        AE::Graphics::StandardVertexDescription::Get(),
-        &mvp,
-        sizeof(StandardUniformBuffer),
-        uniformDescription
-    );
-
-    CatMat2 = graphicsManager.CreateMaterial(
-        "Assets/shaders.shader",
-        AE::Graphics::StandardVertexDescription::Get(),
-        &mvp,
-        sizeof(StandardUniformBuffer),
-        uniformDescription
-    );
+    CatMat1 = ResourceManager::GetInstance().GetMaterial("Assets/shaders.shader", "Assets/shaders.shader", "RockMaterial");
 
     //textures
     textureSetup();
 
     CatMat1->SetTexture("diffuse1", 0, CatTexture1, CatSampler);
     CatMat1->SetTexture("diffuse2", 1, CatTexture2, CatSampler);
-
-    CatMat2->SetTexture("diffuse1", 0, CatTexture1, CatSampler);
-    CatMat2->SetTexture("diffuse2", 1, CatTexture2, CatSampler);
+    
 }
 
 void SetupScene() {
@@ -138,7 +108,7 @@ void SetupScene() {
         {1.0f, 1.0f, 1.0f}
     };
 
-    auto player = PlayerFactory::Create(sceneManager.Registry, *CatMesh.get(), *CatMat2.get(), cat2Start);
+    auto player = PlayerFactory::Create(sceneManager.Registry, *CatMesh.get(), *CatMat1.get(), cat2Start);
 }
 
 void OnPressed() {

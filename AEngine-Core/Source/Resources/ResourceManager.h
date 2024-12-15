@@ -2,6 +2,7 @@
 
 #include <string>
 #include <memory>
+#include <vector>
 
 #include "Utils/Singleton.h"
 
@@ -9,6 +10,7 @@
 #include "Graphics/GraphicsManager.h"
 #include "Graphics/CommonVerticies.h"
 #include "Graphics/Mesh.h"
+#include "Core/Components/Material.h"
 
 #include "Graphics/IBuffer.h"
 
@@ -24,7 +26,7 @@ namespace AE::Core {
 		public:
 			std::shared_ptr<AE::Graphics::Texture> GetTexture(std::string id);
 			std::shared_ptr<AE::Graphics::Mesh> GetStaticMesh(std::string id);
-			std::shared_ptr<AE::Graphics::Material> GetMaterial(std::string vertexShader, std::string fragmentShader);
+			std::shared_ptr<AE::Graphics::Material> GetMaterial(std::string vertexShader, std::string fragmentShader, std::string id);
 			//material
 
 		protected:
