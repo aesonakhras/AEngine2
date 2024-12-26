@@ -23,6 +23,7 @@
 #include "System/Time/DeltaTimeManager.h"
 #include "System/Input/InputManager.h"
 #include "System/Audio/AudioManager.h"
+#include "System/Memory/MemoryTracker.h"
 
 #include "Core/Systems/RenderSystem.h"
 #include "Core/Scene/SceneManager.h"
@@ -50,6 +51,9 @@ entt::registry* g_sceneRegistry;
 JobSystem jobSystem{8};
 
 CommandBuffer commandBuffer {};
+
+
+
 
 void AE::Core::Run() {
     while (!window->GetShouldEngineExit()) {
@@ -101,6 +105,8 @@ void AE::Core::Start(std::function<void(float32, JobSystem&, CommandBuffer&)> cb
     AE::System::DeltaTimeManager::Initialize(144);
 
     AE::Core::SceneManager::Initialize();
+
+    //AE::System::MemoryAllocator::DebugAlloc(8, __FILE__, __LINE__);
 }
 
 
@@ -112,4 +118,6 @@ void AE::Core::ShutDown() {
     AE::Graphics::GraphicsManager::ShutDown();
     AE::System::AudioManager::ShutDown();
     AE::System::DeltaTimeManager::ShutDown();
+
+    AE::System::MemoryAllocator::DonaldDUMP();
 }
