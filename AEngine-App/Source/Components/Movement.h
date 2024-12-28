@@ -2,7 +2,8 @@
 #include <DirectXMath.h>
 
 namespace AE::App {
-	struct Player {
-		float movementSpeed;
+	struct Movement
+	{
+		DirectX::XMVECTOR Dir;
 	};
 }

@@ -111,10 +111,6 @@ void SetupScene() {
     auto player = PlayerFactory::Create(sceneManager.Registry, *CatMesh.get(), *CatMat1.get(), cat2Start);
 }
 
-void OnPressed() {
-    AE::System::AudioManager::GetInstance().PlayAudio("gunshot");
-}
-
 void Update(float32 deltaTime,
     AE::Core::JobSystem& jobSystem,
     AE::Core::CommandBuffer& commandBuffer
@@ -128,9 +124,11 @@ void Update(float32 deltaTime,
 void StartApp() {
     SetupScene();
 
-    AE::System::InputManager::GetInstance().RegisterButtonEvent(AE::System::Button::W, AE::System::InputState::Pressed, OnPressed);
+    //TODO: convert to managed resource at some point
+    //AE::System::AudioManager::GetInstance().LoadAudioClip("Assets/Sound/gunshot.wav", "gunshot");
 
-    AE::System::AudioManager::GetInstance().LoadAudioClip("Assets/Sound/gunshot.wav", "gunshot");
+    AE::Core::SceneManager& sceneManager = AE::Core::SceneManager::GetInstance();
+    playerSystem.Start(sceneManager.Registry);
 }
 
 //update <- for now before updateable is implemented

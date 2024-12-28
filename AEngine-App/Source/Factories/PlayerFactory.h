@@ -5,7 +5,9 @@
 
 #include "Core/Components/Transform.h"
 #include "Core/Components/Material.h"
+
 #include "Graphics/Mesh.h"
+#include "Components/Movement.h"
 
 namespace AE::App {
 	class PlayerFactory {

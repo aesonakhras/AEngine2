@@ -6,7 +6,12 @@
 #include "System/MultiThreading/JobSystem.h"
 #include "System/MultiThreading/CommandBuffer.h"
 
+//forward declare
+struct Transform;
+
 namespace AE::App {
+	struct Movement;
+
 	class PlayerSystem {
 		public:
 			void Update(AE::Core::float32 deltaTime,
@@ -14,5 +19,23 @@ namespace AE::App {
 				AE::Core::JobSystem& jobSystem,
 				AE::Core::CommandBuffer& commandBuffer
 			);
+
+			void Start(entt::registry& scene);
+
+		private:
+			//TODO: Refactor input system to avoid this mess
+			void OnForwardDown();
+			void OnForwardUp();
+			void OnBackwardDown();
+			void OnBackwardUp();
+			void OnRightDown();
+			void OnRightUp();
+			void OnLeftDown();
+			void OnLeftUp();
+
+			inline void modifyMovement(float x, float y, float z);
+
+			entt::registry* m_scene;
+			Movement* playerMovementCache;
 	};
 }

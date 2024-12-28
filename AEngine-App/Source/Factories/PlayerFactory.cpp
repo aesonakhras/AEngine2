@@ -17,7 +17,8 @@ entt::entity PlayerFactory::Create(
 	registry.emplace<Mesh>(entity, meshName);
 	registry.emplace<Material>(entity, material);
 	registry.emplace<Transform>(entity, transform);
-	registry.emplace<Player>(entity);
+	registry.emplace<Player>(entity, 5.0f);
+	registry.emplace<Movement>(entity);
 
 	return entity;
 }
