@@ -27,7 +27,7 @@ namespace AE::Graphics {
 		GraphicsManager() {/* intentianlly left blank Init will initialize, this is to allow start up to be done in programmer order*/ };
 		~GraphicsManager() {/*same as above*/ }
 		
-		void Draw(AE::Core::uint32 count);
+		void Draw(uint32 count);
 
 		void StartFrame();
 		void PresentFrame();

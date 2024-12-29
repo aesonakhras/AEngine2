@@ -40,7 +40,7 @@ void RenderSystem::Render() {
 
     DirectX::XMVECTOR forward = DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
 
-    DirectX::XMVECTOR viewDir = DirectX::XMVector3Rotate(forward, cameraTransform.Rotation);
+    DirectX::XMVECTOR viewDir = DirectX::XMVector3Rotate(forward, cameraTransform.GetRotation());
 
 	for (auto entity : staticMeshView) {
 		//get the model matrix and transform into the necessary thing
@@ -67,7 +67,7 @@ void RenderSystem::Render() {
             {0,1,0,0}
         };
 
-        DirectX::XMVECTOR dirLight = { 0,1,0,0 };
+        DirectX::XMVECTOR dirLight = { 0,-1,0,0 };
 
         //TODO: Material needs to be data only
         //material.SetUBO(&ubo, sizeof(StandardUniformBuffer));

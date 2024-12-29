@@ -14,8 +14,8 @@ entt::entity CameraFactory::Create(
 	float32 aspectRatio,
 	float32 nearZ,
 	float32 farZ,
-	DirectX::XMVECTOR position,
-	DirectX::XMVECTOR lookAt
+	Vec3 position,
+	Vec3 lookAt
 ) {
 	entt::entity entity = registry.create();
 
@@ -23,22 +23,16 @@ entt::entity CameraFactory::Create(
 	
 	Transform transform{};
 
-	transform.Position = position;
+	transform.SetPosition(position);
 
-	//DirectX::XMMATRIX rotation = DirectX::XMMatrixLookAtLH(position, lookAt, { 0.0f, 1.0f, 0.0f });
+	auto lookDir = lookAt - position;
 
-	auto lookDir = DirectX::XMVectorSubtract(lookAt, position);
+	lookDir = lookDir.Normalized();
 
-	lookDir = DirectX::XMVector3Normalize(lookDir);
+	float yaw = std::atan2f(lookDir.X, lookDir.Z);
+	float pitch = std::asinf(lookDir.Y);
 
-	float x = DirectX::XMVectorGetX(lookDir);
-	float y = DirectX::XMVectorGetX(lookDir);
-	float z = DirectX::XMVectorGetX(lookDir);
-
-	float yaw = std::atan2f(x, z);
-	float pitch = std::asinf(y);
-
-	transform.Rotation = DirectX::XMQuaternionRotationRollPitchYawFromVector({pitch, yaw, 0.0f});
+	transform.SetRotation(DirectX::XMQuaternionRotationRollPitchYawFromVector({pitch, yaw, 0.0f}));
 	
 	registry.emplace<Transform>(entity);
 

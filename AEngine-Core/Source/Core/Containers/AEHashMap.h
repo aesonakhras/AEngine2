@@ -167,7 +167,7 @@ namespace AE::Core {
 
 
     private:
-        enum Marker : AE::Core::uint8 {
+        enum Marker : uint8 {
             EMPTY = 0,
             OCCUPIED = 1,
             TOMBSTONE = 2

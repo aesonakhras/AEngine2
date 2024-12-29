@@ -16,7 +16,7 @@ namespace AE::Core {
 		struct CacheItem
 		{
 			std::shared_ptr<T> resource = nullptr;
-			AE::Core::uint32 resourceSize = 0;
+			uint32 resourceSize = 0;
 			bool isPersistent = false;
 		};
 
@@ -28,7 +28,7 @@ namespace AE::Core {
 		bool addItem(
 			std::string id,
 			std::shared_ptr<T> resource,
-			AE::Core::uint32 resourceSize,
+			uint32 resourceSize,
 			bool isPersistent
 		) {
 			std::unique_lock<std::shared_mutex> lock(cacheMutex);
@@ -52,7 +52,7 @@ namespace AE::Core {
 			return nullptr;
 		}
 
-		void garbageCollect(AE::Core::uint32 clearToSize) {
+		void garbageCollect(uint32 clearToSize) {
 			std::unique_lock<std::shared_mutex> lock(cacheMutex);
 
 			for (auto it = cache.begin(); it != cache.end();) {

@@ -17,13 +17,13 @@ namespace AE::System {
 			struct AudioClipData
 			{
 				SDL_AudioSpec wavSpec;
-				AE::Core::uint8* wavBuffer;
-				AE::Core::uint32 wavLength;
+				uint8* wavBuffer;
+				uint32 wavLength;
 			};
 
 			struct AudioClip {
 				AudioClipData audioClipdata;
-				AE::Core::uint32 currentTimeStep;
+				uint32 currentTimeStep;
 			};
 
 			std::unordered_map<std::string, AudioClipData> audioClips;

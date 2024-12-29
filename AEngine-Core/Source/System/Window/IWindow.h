@@ -4,11 +4,11 @@
 
 namespace AE::System {
 	struct WindowCreateInfo {
-		AE::Core::int32 x;
-		AE::Core::int32 y;
+		int32 x;
+		int32 y;
 
-		AE::Core::int32 width;
-		AE::Core::int32 height;
+		int32 width;
+		int32 height;
 
 		std::string& windowName;
 	};

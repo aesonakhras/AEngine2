@@ -11,6 +11,7 @@
 #include "Core/Components/Material.h"
 #include "Graphics/CommonVerticies.h"
 
+#include "Core/Factories/StaticMeshFactory.h"
 
 #include "Core/Scene/SceneManager.h"
 
@@ -41,43 +42,72 @@ float fov = 1.0472f;
 float aspectRatio = (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT;
 float nearZ = 0.01f;
 float farZ = 1000.0f;
-DirectX::XMVECTOR Lookat = { 0.0f, 0.0f, -1.0f, 0.0f };
-
-std::shared_ptr <Material> CatMat1 = nullptr;
-
-//std::shared_ptr <Texture> CatTexture1 = nullptr;
-std::shared_ptr<Texture> CatTexture1 = nullptr;
-std::shared_ptr<Texture> CatTexture2 = nullptr;
-
-std::shared_ptr<Mesh> CatMesh = nullptr;
-
-std::shared_ptr<AE::Graphics::ISampler> CatSampler = nullptr;
+Vec3 Lookat = { 0.0f, 0.0f, -1.0f};
 
 entt::entity camera;
 
 AE::App::PlayerSystem playerSystem;
 
-void textureSetup() {
+std::shared_ptr<AE::Graphics::ISampler> sampler;
+
+//set up player
+void setupPlayer(AE::Core::SceneManager& sceneManager) {
+    //textures
     GraphicsManager& graphicsManager = GraphicsManager::GetInstance();
 
-    CatTexture1 = ResourceManager::GetInstance().GetTexture(std::string("Assets/Rock/basecolor.png"));
-    CatTexture2 = ResourceManager::GetInstance().GetTexture(std::string("Assets/Rock/normal.png"));
+    std::shared_ptr<Texture> baseColor = ResourceManager::GetInstance().GetTexture(std::string("Assets/Rock/basecolor.png"));
+    std::shared_ptr<Texture> normal = ResourceManager::GetInstance().GetTexture(std::string("Assets/Rock/normal.png"));
 
-    CatSampler = graphicsManager.CreateSampler();
+    //std::shared_ptr<AE::Graphics::ISampler> PlayerSampler = graphicsManager.CreateSampler();
+
+    sampler = graphicsManager.CreateSampler();
+
+    std::shared_ptr<Mesh> PlayerMesh = ResourceManager::GetInstance().GetStaticMesh(std::string("Assets/Rock/rock.obj"));
+
+    std::shared_ptr<Material> playerMaterial = ResourceManager::GetInstance().GetMaterial("Assets/shaders.shader", "Assets/shaders.shader", "RockMaterial");
+
+    playerMaterial->SetTexture("diffuse1", 0, baseColor, sampler);
+    playerMaterial->SetTexture("diffuse2", 1, normal, sampler);
+
+    Transform playerStart = {
+        { 0 , 0.0f, 15.0f},
+        DirectX::XMQuaternionRotationRollPitchYawFromVector({ 1.5f, 0.0f, 0.0f, 0.0f }),
+        {1.0f, 1.0f, 1.0f}
+    };
+
+    auto player = PlayerFactory::Create(sceneManager.Registry, *PlayerMesh.get(), *playerMaterial.get(), playerStart);
+
 }
 
-void loadCommonResoureces() {
-    CatMesh = ResourceManager::GetInstance().GetStaticMesh(std::string("Assets/Rock/rock.obj"));
+//set up environment
+void setupEnvironment(AE::Core::SceneManager& sceneManager) {
+    GraphicsManager& graphicsManager = GraphicsManager::GetInstance();
 
-    CatMat1 = ResourceManager::GetInstance().GetMaterial("Assets/shaders.shader", "Assets/shaders.shader", "RockMaterial");
+    std::shared_ptr<Texture> normal = ResourceManager::GetInstance().GetTexture(std::string("Assets/Rock/normal.png"));
 
-    //textures
-    textureSetup();
+    std::shared_ptr<Mesh> planeMesh = ResourceManager::GetInstance().GetStaticMesh(std::string("Assets/plane.obj"));
 
-    CatMat1->SetTexture("diffuse1", 0, CatTexture1, CatSampler);
-    CatMat1->SetTexture("diffuse2", 1, CatTexture2, CatSampler);
-    
+    std::shared_ptr<Material> planeMaterial = ResourceManager::GetInstance().GetMaterial("Assets/shaders.shader", "Assets/shaders.shader", "planeMaterial");
+
+    Transform planeStart = {
+        { 0.0f , -4.0f, 15.0f},
+        DirectX::XMQuaternionRotationRollPitchYawFromVector({ 0.0f, 0.0f, 0.0f, 0.0f }),
+        {5.0f, 5.0f, 5.0f}
+    };
+
+    if (sampler == nullptr) {
+        sampler = graphicsManager.CreateSampler();
+    }
+
+    planeMaterial->SetTexture("diffuse1", 0, normal, sampler);
+    planeMaterial->SetTexture("diffuse2", 0, normal, sampler);
+
+    auto ground = StaticMeshFactory::Create(sceneManager.Registry, *planeMesh.get(), *planeMaterial.get(), planeStart);
 }
+
+//set up enemies
+
+
 
 void SetupScene() {
     //get scene ref
@@ -93,22 +123,9 @@ void SetupScene() {
         Lookat
     );
 
-    loadCommonResoureces();
+    setupPlayer(sceneManager);
 
-    //add the two kitty cats
-    Transform cat1Start = {
-        { 0 , 0.0f, 1 , 1.0f },
-        DirectX::XMQuaternionRotationRollPitchYawFromVector({ 1.5f, 0.0f, 0.0f, 0.0f }),
-        {1.0f, 1.0f, 1.0f} 
-    };
-
-    Transform cat2Start = {
-        { 0 , 0.0f, 15.0f, 1.0f },
-        DirectX::XMQuaternionRotationRollPitchYawFromVector({ 1.5f, 0.0f, 0.0f, 0.0f }),
-        {1.0f, 1.0f, 1.0f}
-    };
-
-    auto player = PlayerFactory::Create(sceneManager.Registry, *CatMesh.get(), *CatMat1.get(), cat2Start);
+    setupEnvironment(sceneManager);
 }
 
 void Update(float32 deltaTime,

@@ -18,7 +18,7 @@
 namespace AE::Graphics {
     struct UniformDescription {
         std::string name;
-        AE::Core::uint32 size;  //size of data
+        uint32 size;  //size of data
     };
 
 
@@ -41,7 +41,7 @@ namespace AE::Graphics {
                 const std::vector<UniformDescription>& uniformlayout) : m_vertexShader(vertexShader),m_fragmentShader(fragmentShader), m_ubo(ubo) {
                 //uniform buffer all we need to do is specify a size?
                 
-                AE::Core::uint32 totalSize  = 0;
+                uint32 totalSize  = 0;
 
                 for (const auto& uniform : uniformlayout) {
                     m_uniformDataLayout[uniform.name] = totalSize;
@@ -119,7 +119,7 @@ namespace AE::Graphics {
             std::unordered_map <std::string, SamplerBinding> m_samplers {};
             
             //cpu side
-            std::unordered_map <std::string, AE::Core::uint32> m_uniformDataLayout;
+            std::unordered_map <std::string, uint32> m_uniformDataLayout;
             char* m_uniformData = nullptr;
             bool m_uniformNeedsUpdate = true;
     };

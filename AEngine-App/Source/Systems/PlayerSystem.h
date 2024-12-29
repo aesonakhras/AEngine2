@@ -14,7 +14,7 @@ namespace AE::App {
 
 	class PlayerSystem {
 		public:
-			void Update(AE::Core::float32 deltaTime,
+			void Update(float32 deltaTime,
 				entt::registry& scene,
 				AE::Core::JobSystem& jobSystem,
 				AE::Core::CommandBuffer& commandBuffer
@@ -26,12 +26,21 @@ namespace AE::App {
 			//TODO: Refactor input system to avoid this mess
 			void OnForwardDown();
 			void OnForwardUp();
+
 			void OnBackwardDown();
 			void OnBackwardUp();
+
 			void OnRightDown();
 			void OnRightUp();
+
 			void OnLeftDown();
 			void OnLeftUp();
+
+			void OnQDown();
+			void OnQUp();
+
+			void OnZDown();
+			void OnZUp();
 
 			inline void modifyMovement(float x, float y, float z);
 

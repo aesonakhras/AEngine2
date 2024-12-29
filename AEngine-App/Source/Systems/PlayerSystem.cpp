@@ -10,7 +10,7 @@
 using namespace AE::Core;
 using namespace AE::App;
 
-void PlayerSystem::Update(AE::Core::float32 deltaTime,
+void PlayerSystem::Update(float32 deltaTime,
 	entt::registry& scene,
 	AE::Core::JobSystem& jobSystem,
 	AE::Core::CommandBuffer& commandBuffer
@@ -18,6 +18,10 @@ void PlayerSystem::Update(AE::Core::float32 deltaTime,
 	jobSystem.SubmitJob([deltaTime, &scene, &commandBuffer]() {
 	
 		auto playerView = scene.view<Player, Transform, Movement>();
+
+		if (playerView.begin() == playerView.end()) {
+			return;
+		}
 
 		auto playerEntity = playerView.front();
 
@@ -27,14 +31,14 @@ void PlayerSystem::Update(AE::Core::float32 deltaTime,
 
 		DirectX::XMVECTOR deltaRotation = DirectX::XMQuaternionRotationAxis({ 0, 1, 0 }, deltaTime);
 
-		DirectX::XMVECTOR normalizedDir = DirectX::XMVector4Normalize(playerMovement.Dir);
+		Vec3 normalizedDir = playerMovement.Dir.Normalized();
 
-		DirectX::XMVECTOR newDeltaMovement = DirectX::XMVectorScale(normalizedDir, deltaTime * player.movementSpeed);
+		Vec3 newDeltaMovement = normalizedDir * (deltaTime * player.movementSpeed);
 
 		commandBuffer.Submit([&playerTransform, deltaRotation, newDeltaMovement]() {
 			//add a small rotation to the player
-			playerTransform.Rotation = DirectX::XMQuaternionMultiply(playerTransform.Rotation, deltaRotation);
-			playerTransform.Position = DirectX::XMVectorAdd(playerTransform.Position, newDeltaMovement);
+			//playerTransform.SetRotation(DirectX::XMQuaternionMultiply(playerTransform.GetRotation(), deltaRotation));
+			playerTransform.SetPosition(playerTransform.GetPosition() + newDeltaMovement);
 		});
 	});
 	
@@ -44,9 +48,14 @@ void PlayerSystem::Update(AE::Core::float32 deltaTime,
 void PlayerSystem::Start(entt::registry& scene) {
 	m_scene = &scene;
 
-	auto playerview = m_scene->view<Movement>();
-	auto playerEntity = playerview.front();
-	playerMovementCache = &playerview.get<Movement>(playerEntity);
+	auto playerView = m_scene->view<Movement>();
+
+	if (playerView.begin() == playerView.end()) {
+		return;
+	}
+
+	auto playerEntity = playerView.front();
+	playerMovementCache = &playerView.get<Movement>(playerEntity);
 
 	AE::System::InputManager::GetInstance().RegisterButtonEvent(
 		AE::System::Button::W,
@@ -95,6 +104,30 @@ void PlayerSystem::Start(entt::registry& scene) {
 		AE::System::InputState::Released,
 		std::bind(&PlayerSystem::OnRightUp, this)
 	);
+
+	AE::System::InputManager::GetInstance().RegisterButtonEvent(
+		AE::System::Button::Q,
+		AE::System::InputState::Pressed,
+		std::bind(&PlayerSystem::OnQDown, this)
+	);
+
+	AE::System::InputManager::GetInstance().RegisterButtonEvent(
+		AE::System::Button::Q,
+		AE::System::InputState::Released,
+		std::bind(&PlayerSystem::OnQUp, this)
+	);
+
+	AE::System::InputManager::GetInstance().RegisterButtonEvent(
+		AE::System::Button::Z,
+		AE::System::InputState::Pressed,
+		std::bind(&PlayerSystem::OnZDown, this)
+	);
+
+	AE::System::InputManager::GetInstance().RegisterButtonEvent(
+		AE::System::Button::Z,
+		AE::System::InputState::Released,
+		std::bind(&PlayerSystem::OnZUp, this)
+	);
 }
 
 void PlayerSystem::OnForwardDown() {
@@ -129,9 +162,22 @@ void PlayerSystem::OnLeftUp() {
 	modifyMovement(1.0f, 0.0f, 0.0f);
 }
 
+void PlayerSystem::OnQDown() {
+	modifyMovement(0.0f, 1.0f, 0.0f);
+}
+
+void PlayerSystem::OnQUp() {
+	modifyMovement(0.0f, -1.0f, 0.0f);
+}
+
+void PlayerSystem::OnZDown() {
+	modifyMovement(0.0f, -1.0f, 0.0f);
+}
+
+void PlayerSystem::OnZUp() {
+	modifyMovement(0.0f, 1.0f, 0.0f);
+}
+
 inline void PlayerSystem::modifyMovement(float x, float y, float z) {
-	playerMovementCache->Dir = DirectX::XMVectorAdd(
-		playerMovementCache->Dir,
-		DirectX::XMVectorSet(x, y, z, 0.0f)
-	);
+	playerMovementCache->Dir += {x, y, z};
 }

@@ -34,7 +34,7 @@ std::shared_ptr<IBuffer> GraphicsManager::CreateBuffer(const void* data, size_t 
     return m_GLI->CreateBuffer(data, count, stride, bufferType);
 }
 
-void GraphicsManager::Draw(AE::Core::uint32 count) {
+void GraphicsManager::Draw(uint32 count) {
     m_GLI->Draw(count);
 }
 

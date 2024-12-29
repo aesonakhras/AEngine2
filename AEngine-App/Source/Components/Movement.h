@@ -1,9 +1,9 @@
 #pragma once
-#include <DirectXMath.h>
+#include "Math/Vec3.h"
 
 namespace AE::App {
 	struct Movement
 	{
-		DirectX::XMVECTOR Dir;
+		Vec3 Dir;
 	};
 }

@@ -3,6 +3,8 @@
 #include <entt/entt.hpp>
 
 #include "Core/Common.h"
+#include "Math/Vec3.h"
+
 namespace AE::Core {
 	class CameraFactory {
 	public:
@@ -12,8 +14,8 @@ namespace AE::Core {
 			float32 aspectRatio,
 			float32 nearZ,
 			float32 farZ,
-			DirectX::XMVECTOR position,
-			DirectX::XMVECTOR lookAt
+			Vec3 position,
+			Vec3 lookAt
 		);
 	};
 }
