@@ -1,81 +1,147 @@
 #pragma once
-#include "Math/Vec3.h"
+#include <set>
 #include <DirectXMath.h>
+//TODO: At some point only have name in debug config
+#include <string>
+
+#include "Math/Vec3.h"
 
 
 //TODO: implement matrix to get rid of the directX internal dependency
 struct Transform {
-	Transform() {
-		Position = {0.0f,0.0f,0.f};
-		Rotation = DirectX::XMQuaternionIdentity();
-		Scale = { 1.0f,1.0f,1.0f };
-		isDirty = false;
-	}
+	public:
+		DirectX::XMMATRIX WorldMatrix;
 
-	Transform(Vec3 pos, DirectX::XMVECTOR rot, Vec3 scale) {
-		Position = { pos.X, pos.Y, pos.Z, 1.0f };
-		Rotation = rot;
-		Scale = { scale.X, scale.Y, scale.Z };
-		isDirty = false;
-	}
+		Transform() : 
+			Position{ 0.0f, 0.0f, 0.0f },
+			Rotation{ DirectX::XMQuaternionIdentity() },
+			Scale{ 1.0f, 1.0f, 1.0f },
+			isDirty{ false },
+			Parent{ nullptr },
+			WorldMatrix{ DirectX::XMMatrixIdentity() } { }
 
-	void SetPosition(Vec3 pos) {
-		Position = { pos.X, pos.Y, pos.Z, 1.0f };
-		isDirty = true;
-	}
+		Transform (
+			Vec3 pos,
+			DirectX::XMVECTOR rot,
+			Vec3 scale,
+			Transform* parent,
+			std::string name
+		) : 
+			Position { pos }, 
+			Rotation{ rot },
+			Scale{ scale },
+			isDirty{ true },
+			Parent { parent },
+			Name{ name },
+			WorldMatrix{ DirectX::XMMatrixIdentity() }
+		{
+			if (Parent != nullptr) {
+				Parent->AddChild(this);
+			}	
+		}
 
-	Vec3 GetPosition() {
-		return { 
-			DirectX::XMVectorGetX(Position),
-			DirectX::XMVectorGetY(Position), 
-			DirectX::XMVectorGetZ(Position)
-		};
-	}
+		~Transform() {
+			if (Parent) {
+				Parent->RemoveChild(this);
+			}
+			//clear children
+			for (auto* child : Children) {
+				child->Parent = nullptr;
+			}
+		}
 
-	void SetRotation(DirectX::XMVECTOR rot) {
-		Rotation = rot;
-		isDirty = true;
-	}
+		void SetLocalPosition(Vec3 pos) {
+			Position = pos;
+			isDirty = true;
+		}
 
-	DirectX::XMVECTOR GetRotation() {
-		return Rotation;
-	}
+		Vec3 GetLocalPosition() {
+			return Position;
+		}
 
-	void SetScale(Vec3 scale) {
-		Scale = { scale.X, scale.Y, scale.Z };
-		isDirty = true;
-	}
+		void SetLocalRotation(DirectX::XMVECTOR rot) {
+			Rotation = rot;
+			isDirty = true;
+		}
 
-	Vec3 GetScale() {
-		return {
-			DirectX::XMVectorGetX(Scale),
-			DirectX::XMVectorGetY(Scale),
-			DirectX::XMVectorGetZ(Scale)
-		};
-	}
+		DirectX::XMVECTOR GetLocalRotation() {
+			return Rotation;
+		}
 
-	//DO not use these in the application layer, you will break everything
-	bool GetIsDirty() {
-		return isDirty;
-	}
+		void SetScale(Vec3 scale) {
+			Scale = scale;
+			isDirty = true;
+		}
 
-	//DO not use these in the application layer, you will break everything
-	bool resetIsDirty() {
-		isDirty = true;
-	}
+		Vec3 GetScale() {
+			return Scale;
+		}
 
-	DirectX::XMMATRIX ToMatrix() {
-		return DirectX::XMMatrixScalingFromVector(Scale) *
-			DirectX::XMMatrixRotationQuaternion(Rotation) *
-			DirectX::XMMatrixTranslationFromVector(Position);
-	}
+
+		//DO not use these in the application layer, you will break everything
+		bool GetDirty() {
+			return isDirty;
+		}
+
+		//DO not use these in the application layer, you will break everything
+		void SetDirty() {
+			isDirty = true;
+		}
+
+		//DO not use these in the application layer, you will break everything
+		void ClearDirty() {
+			isDirty = false;
+		}
+
+		DirectX::XMMATRIX GetLocalMatrix() {
+			DirectX::XMVECTOR dxPos = { Position.X, Position.Y, Position.Z };
+			DirectX::XMVECTOR dxScale = { Scale.X, Scale.Y, Scale.Z };
+
+			return DirectX::XMMatrixScalingFromVector(dxScale) *
+				DirectX::XMMatrixRotationQuaternion(Rotation) *
+				DirectX::XMMatrixTranslationFromVector(dxPos);
+		}
+
+		void SetParent(Transform* parent) {
+			if (Parent != nullptr) {
+				Parent->AddChild(this);
+			}
+
+			isDirty = true;
+		}
+
+		void DetachParent() {
+			if (Parent != nullptr) {
+				Parent->RemoveChild(this);
+				Parent = nullptr;
+			}
+
+			isDirty = true;
+		}
+
+		const Transform* GetParent() {
+			return Parent;
+		}
+
+		const std::set<Transform*> GetChildren() {
+			return Children;
+		}
 
 	private:
-		//TODO: Need to abstract this out before too long
-		//also quaternion?
-		DirectX::XMVECTOR Position;
-		DirectX::XMVECTOR Rotation;	//NOTE: This is a quaternion
-		DirectX::XMVECTOR Scale;
+		void AddChild(Transform* newChild) {
+			Children.insert(newChild);
+		}
 
+		void RemoveChild(Transform* childToRemove) {
+			Children.erase(childToRemove);
+		}
+
+		Vec3 Position;
+		//NOTE: This is a quaternion
+		DirectX::XMVECTOR Rotation;	
+		Vec3 Scale;
 		bool isDirty;
+		Transform* Parent;
+		std::set<Transform*> Children{};
+		std::string Name;
 };

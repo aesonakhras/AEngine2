@@ -21,6 +21,8 @@ namespace AE::System {
 			
 			void RegisterButtonEvent(Button button, InputState targetState, std::function<void()> cb);
 
+			void RegisterAxisEvent(AxisType axisType, std::function<void(float)> cb);
+
 		private:
 			struct InputActionBinding {
 				InputState targetState;
@@ -33,12 +35,18 @@ namespace AE::System {
 				std::vector<InputActionBinding> actionBinding;
 			};
 
+			struct InputAxisHandle
+			{
+				std::vector<std::function<void(float)>> axisBinding;
+			};
+
 			void Poll();
 			void UpdateEvents();
 			void DispatchCallBacks();
 
 			//button map
 			std::unordered_map<Button, InputStateHandle> m_buttonMap;
+			std::unordered_map<AxisType, InputAxisHandle> m_axisMap;
 			std::shared_ptr<IRawInputHandler> m_inputHandler;
 
 			friend class AE::Utils::Singleton<InputManager>;

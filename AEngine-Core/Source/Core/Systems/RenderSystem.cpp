@@ -32,7 +32,7 @@ void RenderSystem::Render() {
     auto& cameraTransform = cameraView.get<Transform>(cameraEntity);
 
     auto projection = camera.ProjectionMatrix;
-    auto view = cameraTransform.ToMatrix();
+    auto view = DirectX::XMMatrixInverse(nullptr, cameraTransform.WorldMatrix);
 
     auto vp2 = view * projection;
 
@@ -40,7 +40,7 @@ void RenderSystem::Render() {
 
     DirectX::XMVECTOR forward = DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
 
-    DirectX::XMVECTOR viewDir = DirectX::XMVector3Rotate(forward, cameraTransform.GetRotation());
+    DirectX::XMVECTOR viewDir = DirectX::XMVector3Rotate(forward, cameraTransform.GetLocalRotation());
 
 	for (auto entity : staticMeshView) {
 		//get the model matrix and transform into the necessary thing
@@ -49,7 +49,7 @@ void RenderSystem::Render() {
         auto& material = staticMeshView.get<AE::Graphics::Material>(entity);
         auto& transform = staticMeshView.get<Transform>(entity);
 
-        DirectX::XMMATRIX modelMatrix = transform.ToMatrix();
+        DirectX::XMMATRIX modelMatrix = transform.WorldMatrix;
 
         auto mvp = modelMatrix * vp2;
         ////Thank you DirectX very nice

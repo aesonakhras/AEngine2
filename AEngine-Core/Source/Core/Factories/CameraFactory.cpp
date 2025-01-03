@@ -21,9 +21,6 @@ entt::entity CameraFactory::Create(
 
 	registry.emplace<Camera>(entity, fov, aspectRatio, nearZ, farZ);
 	
-	Transform transform{};
-
-	transform.SetPosition(position);
 
 	auto lookDir = lookAt - position;
 
@@ -31,10 +28,18 @@ entt::entity CameraFactory::Create(
 
 	float yaw = std::atan2f(lookDir.X, lookDir.Z);
 	float pitch = std::asinf(lookDir.Y);
-
-	transform.SetRotation(DirectX::XMQuaternionRotationRollPitchYawFromVector({pitch, yaw, 0.0f}));
 	
-	registry.emplace<Transform>(entity);
+	Transform transform{
+		position,
+		DirectX::XMQuaternionRotationRollPitchYawFromVector({pitch, yaw, 0.0f}),
+		{ 1.0f, 1.0f, 1.0f },
+		nullptr,
+		"Camera"
+	};
+
+
+
+	registry.emplace<Transform>(entity, transform);
 
 	return entity;
 }

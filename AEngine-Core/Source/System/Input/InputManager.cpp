@@ -43,6 +43,22 @@ void InputManager::RegisterButtonEvent(Button button, InputState targetState, st
 	}
 }
 
+void InputManager::RegisterAxisEvent(AxisType axisType, std::function<void(float)> cb) {
+	if (!cb) {
+		AE::Core::Debug::LogError("Trying to register null event");
+	}
+
+	if (m_axisMap.contains(axisType)) {
+		m_axisMap[axisType].axisBinding.push_back(cb);
+	}
+	else {
+		InputAxisHandle handle;
+		handle.axisBinding.push_back(cb);
+
+		m_axisMap[axisType] = handle;
+	}
+}
+
 void InputManager::Poll() {
 	m_inputHandler->Poll();
 }
@@ -63,9 +79,9 @@ void InputManager::UpdateEvents() {
 	}
 	
 	//grab events from the inputHandler and set the states as necessary
-	InputEvent currEvent {};
+	InputButtonEvent currEvent {};
 
-	while (m_inputHandler->GetNextEvent(currEvent)) {
+	while (m_inputHandler->GetNextButtonEvent(currEvent)) {
 		//updates the state to the new
 		m_buttonMap[currEvent.button].currState = currEvent.state;
 	}
@@ -78,6 +94,18 @@ void InputManager::DispatchCallBacks() {
 			if (element.second.currState == actionBinding.targetState) {
 				if (actionBinding.cb) {
 					actionBinding.cb();
+				}
+			}
+		}
+	}
+
+	InputAxisEvent axisEvent;
+	//handle axis callbacks
+	while (m_inputHandler->GetNextAxisEvent(axisEvent)) {
+		if (m_axisMap.contains(axisEvent.axis)) {
+			for (const auto& cb : m_axisMap[axisEvent.axis].axisBinding) {
+				if (cb != nullptr) {
+					cb(axisEvent.axisValue);
 				}
 			}
 		}

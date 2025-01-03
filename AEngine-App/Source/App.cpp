@@ -26,6 +26,9 @@
 #include "Systems/PlayerSystem.h"
 #include "Factories/PlayerFactory.h"
 
+#include "Systems/WindmillSystem.h"
+#include "Factories/WindmillFactory.h"
+
 #include "Resources/ResourceManager.h"
 
 #include <iostream>
@@ -42,11 +45,13 @@ float fov = 1.0472f;
 float aspectRatio = (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT;
 float nearZ = 0.01f;
 float farZ = 1000.0f;
-Vec3 Lookat = { 0.0f, 0.0f, -1.0f};
+Vec3 Lookat = { 0.0f, 0.0f, 1.0f};
 
 entt::entity camera;
 
 AE::App::PlayerSystem playerSystem;
+
+AE::App::WindmillSystem windmillSystem;
 
 std::shared_ptr<AE::Graphics::ISampler> sampler;
 
@@ -72,10 +77,14 @@ void setupPlayer(AE::Core::SceneManager& sceneManager) {
     Transform playerStart = {
         { 0 , 0.0f, 15.0f},
         DirectX::XMQuaternionRotationRollPitchYawFromVector({ 1.5f, 0.0f, 0.0f, 0.0f }),
-        {1.0f, 1.0f, 1.0f}
+        {1.0f, 1.0f, 1.0f},
+        nullptr,
+        "Player"
     };
 
-    auto player = PlayerFactory::Create(sceneManager.Registry, *PlayerMesh.get(), *playerMaterial.get(), playerStart);
+    auto& cameraTransform = SceneManager::GetInstance().Registry.get<Transform>(camera);
+
+    auto player = PlayerFactory::Create(sceneManager.Registry, *playerMaterial.get(), playerStart);
 
 }
 
@@ -89,11 +98,6 @@ void setupEnvironment(AE::Core::SceneManager& sceneManager) {
 
     std::shared_ptr<Material> planeMaterial = ResourceManager::GetInstance().GetMaterial("Assets/shaders.shader", "Assets/shaders.shader", "planeMaterial");
 
-    Transform planeStart = {
-        { 0.0f , -4.0f, 15.0f},
-        DirectX::XMQuaternionRotationRollPitchYawFromVector({ 0.0f, 0.0f, 0.0f, 0.0f }),
-        {5.0f, 5.0f, 5.0f}
-    };
 
     if (sampler == nullptr) {
         sampler = graphicsManager.CreateSampler();
@@ -102,11 +106,19 @@ void setupEnvironment(AE::Core::SceneManager& sceneManager) {
     planeMaterial->SetTexture("diffuse1", 0, normal, sampler);
     planeMaterial->SetTexture("diffuse2", 0, normal, sampler);
 
-    auto ground = StaticMeshFactory::Create(sceneManager.Registry, *planeMesh.get(), *planeMaterial.get(), planeStart);
+    auto ground = StaticMeshFactory::Create(
+        sceneManager.Registry, 
+        *planeMesh.get(), 
+        *planeMaterial.get(), 
+        { 0.0f , -4.0f, 15.0f },
+        DirectX::XMQuaternionRotationRollPitchYawFromVector({ 0.0f, 0.0f, 0.0f, 0.0f }),
+        { 5.0f, 5.0f, 5.0f },
+        nullptr,
+        "Plane"
+    );
+
+    auto windMill = WindMillFactory::Create(sceneManager.Registry, *planeMaterial.get(), {});
 }
-
-//set up enemies
-
 
 
 void SetupScene() {
@@ -119,7 +131,7 @@ void SetupScene() {
         aspectRatio,
         nearZ,
         farZ,
-        {0.0, 0.0, 0.0},
+        {0.0, 0.0, -5.0},
         Lookat
     );
 
@@ -134,7 +146,9 @@ void Update(float32 deltaTime,
 ) {
     AE::Core::SceneManager& sceneManager = AE::Core::SceneManager::GetInstance();
 
+    windmillSystem.Update(deltaTime, sceneManager.Registry, jobSystem, commandBuffer);
     playerSystem.Update(deltaTime, sceneManager.Registry, jobSystem, commandBuffer);
+    
 }
 
 //startup

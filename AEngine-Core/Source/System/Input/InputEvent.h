@@ -16,14 +16,13 @@ namespace AE::System {
 		Invalid
 	};
 
-	struct InputEvent {
-		InputType type;
-
+	struct InputButtonEvent {
 		Button button;
 		InputState state;
+	};
 
+	struct InputAxisEvent {
 		AxisType axis;
 		float axisValue;
-		bool isAbsolute;
 	};
 }

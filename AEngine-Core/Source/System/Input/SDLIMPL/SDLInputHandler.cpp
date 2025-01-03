@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "SDLInputHandler.h"
 #include "System/Input/InputEvent.h"
 #include "Core/Debug.h"
@@ -24,13 +26,32 @@ void SDLInputHandler::Poll() {
         //handle key event
         if ((event.type == SDL_KEYDOWN && event.key.repeat == 0) || (event.type == SDL_KEYUP)) {
 
-            InputEvent inputEvent{};
+            InputButtonEvent inputEvent{};
 
             inputEvent.button = ConvertToButton(event.key.keysym.sym);
             inputEvent.state = event.key.type == SDL_KEYDOWN ? InputState::Pressed : InputState::Released;
-            inputEvent.type = InputType::Button;
 
-            inputEventQueue.push(inputEvent);
+            inputButtonEventQueue.push(inputEvent);
+        }
+        else if (event.type == SDL_MOUSEMOTION) {
+            int screenDeltaX = event.motion.xrel;
+            int screenDeltaY = event.motion.yrel;
+
+            if (screenDeltaX != 0) {
+                InputAxisEvent xInputEvent{};
+
+                xInputEvent.axis = AxisType::MouseX;
+                xInputEvent.axisValue = static_cast<float>(screenDeltaX) / sensitivity;
+                inputAxisEventQueue.push(xInputEvent);
+            }
+            
+            if (screenDeltaY != 0) {
+                InputAxisEvent yInputEvent{};
+
+                yInputEvent.axis = AxisType::MouseY;
+                yInputEvent.axisValue = static_cast<float>(screenDeltaY) / sensitivity;
+                inputAxisEventQueue.push(yInputEvent);
+            }
         }
         else if (event.type == SDL_QUIT) {
             //exit at end of frame
@@ -40,13 +61,23 @@ void SDLInputHandler::Poll() {
 }
 
 
-bool SDLInputHandler::GetNextEvent(InputEvent& event) {
-    if (!inputEventQueue.empty()) {
-        event = inputEventQueue.front();
-        inputEventQueue.pop();
+bool SDLInputHandler::GetNextButtonEvent(InputButtonEvent& event) {
+    if (!inputButtonEventQueue.empty()) {
+        event = inputButtonEventQueue.front();
+        inputButtonEventQueue.pop();
         return true;
     }
     
+    return false;
+}
+
+bool SDLInputHandler::GetNextAxisEvent(InputAxisEvent& event) {
+    if (!inputAxisEventQueue.empty()) {
+        event = inputAxisEventQueue.front();
+        inputAxisEventQueue.pop();
+        return true;
+    }
+
     return false;
 }
 

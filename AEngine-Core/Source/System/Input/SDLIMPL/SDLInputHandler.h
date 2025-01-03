@@ -15,15 +15,20 @@ namespace AE::System {
 	public:
 		SDLInputHandler(std::shared_ptr<IWindow> window);
 		virtual void Poll() override final;
-		virtual bool GetNextEvent(InputEvent& event) override final;
+
+		virtual bool GetNextButtonEvent(InputButtonEvent& event) override final;
+		virtual bool GetNextAxisEvent(InputAxisEvent& event) override final;
 
 	private:
-		std::queue<InputEvent> inputEventQueue;
+		std::queue<InputButtonEvent> inputButtonEventQueue;
+		std::queue<InputAxisEvent> inputAxisEventQueue;
 		bool handleWindowEvents(const SDL_Event& event);
 		bool handleInputEvents(const SDL_Event& event);
 
 		Button ConvertToButton(SDL_Keycode keyCode);
 		//AxisType ConvertToAxis(SDL_GameControllerAxis axis);
 		std::shared_ptr<IWindow> m_window;
+
+		float sensitivity = 100.0f;
 	};
 }

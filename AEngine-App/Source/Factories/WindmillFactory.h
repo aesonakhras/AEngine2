@@ -1,4 +1,5 @@
 #pragma once
+
 #include <memory>
 
 #include <entt/entt.hpp>
@@ -10,7 +11,7 @@
 #include "Components/Movement.h"
 
 namespace AE::App {
-	class PlayerFactory {
+	class WindMillFactory {
 	public:
 		static entt::entity Create(
 			entt::registry& registry,

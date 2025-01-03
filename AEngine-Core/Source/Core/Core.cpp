@@ -25,6 +25,8 @@
 #include "System/Audio/AudioManager.h"
 #include "System/Memory/MemoryTracker.h"
 
+#include "Core/Systems/SystemLocator.h"
+#include "Core/Systems/TransformSystem.h"
 #include "Core/Systems/RenderSystem.h"
 #include "Core/Scene/SceneManager.h"
 
@@ -45,6 +47,7 @@ float32 deltaTime = 0.0f;
 std::function<void(float32, JobSystem&, CommandBuffer&)> appUpdate;
 
 RenderSystem renderSystem;
+AE::Core::TransformSystem transformSystem;
 
 entt::registry* g_sceneRegistry;
 
@@ -56,6 +59,10 @@ CommandBuffer commandBuffer {};
 
 
 void AE::Core::Run() {
+    //force delta time to zero for the first frame
+    AE::System::DeltaTimeManager::GetInstance().StartFrame();
+    AE::System::DeltaTimeManager::GetInstance().LimitFrameRate();
+
     while (!window->GetShouldEngineExit()) {
         AE::System::DeltaTimeManager::GetInstance().StartFrame();
         deltaTime = AE::System::DeltaTimeManager::GetInstance().GetDeltaTime();
@@ -65,6 +72,8 @@ void AE::Core::Run() {
 
         //execute jobs
         jobSystem.WaitForCompletion();
+
+        transformSystem.Update();
 
         //execute command buffer for shared variable data in order
         commandBuffer.Execute();
@@ -106,7 +115,9 @@ void AE::Core::Start(std::function<void(float32, JobSystem&, CommandBuffer&)> cb
 
     AE::Core::SceneManager::Initialize();
 
-    //AE::System::MemoryAllocator::DebugAlloc(8, __FILE__, __LINE__);
+    transformSystem.SetScene(SceneManager::GetInstance().Registry);
+
+    AE::Core::SystemLocator::Register<AE::Core::TransformSystem>(&transformSystem);
 }
 
 

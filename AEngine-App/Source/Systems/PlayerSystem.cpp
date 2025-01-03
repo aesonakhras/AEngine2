@@ -6,6 +6,8 @@
 #include "Core/Components/Transform.h"
 #include "System/Input/InputManager.h"
 
+#include "Core/Systems/SystemLocator.h"
+#include "Core/Systems/TransformSystem.h"
 
 using namespace AE::Core;
 using namespace AE::App;
@@ -15,7 +17,7 @@ void PlayerSystem::Update(float32 deltaTime,
 	AE::Core::JobSystem& jobSystem,
 	AE::Core::CommandBuffer& commandBuffer
 ) {
-	jobSystem.SubmitJob([deltaTime, &scene, &commandBuffer]() {
+	jobSystem.SubmitJob([this, deltaTime, &scene, &commandBuffer]() {
 	
 		auto playerView = scene.view<Player, Transform, Movement>();
 
@@ -28,18 +30,27 @@ void PlayerSystem::Update(float32 deltaTime,
 		auto& player = playerView.get<Player>(playerEntity);
 		auto& playerTransform = playerView.get<Transform>(playerEntity);
 		auto& playerMovement = playerView.get<Movement>(playerEntity);
+		auto transformSystem = SystemLocator::Get<TransformSystem>();
 
-		DirectX::XMVECTOR deltaRotation = DirectX::XMQuaternionRotationAxis({ 0, 1, 0 }, deltaTime);
+		DirectX::XMVECTOR deltaRotationX = DirectX::XMQuaternionRotationAxis({ 0, 1, 0 }, lookAxis.X);
+		DirectX::XMVECTOR deltaRotationY = DirectX::XMQuaternionRotationAxis({ 1, 0, 0 }, lookAxis.Y);
+
+		auto finalDeltaRotation = DirectX::XMQuaternionMultiply(deltaRotationX, deltaRotationY);
+		auto newRotation = DirectX::XMQuaternionMultiply(transformSystem->GetLocalRotation(playerEntity), finalDeltaRotation);
+
+		//reset look axis because why not
+		lookAxis = {};
 
 		Vec3 normalizedDir = playerMovement.Dir.Normalized();
 
 		Vec3 newDeltaMovement = normalizedDir * (deltaTime * player.movementSpeed);
 
-		commandBuffer.Submit([&playerTransform, deltaRotation, newDeltaMovement]() {
-			//add a small rotation to the player
-			//playerTransform.SetRotation(DirectX::XMQuaternionMultiply(playerTransform.GetRotation(), deltaRotation));
-			playerTransform.SetPosition(playerTransform.GetPosition() + newDeltaMovement);
-		});
+
+		//apply the movement
+		Vec3 newPosition = transformSystem->GetLocalPosition(playerEntity) + newDeltaMovement;
+
+		transformSystem->SetLocalPosition(playerEntity, newPosition);
+		transformSystem->SetLocalRotation(playerEntity, newRotation);
 	});
 	
 
@@ -128,6 +139,17 @@ void PlayerSystem::Start(entt::registry& scene) {
 		AE::System::InputState::Released,
 		std::bind(&PlayerSystem::OnZUp, this)
 	);
+
+	AE::System::InputManager::GetInstance().RegisterAxisEvent(
+		AE::System::AxisType::MouseX,
+		std::bind(&PlayerSystem::OnHorizontal, this, std::placeholders::_1)
+	);
+
+	AE::System::InputManager::GetInstance().RegisterAxisEvent(
+		AE::System::AxisType::MouseY,
+		std::bind(&PlayerSystem::OnVertical, this, std::placeholders::_1)
+	);
+
 }
 
 void PlayerSystem::OnForwardDown() {
@@ -176,6 +198,14 @@ void PlayerSystem::OnZDown() {
 
 void PlayerSystem::OnZUp() {
 	modifyMovement(0.0f, 1.0f, 0.0f);
+}
+
+void PlayerSystem::OnVertical(float y) {
+	lookAxis += {0, y, 0};
+}
+
+void PlayerSystem::OnHorizontal(float x) {
+	lookAxis += {x, 0, 0};
 }
 
 inline void PlayerSystem::modifyMovement(float x, float y, float z) {
