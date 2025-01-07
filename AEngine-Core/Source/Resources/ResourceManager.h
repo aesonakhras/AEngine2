@@ -26,7 +26,7 @@ namespace AE::Core {
 		public:
 			std::shared_ptr<AE::Graphics::Texture> GetTexture(std::string id);
 			std::shared_ptr<AE::Graphics::Mesh> GetStaticMesh(std::string id);
-			std::shared_ptr<AE::Graphics::Material> GetMaterial(std::string vertexShader, std::string fragmentShader, std::string id);
+			std::shared_ptr<AE::Graphics::Material> GetMaterial(std::string vertexShaderName, std::string fragmentShaderName, std::string id);
 			//material
 
 		protected:
@@ -36,8 +36,21 @@ namespace AE::Core {
 			void shutdown();
 
 		private:
+			std::shared_ptr<AE::Graphics::IVertexShader> GetVertexShader(std::string shaderName);
+			std::shared_ptr<AE::Graphics::IFragmentShader> GetFragmentShader(std::string shaderName);
+			std::shared_ptr<AE::Graphics::MaterialBase> GetMaterialBase(
+				std::string materialName,
+				std::string vertexShaderName,
+				std::string fragmentShaderName,
+				std::vector<AE::Graphics::UniformDescription> uniformDescription
+			);
+
 			ResourceCache<AE::Graphics::Texture> textureCache;
 			ResourceCache<AE::Graphics::Mesh> meshCache;
 			ResourceCache<AE::Graphics::Material> materialCache;
+			ResourceCache<AE::Graphics::MaterialBase> MaterialBaseCache;
+
+			ResourceCache<AE::Graphics::IFragmentShader> fragmentShaderCache;
+			ResourceCache<AE::Graphics::IVertexShader> vertexShaderCache;
 	};
 }

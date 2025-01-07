@@ -20,6 +20,7 @@ namespace AE::Graphics {
 	class Material;
 	struct UniformDescription;
 	struct DeviceCreateInfo;
+	struct MaterialBase;
 
 	class GraphicsManager : public AE::Utils::Singleton<GraphicsManager> {
 
@@ -39,12 +40,16 @@ namespace AE::Graphics {
 
 		std::shared_ptr<IFragmentShader> CreateFragmentShader(std::string fileName);
 
-		std::shared_ptr<Material> CreateMaterial(
-			std::string shaderName,
-			const std::vector<VertexAttribute>& attributes,
-			const void* initalData,
-			size_t intialDataSize,
+		std::shared_ptr<MaterialBase> CreateMaterialBase(
+			const std::shared_ptr<IVertexShader> vertexShader,
+			const std::shared_ptr<IFragmentShader> fragmentShader,
 			std::vector<UniformDescription> uniformDescription
+		);
+
+		std::shared_ptr<Material> CreateMaterialInstance(
+			std::shared_ptr<MaterialBase> materialBase,
+			const void* initalData,
+			size_t intialDataSize
 		);
 
 		//Pass in the data to the texture, call it make texture

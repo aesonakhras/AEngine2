@@ -15,13 +15,9 @@
 #include "Graphics/Texture.h"
 #include "Graphics/ISampler.h"
 
+#include "Graphics/MaterialBase.h"
+
 namespace AE::Graphics {
-    struct UniformDescription {
-        std::string name;
-        uint32 size;  //size of data
-    };
-
-
     class Material {
     private:
         struct TextureBinding {
@@ -35,36 +31,24 @@ namespace AE::Graphics {
         };
     
         public:
-            Material(std::shared_ptr<IVertexShader> vertexShader,
-                std::shared_ptr<IFragmentShader> fragmentShader,
-                std::shared_ptr<IBuffer> ubo,
-                const std::vector<UniformDescription>& uniformlayout) : m_vertexShader(vertexShader),m_fragmentShader(fragmentShader), m_ubo(ubo) {
-                //uniform buffer all we need to do is specify a size?
-                
-                uint32 totalSize  = 0;
+            Material(
+                std::shared_ptr<MaterialBase> materialBase,
+                std::shared_ptr<IBuffer> ubo) : m_materialBase(materialBase), m_ubo(ubo) {
 
-                for (const auto& uniform : uniformlayout) {
-                    m_uniformDataLayout[uniform.name] = totalSize;
-                    totalSize += uniform.size;
-                }
-
-                m_uniformData = new char[totalSize]();
+                m_uniformData = std::shared_ptr<char[]>(new char[materialBase->UniformSize]);
             }
 
             ~Material() {
-                if (m_uniformData != nullptr) {
-                    delete m_uniformData;
-                    m_uniformData = nullptr;
-                }
+  
             }
 
             template<typename T>
             void SetUniform(const std::string name, const T& value) {
                 m_uniformNeedsUpdate = true;
 
-                if (m_uniformDataLayout.contains(name)) {
-                    int offset = m_uniformDataLayout[name];
-                    std::memcpy(m_uniformData + offset, &value, sizeof(T));
+                if (m_materialBase->UniformDataLayout.contains(name)) {
+                    int offset = m_materialBase->UniformDataLayout[name];
+                    std::memcpy(m_uniformData.get() + offset, &value, sizeof(T));
                 }
                 else {
                     AE::Core::Debug::LogWarning("Uniform for material does not exist.");
@@ -81,18 +65,18 @@ namespace AE::Graphics {
             }
 
             void Bind() {
-                m_ubo->Update(m_uniformData, m_ubo->Count);
+                m_ubo->Update(m_uniformData.get(), m_ubo->Count);
                 m_uniformNeedsUpdate = false;
                 m_ubo->Bind();
                 bindTextures();
-                m_vertexShader->Bind();
-                m_fragmentShader->Bind();
+                m_materialBase->VertexShader->Bind();
+                m_materialBase->FragmentShader->Bind();
             }
 
             void UnBind() {
                 m_ubo->UnBind();
-                m_vertexShader->UnBind();
-                m_fragmentShader->UnBind();
+                m_materialBase->VertexShader->UnBind();
+                m_materialBase->FragmentShader->UnBind();
             }
 
         private:
@@ -110,17 +94,16 @@ namespace AE::Graphics {
                 }
             }
             
-            std::shared_ptr<IVertexShader> m_vertexShader;
-            std::shared_ptr<IFragmentShader> m_fragmentShader;
+            std::shared_ptr<MaterialBase> m_materialBase;
+            
+            //instance stuff
             //gpu resource
             std::shared_ptr<IBuffer> m_ubo;
-            
             std::unordered_map <std::string, TextureBinding> m_textures {};
             std::unordered_map <std::string, SamplerBinding> m_samplers {};
-            
-            //cpu side
-            std::unordered_map <std::string, uint32> m_uniformDataLayout;
-            char* m_uniformData = nullptr;
+
+            std::shared_ptr<char[]> m_uniformData = nullptr;
             bool m_uniformNeedsUpdate = true;
+            //end instance
     };
 }

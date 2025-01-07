@@ -6,6 +6,8 @@
 
 #include "Core/Components/Material.h"
 
+#include "Graphics/MaterialBase.h"
+
 #ifdef D3D11_MODE
     #include "DX11IMPL/DX11GLI.h"
 #endif // D3D11_MODE
@@ -66,20 +68,22 @@ std::vector<char> GraphicsManager::LoadShaderRaw(std::string fileName) {
     return fileHandle->ReadAll();
 }
 
-std::shared_ptr<Material> GraphicsManager::CreateMaterial(
-    std::string shaderName,
-    const std::vector<VertexAttribute>& attributes,
-    const void* initalData,
-    size_t intialDataSize,
+std::shared_ptr<MaterialBase> GraphicsManager::CreateMaterialBase(
+    const std::shared_ptr<IVertexShader> vertexShader,
+    const std::shared_ptr<IFragmentShader> fragmentShader,
     std::vector<UniformDescription> uniformDescription
-) 
-{
-    auto vShader = CreateVertexShader(shaderName, attributes);
-    auto pShader = CreateFragmentShader(shaderName);
-    auto ubo = CreateBuffer(initalData, intialDataSize, 0, BufferType::Uniform);
-    
+) {
+    return std::make_shared<MaterialBase>(vertexShader, fragmentShader, uniformDescription);
+}
 
-    return std::make_shared<Material>(vShader, pShader, ubo, uniformDescription);
+std::shared_ptr<Material> GraphicsManager::CreateMaterialInstance(
+    std::shared_ptr<MaterialBase> materialBase,
+    const void* initalData,
+    size_t intialDataSize
+) {
+    auto ubo = CreateBuffer(initalData, intialDataSize, 0, BufferType::Uniform);
+
+    return std::make_shared<Material>(materialBase, ubo);
 }
 
 

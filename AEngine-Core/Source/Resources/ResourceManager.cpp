@@ -78,8 +78,8 @@ std::shared_ptr<AE::Graphics::Mesh> ResourceManager::GetStaticMesh(std::string i
 }
 
 std::shared_ptr<AE::Graphics::Material> ResourceManager::GetMaterial(
-	std::string vertexShader,
-	std::string fragmentShader,
+	std::string vertexShaderName,
+	std::string fragmentShaderName,
 	std::string id
 ) {
 	GraphicsManager& graphicsManager = GraphicsManager::GetInstance();
@@ -94,12 +94,12 @@ std::shared_ptr<AE::Graphics::Material> ResourceManager::GetMaterial(
 		{"DirLight", sizeof(DirectX::XMVECTOR)}
 	};
 
-	auto material = graphicsManager.CreateMaterial(
-		vertexShader,
-		AE::Graphics::StandardVertexDescription::Get(),
+	auto materialBase = GetMaterialBase(id, vertexShaderName, fragmentShaderName, uniformDescription);
+
+	auto material = graphicsManager.CreateMaterialInstance(
+		materialBase,
 		&mvp,
-		sizeof(StandardUniformBuffer),
-		uniformDescription
+		sizeof(StandardUniformBuffer)
 	);
 
 	//add to the resource cache
@@ -110,6 +110,63 @@ std::shared_ptr<AE::Graphics::Material> ResourceManager::GetMaterial(
 	}
 
 	return nullptr;
+}
+
+std::shared_ptr<AE::Graphics::IVertexShader> ResourceManager::GetVertexShader(std::string shaderName) {
+	GraphicsManager& graphicsManager = GraphicsManager::GetInstance();
+
+	auto vertexShader = graphicsManager.CreateVertexShader(
+		shaderName,
+		AE::Graphics::StandardVertexDescription::Get()
+	);
+
+	if (vertexShader != nullptr) {
+		//add to the cache
+		vertexShaderCache.addItem(shaderName, vertexShader, 0, false);
+	}
+	else {
+		//uh oh
+	}
+
+	return vertexShader;
+}
+
+std::shared_ptr<AE::Graphics::IFragmentShader> ResourceManager::GetFragmentShader(std::string shaderName) {
+	GraphicsManager& graphicsManager = GraphicsManager::GetInstance();
+
+	auto fragmentShader = graphicsManager.CreateFragmentShader(shaderName);
+
+	if (fragmentShader != nullptr) {
+		fragmentShaderCache.addItem(shaderName, fragmentShader, 0, false);
+	}
+	else {
+		//uh oh
+	}
+
+	return fragmentShader;
+}
+
+std::shared_ptr<AE::Graphics::MaterialBase> ResourceManager::GetMaterialBase(
+	std::string materialName,
+	std::string vertexShaderName,
+	std::string fragmentShaderName,
+	std::vector<AE::Graphics::UniformDescription> uniformDescription
+) {
+	GraphicsManager& graphicsManager = GraphicsManager::GetInstance();
+
+	auto vertexshader = GetVertexShader(vertexShaderName);
+	auto fragmentShader = GetFragmentShader(fragmentShaderName);
+
+	auto materialBase = graphicsManager.CreateMaterialBase(vertexshader, fragmentShader, uniformDescription);
+
+	if (materialBase != nullptr) {
+		MaterialBaseCache.addItem(materialName, materialBase, 0, false);
+	}
+	else {
+		//uh oh
+	}
+
+	return materialBase;
 }
 
 bool ResourceManager::initialize() { return false; }
