@@ -363,6 +363,26 @@ std::shared_ptr<IFragmentShader> DX11GLI::CreateFragmentShader(const void* data,
 
 }
 
+void DX11GLI::RecompileVertexShader(const void* data, size_t dataSize, std::shared_ptr<IVertexShader>& vertexShader) {
+    auto dx11vertexShader = std::static_pointer_cast<DX11VertexShader>(vertexShader);
+
+    //recompile the shdaer itself first
+    dx11vertexShader->Shader->Compile(data, dataSize, "VShader", "vs_4_0");
+
+    //recompile the vertex shader and layout, which is currently in the vertex shader
+    dx11vertexShader->Recreate();
+}
+
+void DX11GLI::RecompileFragmentShader(const void* data, size_t dataSize, std::shared_ptr <IFragmentShader>& fragmentShader) {
+    auto dx11fragmentShader = std::static_pointer_cast<DX11FragmentShader>(fragmentShader);
+
+    //recompile the shdaer itself first
+    dx11fragmentShader->Shader->Compile(data, dataSize, "PShader", "ps_4_0");
+
+    //recompile the vertex shader and layout, which is currently in the vertex shader
+    dx11fragmentShader->Recreate();
+}
+
 
 //Binding
 void DX11GLI::BindBuffer(const std::shared_ptr<IBuffer>& ib) {

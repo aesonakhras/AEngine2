@@ -22,13 +22,18 @@ namespace AE::Graphics {
 			const std::vector<VertexAttribute>& attribs
 		);
 
+		bool Recreate();
+		
+
 		virtual void Bind() override final;
 		virtual void UnBind() override final;
 
+		std::shared_ptr<DX11ShaderObject> Shader;
+
 	private:
-		std::shared_ptr<DX11ShaderObject> m_shader;
 		DX11VertexLayout m_layout;
 		Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_deviceContext;
+		Microsoft::WRL::ComPtr<ID3D11Device> m_device;
 		Microsoft::WRL::ComPtr<ID3D11VertexShader> m_vertexShader;
 	};
 }

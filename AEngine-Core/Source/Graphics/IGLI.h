@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "IBuffer.h"
-#include "IShaderObject.h"
 #include "IShaderResourceView.h"
 #include "ISampler.h"
 #include "IShaderResourceView.h"
@@ -43,6 +42,9 @@ namespace AE::Graphics {
 		virtual std::shared_ptr<AE::Graphics::IShaderResourceView> CreateShaderResourceView(const std::shared_ptr<AE::Graphics::ITextureResource> textureResource) = 0;
 		virtual std::shared_ptr<AE::Graphics::ISampler> CreateSampler() = 0;
 		virtual std::shared_ptr<AE::Graphics::ITextureResource> CreateTextureResource(const AE::Graphics::TextureCreateInfo& createInfo) = 0;
+
+		virtual void RecompileVertexShader(const void* data, size_t dataSize, std::shared_ptr<IVertexShader>& vertexShader) = 0;
+		virtual void RecompileFragmentShader(const void* data, size_t dataSize, std::shared_ptr <IFragmentShader>& fragmentShader) = 0;
 		
 		//Binding
 		virtual void BindBuffer(const std::shared_ptr<IBuffer>& ib) = 0;

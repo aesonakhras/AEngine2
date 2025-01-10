@@ -16,21 +16,19 @@ namespace AE::Graphics {
 		public:
 			DX11VertexLayout(
 				Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext,
-				Microsoft::WRL::ComPtr<ID3D11Device> device,
-				Microsoft::WRL::ComPtr<ID3D10Blob> shaderBlob
+				Microsoft::WRL::ComPtr<ID3D11Device> device
 			);
 
 
-			//Note this will clear all attributes
-			virtual void Build(const std::vector<VertexAttribute>& vertexAttributes) override final;
-
+			void Build(const std::vector<VertexAttribute>& vertexAttributes, Microsoft::WRL::ComPtr<ID3D10Blob> shaderBlob);
+			void Rebuild(Microsoft::WRL::ComPtr<ID3D10Blob> shaderBlob);
 			virtual void Bind() override final;
 			virtual void UnBind() override final;
 
 		private:
-			Microsoft::WRL::ComPtr <ID3D10Blob> m_shaderBlob;
 			Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_deviceContext;
 			Microsoft::WRL::ComPtr<ID3D11Device> m_device;
 			Microsoft::WRL::ComPtr<ID3D11InputLayout> m_layout;
+			std::vector<D3D11_INPUT_ELEMENT_DESC> m_elementDescs{ };
 	};
 }

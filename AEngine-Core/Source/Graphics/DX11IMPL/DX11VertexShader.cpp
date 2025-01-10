@@ -14,18 +14,33 @@ DX11VertexShader::DX11VertexShader(
 	const std::vector<VertexAttribute>& attribs
 ) :
 	m_deviceContext(deviceContext),
-	m_shader(shader),
-	m_layout(deviceContext, device, m_shader->Get<ID3D10Blob>())
+	m_device(device),
+	Shader(shader),
+	m_layout(deviceContext, device)
 {
-	ID3D10Blob* blob = m_shader->Get<ID3D10Blob>();
+	auto blob = Shader->GetShaderBlob();
 
-	HRESULT hr = device->CreateVertexShader(
+	HRESULT hr = m_device->CreateVertexShader(
 		blob->GetBufferPointer(),
 		blob->GetBufferSize(),
 		NULL,
 		m_vertexShader.GetAddressOf());
 
-	m_layout.Build(attribs);
+	m_layout.Build(attribs, Shader->GetShaderBlob());
+}
+
+bool DX11VertexShader::Recreate() {	
+	auto blob = Shader->GetShaderBlob();
+
+	HRESULT hr = m_device->CreateVertexShader(
+		blob->GetBufferPointer(),
+		blob->GetBufferSize(),
+		NULL,
+		m_vertexShader.GetAddressOf());
+
+	m_layout.Rebuild(Shader->GetShaderBlob());
+
+	return true;
 }
 
 void DX11VertexShader::Bind() {

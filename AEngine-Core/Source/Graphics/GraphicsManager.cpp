@@ -59,6 +59,22 @@ std::shared_ptr<IFragmentShader> GraphicsManager::CreateFragmentShader(std::stri
     return m_GLI->CreateFragmentShader(shaderData.data(), shaderData.size());
 }
 
+void GraphicsManager::RecompileVertexShader(std::string fileName, std::shared_ptr<IVertexShader>& vertexShader) {
+    //load the new shader
+    auto shaderData = LoadShaderRaw(fileName);
+    
+    //recompile shader
+    m_GLI->RecompileVertexShader(shaderData.data(), shaderData.size(), vertexShader);
+}
+
+void GraphicsManager::RecompileFragmentShader(std::string fileName, std::shared_ptr<IFragmentShader>& fragmentShader) {
+    //load the new shader
+    auto shaderData = LoadShaderRaw(fileName);
+
+    //recompile shader
+    m_GLI->RecompileFragmentShader(shaderData.data(), shaderData.size(), fragmentShader);
+}
+
 std::vector<char> GraphicsManager::LoadShaderRaw(std::string fileName) {
     //Load File
     AE::System::FileManager& fileManager = AE::System::FileManager::GetInstance();

@@ -6,6 +6,19 @@ using namespace AE::Graphics;
 //must be removed by 12/15/2024
 #include "Graphics/CommonUBOs.h"
 
+#include "System/Input/InputManager.h"
+
+
+bool ResourceManager::initialize() {
+	AE::System::InputManager::GetInstance().RegisterButtonEvent(
+		AE::System::Button::R,
+		AE::System::InputState::Pressed,
+		std::bind(&ResourceManager::recompileAllShaders, this)
+	);
+
+	return true;
+}
+
 std::shared_ptr<AE::Graphics::Texture> ResourceManager::GetTexture(std::string id) {
 	//check to see if resource exists
 	auto resource = textureCache.GetItem(id);
@@ -77,11 +90,18 @@ std::shared_ptr<AE::Graphics::Mesh> ResourceManager::GetStaticMesh(std::string i
 	return nullptr;
 }
 
-std::shared_ptr<AE::Graphics::Material> ResourceManager::GetMaterial(
-	std::string vertexShaderName,
-	std::string fragmentShaderName,
-	std::string id
-) {
+std::shared_ptr<AE::Graphics::Material> ResourceManager::LoadMaterial(std::string vertexShaderName, std::string fragmentShaderName, std::string id) {
+	
+	if (MaterialBaseCache.GetItem(id) != nullptr) {
+		auto sharedMaterial = MaterialInstanceCache[id][0];
+
+		if (sharedMaterial == nullptr) {
+			//error
+		}
+
+		return sharedMaterial;
+	}
+
 	GraphicsManager& graphicsManager = GraphicsManager::GetInstance();
 
 	StandardUniformBuffer mvp;
@@ -102,14 +122,47 @@ std::shared_ptr<AE::Graphics::Material> ResourceManager::GetMaterial(
 		sizeof(StandardUniformBuffer)
 	);
 
-	//add to the resource cache
-	bool result = materialCache.addItem(id, material, 0, false);
 
-	if (result) {
-		return material;
+	//initialize the list
+	MaterialInstanceCache[id] = {};
+
+	MaterialInstanceCache[id].push_back(material);
+
+	return MaterialInstanceCache[id][0];
+}
+
+std::shared_ptr<AE::Graphics::Material> ResourceManager::CreateMaterialInstance(std::string materialID) {
+	GraphicsManager& graphicsManager = GraphicsManager::GetInstance();
+	
+	if (MaterialBaseCache.GetItem(materialID) == nullptr) {
+		//error
 	}
 
-	return nullptr;
+	auto materialBase = MaterialBaseCache.GetItem(materialID);
+
+	StandardUniformBuffer mvp;
+	mvp.mWorldViewProj = DirectX::XMMatrixIdentity();
+
+	auto material = graphicsManager.CreateMaterialInstance(
+		materialBase,
+		&mvp,
+		sizeof(StandardUniformBuffer)
+	);
+
+	MaterialInstanceCache[materialID] = {};
+
+	MaterialInstanceCache[materialID].push_back(material);
+
+	return material;
+
+}
+
+std::shared_ptr<AE::Graphics::Material> ResourceManager::GetSharedMaterial(std::string materialID) {
+	if (MaterialBaseCache.GetItem(materialID) == nullptr) {
+		//error
+	}
+
+	return MaterialInstanceCache[materialID][0];
 }
 
 std::shared_ptr<AE::Graphics::IVertexShader> ResourceManager::GetVertexShader(std::string shaderName) {
@@ -169,5 +222,26 @@ std::shared_ptr<AE::Graphics::MaterialBase> ResourceManager::GetMaterialBase(
 	return materialBase;
 }
 
-bool ResourceManager::initialize() { return false; }
+void ResourceManager::recompileAllShaders() {
+	for (auto& [key, item] : vertexShaderCache) {
+		recompileVertexShader(key, item.resource);
+	}
+
+	for (auto& [key, item] : fragmentShaderCache) {
+		recompileFragmentShader(key, item.resource);
+	}
+}
+
+void ResourceManager::recompileVertexShader(std::string name, std::shared_ptr<AE::Graphics::IVertexShader> vertexShader) {
+	GraphicsManager& graphicsManager = GraphicsManager::GetInstance();
+
+	graphicsManager.RecompileVertexShader(name, vertexShader);
+}
+
+void ResourceManager::recompileFragmentShader(std::string name, std::shared_ptr<AE::Graphics::IFragmentShader> fragmentShader) {
+	GraphicsManager& graphicsManager = GraphicsManager::GetInstance();
+
+	graphicsManager.RecompileFragmentShader(name, fragmentShader);
+}
+
 void ResourceManager::shutdown() { return; }

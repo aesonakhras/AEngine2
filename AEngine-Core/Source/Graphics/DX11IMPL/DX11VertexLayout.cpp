@@ -10,20 +10,19 @@ using namespace AE::Graphics;
 
 DX11VertexLayout::DX11VertexLayout(
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext,
-	Microsoft::WRL::ComPtr<ID3D11Device> device,
-	Microsoft::WRL::ComPtr<ID3D10Blob> shaderBlob
+	Microsoft::WRL::ComPtr<ID3D11Device> device
 ) : m_deviceContext(deviceContext),
-	m_device(device),
-	m_shaderBlob(shaderBlob) {};
+	m_device(device) {};
 
 
-void DX11VertexLayout::Build(const std::vector<VertexAttribute>& vertexAttributes) {
+void DX11VertexLayout::Build(
+	const std::vector<VertexAttribute>& vertexAttributes,
+	Microsoft::WRL::ComPtr<ID3D10Blob> shaderBlob
+) {
 	if ((vertexAttributes.size() == 0)) {
 		AE::Core::Debug::LogError("Cannot create vertexLayout with no attributes");
 		return;
 	}
-
-	std::vector<D3D11_INPUT_ELEMENT_DESC> elementDescs{ };
 
 	for (const VertexAttribute& layoutElement : vertexAttributes) {
 		D3D11_INPUT_ELEMENT_DESC desc;
@@ -35,22 +34,25 @@ void DX11VertexLayout::Build(const std::vector<VertexAttribute>& vertexAttribute
 		desc.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
 		desc.InstanceDataStepRate = 0;
 
-		elementDescs.push_back(desc);
+		m_elementDescs.push_back(desc);
 	}
 
+	Rebuild(shaderBlob);
+};
 
+void DX11VertexLayout::Rebuild(Microsoft::WRL::ComPtr<ID3D10Blob> shaderBlob) {
 	//set up the layout
 	HRESULT hr = m_device->CreateInputLayout(
-		elementDescs.data(),
-		elementDescs.size(),
-		m_shaderBlob->GetBufferPointer(),
-		m_shaderBlob->GetBufferSize(),
+		m_elementDescs.data(),
+		m_elementDescs.size(),
+		shaderBlob->GetBufferPointer(),
+		shaderBlob->GetBufferSize(),
 		m_layout.GetAddressOf());
 
 	if (FAILED(hr)) {
 		AE::Core::Debug::LogError("Failed to create layout");
 	}
-};
+}
 
 void DX11VertexLayout::Bind() {
 	m_deviceContext->IASetInputLayout(m_layout.Get());

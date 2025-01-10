@@ -49,6 +49,9 @@ namespace AE::Graphics {
 
 		virtual std::shared_ptr<IFragmentShader> CreateFragmentShader(const void* data, size_t dataSize) final override;
 
+		virtual void RecompileVertexShader(const void* data, size_t dataSize, std::shared_ptr<IVertexShader>& vertexShader) final override;
+		virtual void RecompileFragmentShader(const void* data, size_t dataSize, std::shared_ptr <IFragmentShader>& fragmentShader) final override;
+
 		//Binding
 		virtual void BindBuffer(const std::shared_ptr<IBuffer>& ib) final override;
 		///////////////////////////End of the IGLI functions

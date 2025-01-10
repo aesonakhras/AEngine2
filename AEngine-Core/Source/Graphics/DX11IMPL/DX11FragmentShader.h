@@ -18,12 +18,16 @@ namespace AE::Graphics {
 			std::shared_ptr<DX11ShaderObject> shader
 		);
 
+		bool Recreate();
+
 		virtual void Bind() final override;
 		virtual void UnBind() final override;
 
+		std::shared_ptr<DX11ShaderObject> Shader;
 	private:
-		std::shared_ptr<DX11ShaderObject> m_shader;
+		
 		Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_deviceContext;
 		Microsoft::WRL::ComPtr<ID3D11PixelShader> m_pixelShader;
+		Microsoft::WRL::ComPtr<ID3D11Device> m_device;
 	};
 }

@@ -66,5 +66,16 @@ namespace AE::Core {
 				}
 			}
 		}
+
+		//Allow the resource cache to be iterated through
+		typename std::unordered_map<std::string, CacheItem>::iterator begin() {
+			std::shared_lock lock(cacheMutex);
+			return cache.begin();
+		}
+
+		typename std::unordered_map<std::string, CacheItem>::iterator end() {
+			std::shared_lock lock(cacheMutex);
+			return cache.end();
+		}
 	};
 };

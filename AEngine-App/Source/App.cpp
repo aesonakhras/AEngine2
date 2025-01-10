@@ -69,7 +69,7 @@ void setupPlayer(AE::Core::SceneManager& sceneManager) {
 
     std::shared_ptr<Mesh> PlayerMesh = ResourceManager::GetInstance().GetStaticMesh(std::string("Assets/Rock/rock.obj"));
 
-    std::shared_ptr<Material> playerMaterial = ResourceManager::GetInstance().GetMaterial("Assets/shaders.shader", "Assets/shaders.shader", "RockMaterial");
+    auto playerMaterial = ResourceManager::GetInstance().LoadMaterial("Assets/shaders.shader", "Assets/shaders.shader", "RockMaterial");
 
     playerMaterial->SetTexture("diffuse1", 0, baseColor, sampler);
     playerMaterial->SetTexture("diffuse2", 1, normal, sampler);
@@ -96,7 +96,7 @@ void setupEnvironment(AE::Core::SceneManager& sceneManager) {
 
     std::shared_ptr<Mesh> planeMesh = ResourceManager::GetInstance().GetStaticMesh(std::string("Assets/plane.obj"));
 
-    std::shared_ptr<Material> planeMaterial = ResourceManager::GetInstance().GetMaterial("Assets/shaders.shader", "Assets/shaders.shader", "planeMaterial");
+    auto planeMaterial = ResourceManager::GetInstance().GetSharedMaterial("RockMaterial");
 
 
     if (sampler == nullptr) {

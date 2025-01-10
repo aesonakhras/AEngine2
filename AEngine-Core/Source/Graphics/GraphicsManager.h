@@ -40,6 +40,9 @@ namespace AE::Graphics {
 
 		std::shared_ptr<IFragmentShader> CreateFragmentShader(std::string fileName);
 
+		void RecompileVertexShader(std::string fileName, std::shared_ptr<IVertexShader>& vertexShader);
+		void RecompileFragmentShader(std::string fileName, std::shared_ptr<IFragmentShader>& fragmentShader);
+
 		std::shared_ptr<MaterialBase> CreateMaterialBase(
 			const std::shared_ptr<IVertexShader> vertexShader,
 			const std::shared_ptr<IFragmentShader> fragmentShader,

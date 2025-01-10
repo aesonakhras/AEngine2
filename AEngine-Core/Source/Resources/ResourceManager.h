@@ -26,8 +26,12 @@ namespace AE::Core {
 		public:
 			std::shared_ptr<AE::Graphics::Texture> GetTexture(std::string id);
 			std::shared_ptr<AE::Graphics::Mesh> GetStaticMesh(std::string id);
-			std::shared_ptr<AE::Graphics::Material> GetMaterial(std::string vertexShaderName, std::string fragmentShaderName, std::string id);
-			//material
+			
+			std::shared_ptr<AE::Graphics::Material> LoadMaterial(std::string vertexShaderName, std::string fragmentShaderName, std::string id);
+
+			std::shared_ptr<AE::Graphics::Material> CreateMaterialInstance(std::string materialID);
+
+			std::shared_ptr<AE::Graphics::Material> GetSharedMaterial(std::string materialID);
 
 		protected:
 			friend class AE::Utils::Singleton<ResourceManager>;
@@ -36,6 +40,11 @@ namespace AE::Core {
 			void shutdown();
 
 		private:
+			void recompileAllShaders();
+
+			void recompileVertexShader(std::string name, std::shared_ptr<AE::Graphics::IVertexShader> vertexShader);
+			void recompileFragmentShader(std::string name, std::shared_ptr<AE::Graphics::IFragmentShader> fragmentShader);
+
 			std::shared_ptr<AE::Graphics::IVertexShader> GetVertexShader(std::string shaderName);
 			std::shared_ptr<AE::Graphics::IFragmentShader> GetFragmentShader(std::string shaderName);
 			std::shared_ptr<AE::Graphics::MaterialBase> GetMaterialBase(
@@ -47,7 +56,9 @@ namespace AE::Core {
 
 			ResourceCache<AE::Graphics::Texture> textureCache;
 			ResourceCache<AE::Graphics::Mesh> meshCache;
-			ResourceCache<AE::Graphics::Material> materialCache;
+
+			std::unordered_map<std::string, std::vector<std::shared_ptr<AE::Graphics::Material>>> MaterialInstanceCache;
+
 			ResourceCache<AE::Graphics::MaterialBase> MaterialBaseCache;
 
 			ResourceCache<AE::Graphics::IFragmentShader> fragmentShaderCache;

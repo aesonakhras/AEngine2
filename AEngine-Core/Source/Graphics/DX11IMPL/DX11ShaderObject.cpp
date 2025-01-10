@@ -8,13 +8,29 @@ using namespace AE::Graphics;
 
 DX11ShaderObject::DX11ShaderObject(Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext, Microsoft::WRL::ComPtr<ID3D11Device> device, const void* data, size_t dataSize, std::string entryPoint, std::string shaderTarget) :
 	m_deviceContext(deviceContext), m_device(device) {
+
+	//TODO: May wnt to defer this to compile to have control
+	Compile(
+		data,
+		dataSize,
+		entryPoint,
+		shaderTarget
+	);
+}
+
+bool DX11ShaderObject::Compile(
+	const void* data,
+	size_t dataSize,
+	std::string entryPoint,
+	std::string shaderTarget
+) {
 	Microsoft::WRL::ComPtr <ID3DBlob> pErrorBlob = NULL;
 
 	UINT compileFlags = D3DCOMPILE_ENABLE_STRICTNESS;
 
-#ifdef _DEBUG
-	compileFlags |= D3DCOMPILE_DEBUG;
-#endif
+	#ifdef _DEBUG
+		compileFlags |= D3DCOMPILE_DEBUG;
+	#endif
 
 	HRESULT hr = S_OK;
 
@@ -41,9 +57,13 @@ DX11ShaderObject::DX11ShaderObject(Microsoft::WRL::ComPtr<ID3D11DeviceContext> d
 		if (pErrorBlob != NULL) {
 			OutputDebugStringA((LPCSTR)pErrorBlob->GetBufferPointer());
 		}
+
+		return false;
 	}
+
+	return true;
 }
 
-void* DX11ShaderObject::GetRawObject() {
-	return static_cast<void*>(m_shaderBlob.Get());
+Microsoft::WRL::ComPtr <ID3D10Blob> DX11ShaderObject::GetShaderBlob() {
+	return m_shaderBlob;
 }

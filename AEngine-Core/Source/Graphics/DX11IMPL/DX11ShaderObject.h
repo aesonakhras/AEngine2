@@ -6,12 +6,10 @@
 
 #include "Core/Debug.h"
 
-#include "Graphics/IShaderObject.h"
-
 #include "FileManagment/FileManager.h"
 
 namespace AE::Graphics {
-	class DX11ShaderObject : public IShaderObject {
+	class DX11ShaderObject {
 	public:
 		DX11ShaderObject(
 			Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext,
@@ -21,7 +19,14 @@ namespace AE::Graphics {
 			std::string entryPoint,
 			std::string shaderTarget);
 
-		virtual void* GetRawObject() final override;
+		Microsoft::WRL::ComPtr <ID3D10Blob> GetShaderBlob();
+
+		bool Compile(
+			const void* data,
+			size_t dataSize,
+			std::string entryPoint,
+			std::string shaderTarget
+		);
 
 	private:
 		Microsoft::WRL::ComPtr <ID3D10Blob> m_shaderBlob = nullptr;
