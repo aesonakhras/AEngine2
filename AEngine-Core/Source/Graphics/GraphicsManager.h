@@ -18,7 +18,7 @@ namespace AE::Graphics {
 	class IVertexShader;
 	struct VertexAttribute;
 	class Material;
-	struct UniformDescription;
+	struct UniformLayoutDescription;
 	struct DeviceCreateInfo;
 	struct MaterialBase;
 
@@ -46,7 +46,7 @@ namespace AE::Graphics {
 		std::shared_ptr<MaterialBase> CreateMaterialBase(
 			const std::shared_ptr<IVertexShader> vertexShader,
 			const std::shared_ptr<IFragmentShader> fragmentShader,
-			std::vector<UniformDescription> uniformDescription
+			UniformLayoutDescription& layoutDescription
 		);
 
 		std::shared_ptr<Material> CreateMaterialInstance(

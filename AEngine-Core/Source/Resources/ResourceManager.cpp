@@ -1,13 +1,8 @@
 #include "ResourceManager.h"
+#include "System/Input/InputManager.h"
 
 using namespace AE::Core;
 using namespace AE::Graphics;
-
-//must be removed by 12/15/2024
-#include "Graphics/CommonUBOs.h"
-
-#include "System/Input/InputManager.h"
-
 
 bool ResourceManager::initialize() {
 	AE::System::InputManager::GetInstance().RegisterButtonEvent(
@@ -19,7 +14,7 @@ bool ResourceManager::initialize() {
 	return true;
 }
 
-std::shared_ptr<AE::Graphics::Texture> ResourceManager::GetTexture(std::string id) {
+std::shared_ptr<AE::Graphics::Texture> ResourceManager::GetTexture(std::string id, bool isCubeMap) {
 	//check to see if resource exists
 	auto resource = textureCache.GetItem(id);
 
@@ -30,13 +25,12 @@ std::shared_ptr<AE::Graphics::Texture> ResourceManager::GetTexture(std::string i
 		//if not load it and add it to the resource cache
 		GraphicsManager& graphicsManager = GraphicsManager::GetInstance();
 
-		AE::Graphics::TextureCreateInfo textureData = FileImporter::ImportTexture(id);
+		AE::Graphics::TextureCreateInfo textureData = FileImporter::ImportTexture(id, isCubeMap);
 
 		textureData.depth = 1;
 		textureData.mipLevels = 1;
 		textureData.bindFlags = AE::Graphics::ShaderResource;
 		textureData.generateMipMaps = false;
-		textureData.arraySize = 1;
 		textureData.sampleCount = 1;
 
 		auto texture = graphicsManager.CreateTextureUnsafe(textureData);
@@ -90,7 +84,12 @@ std::shared_ptr<AE::Graphics::Mesh> ResourceManager::GetStaticMesh(std::string i
 	return nullptr;
 }
 
-std::shared_ptr<AE::Graphics::Material> ResourceManager::LoadMaterial(std::string vertexShaderName, std::string fragmentShaderName, std::string id) {
+std::shared_ptr<AE::Graphics::Material> ResourceManager::LoadMaterial(
+	std::string vertexShaderName,
+	std::string fragmentShaderName,
+	std::string id,
+	const std::vector<AE::Graphics::UniformDescriptionElement>& uniformDescriptionElements
+) {
 	
 	if (MaterialBaseCache.GetItem(id) != nullptr) {
 		auto sharedMaterial = MaterialInstanceCache[id][0];
@@ -104,22 +103,21 @@ std::shared_ptr<AE::Graphics::Material> ResourceManager::LoadMaterial(std::strin
 
 	GraphicsManager& graphicsManager = GraphicsManager::GetInstance();
 
-	StandardUniformBuffer mvp;
-	mvp.mWorldViewProj = DirectX::XMMatrixIdentity();
-
-	std::vector<AE::Graphics::UniformDescription> uniformDescription = {
-		{"MVP", sizeof(DirectX::XMMATRIX)},
-		{"Model", sizeof(DirectX::XMMATRIX)},
-		{"ViewDir", sizeof(DirectX::XMVECTOR)},
-		{"DirLight", sizeof(DirectX::XMVECTOR)}
+	AE::Graphics::UniformLayoutDescription layoutDescription {
+		uniformDescriptionElements
 	};
 
-	auto materialBase = GetMaterialBase(id, vertexShaderName, fragmentShaderName, uniformDescription);
+	
+	//dummy buffer since I have nothing to send at start
+	std::unique_ptr<unsigned char[]> mvp = std::make_unique<unsigned char[]>(layoutDescription.Size);
+	std::fill_n(mvp.get(), layoutDescription.Size, 0);
+
+	auto materialBase = GetMaterialBase(id, vertexShaderName, fragmentShaderName, layoutDescription);
 
 	auto material = graphicsManager.CreateMaterialInstance(
 		materialBase,
 		&mvp,
-		sizeof(StandardUniformBuffer)
+		layoutDescription.Size
 	);
 
 
@@ -140,13 +138,14 @@ std::shared_ptr<AE::Graphics::Material> ResourceManager::CreateMaterialInstance(
 
 	auto materialBase = MaterialBaseCache.GetItem(materialID);
 
-	StandardUniformBuffer mvp;
-	mvp.mWorldViewProj = DirectX::XMMatrixIdentity();
+	//dummy buffer since I have nothing to send at start
+	std::unique_ptr<unsigned char[]> mvp = std::make_unique<unsigned char[]>(materialBase->UniformDescription.Size);
+	std::fill_n(mvp.get(), materialBase->UniformDescription.Size, 0);
 
 	auto material = graphicsManager.CreateMaterialInstance(
 		materialBase,
 		&mvp,
-		sizeof(StandardUniformBuffer)
+		materialBase->UniformDescription.Size
 	);
 
 	MaterialInstanceCache[materialID] = {};
@@ -203,14 +202,14 @@ std::shared_ptr<AE::Graphics::MaterialBase> ResourceManager::GetMaterialBase(
 	std::string materialName,
 	std::string vertexShaderName,
 	std::string fragmentShaderName,
-	std::vector<AE::Graphics::UniformDescription> uniformDescription
+	UniformLayoutDescription& layoutDescription
 ) {
 	GraphicsManager& graphicsManager = GraphicsManager::GetInstance();
 
 	auto vertexshader = GetVertexShader(vertexShaderName);
 	auto fragmentShader = GetFragmentShader(fragmentShaderName);
 
-	auto materialBase = graphicsManager.CreateMaterialBase(vertexshader, fragmentShader, uniformDescription);
+	auto materialBase = graphicsManager.CreateMaterialBase(vertexshader, fragmentShader, layoutDescription);
 
 	if (materialBase != nullptr) {
 		MaterialBaseCache.addItem(materialName, materialBase, 0, false);

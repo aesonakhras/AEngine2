@@ -6,15 +6,17 @@
 #include "Core/Components/Transform.h"
 #include "Graphics/Mesh.h"
 #include "Core/Components/Camera.h"
+#include "Core/Components/SkyBox.h"
 
 #include "Graphics/GraphicsManager.h"
-#include "Graphics/CommonUBOs.h"
 
 #include "Core/Scene/SceneManager.h"
 
 using namespace AE::Core;
 using namespace AE::Graphics;
 
+
+//TODO: Break this into multiple functions
 void RenderSystem::Render() {
     //get scene ref
     SceneManager& sceneManager = SceneManager::GetInstance();
@@ -33,6 +35,8 @@ void RenderSystem::Render() {
 
     auto projection = camera.ProjectionMatrix;
     auto view = DirectX::XMMatrixInverse(nullptr, cameraTransform.WorldMatrix);
+
+    
 
     auto vp2 = view * projection;
 
@@ -59,18 +63,8 @@ void RenderSystem::Render() {
         mesh.VertexBuffer->Bind();
         mesh.IndexBuffer->Bind();
 
-        //update ubo
-        StandardUniformBuffer ubo{
-            tMVP,
-            modelMatrix,
-            viewDir,
-            {0,1,0,0}
-        };
-
         DirectX::XMVECTOR dirLight = { 0,-1,0,0 };
 
-        //TODO: Material needs to be data only
-        //material.SetUBO(&ubo, sizeof(StandardUniformBuffer));
         material.SetUniform("MVP", tMVP);
         material.SetUniform("Model", modelMatrix);
         material.SetUniform("ViewDir", viewDir);
@@ -82,6 +76,40 @@ void RenderSystem::Render() {
 
         //graphicsManager;
 	}
+    MaybeRenderSkyBox(view, projection);
+    
 
     graphicsManager.PresentFrame();
+}
+
+void RenderSystem::MaybeRenderSkyBox(DirectX::XMMATRIX view, DirectX::XMMATRIX projection) {
+
+    SceneManager& sceneManager = SceneManager::GetInstance();
+    GraphicsManager& graphicsManager = GraphicsManager::GetInstance();
+    //now do the skybox
+    auto skyBoxView = sceneManager.Registry.view<SkyBox, Mesh, Material>();
+    if (skyBoxView.begin() != skyBoxView.end()) {
+
+        auto skyboxEntity = skyBoxView.front();
+
+
+        auto& skyBoxMesh = skyBoxView.get<Mesh>(skyboxEntity);
+        auto& skyBoxMaterial = skyBoxView.get<AE::Graphics::Material>(skyboxEntity);
+
+        //calculate the view matrix with no translation
+        DirectX::XMMATRIX finalViewMatrix = view;
+
+        finalViewMatrix.r[3] = DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, finalViewMatrix.r[3].m128_f32[3]);
+
+        finalViewMatrix = finalViewMatrix * projection;
+
+        auto tfinalViewMatrix = DirectX::XMMatrixTranspose(finalViewMatrix);
+
+        skyBoxMaterial.SetUniform("vpNoPosition", tfinalViewMatrix);
+        skyBoxMaterial.Bind();
+        skyBoxMesh.VertexBuffer->Bind();
+        skyBoxMesh.IndexBuffer->Bind();
+
+        graphicsManager.Draw(skyBoxMesh.IndexBuffer->Count);
+    }
 }

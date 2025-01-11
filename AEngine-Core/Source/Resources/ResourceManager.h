@@ -24,10 +24,15 @@
 namespace AE::Core {
 	class ResourceManager : public AE::Utils::Singleton<ResourceManager> {
 		public:
-			std::shared_ptr<AE::Graphics::Texture> GetTexture(std::string id);
+			std::shared_ptr<AE::Graphics::Texture> GetTexture(std::string id, bool isCubeMap);
 			std::shared_ptr<AE::Graphics::Mesh> GetStaticMesh(std::string id);
 			
-			std::shared_ptr<AE::Graphics::Material> LoadMaterial(std::string vertexShaderName, std::string fragmentShaderName, std::string id);
+			std::shared_ptr<AE::Graphics::Material> LoadMaterial(
+				std::string vertexShaderName,
+				std::string fragmentShaderName,
+				std::string id,
+				const std::vector<AE::Graphics::UniformDescriptionElement>& uniformDescriptionElements
+			);
 
 			std::shared_ptr<AE::Graphics::Material> CreateMaterialInstance(std::string materialID);
 
@@ -51,7 +56,7 @@ namespace AE::Core {
 				std::string materialName,
 				std::string vertexShaderName,
 				std::string fragmentShaderName,
-				std::vector<AE::Graphics::UniformDescription> uniformDescription
+				AE::Graphics::UniformLayoutDescription& uniformDescription
 			);
 
 			ResourceCache<AE::Graphics::Texture> textureCache;

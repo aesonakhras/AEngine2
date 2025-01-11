@@ -1,20 +1,29 @@
 #include "DX11ShaderResourceView.h"
+#include "Graphics/DX11IMPL/DX11Utils.h"
+#include "Graphics/DX11IMPL/DX11TextureResource.h"
 #include "Core/Debug.h"
 
 using namespace AE::Graphics;
 
-DX11ShaderResourceView::DX11ShaderResourceView(Microsoft::WRL::ComPtr<ID3D11DeviceContext>deviceContext, Microsoft::WRL::ComPtr <ID3D11Device> device, ID3D11Resource* texture, D3D11_SRV_DIMENSION viewDimension) :
+DX11ShaderResourceView::DX11ShaderResourceView(
+    Microsoft::WRL::ComPtr<ID3D11DeviceContext>deviceContext,
+    Microsoft::WRL::ComPtr <ID3D11Device> device,
+    std::shared_ptr<DX11TextureResource> textureResource
+) :
     m_deviceContext(deviceContext),
         m_device(device),
         m_shaderResourceView(nullptr) {
 
-        //TODO: Update this to be better during the refactor
-        D3D11_SHADER_RESOURCE_VIEW_DESC shaderViewDesc;
-        ZeroMemory(&shaderViewDesc, sizeof(D3D11_SHADER_RESOURCE_VIEW_DESC));
-        shaderViewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-        shaderViewDesc.ViewDimension = viewDimension;
+    D3D11_SHADER_RESOURCE_VIEW_DESC shaderViewDesc {};
+        shaderViewDesc.Format = ConvertToDX11Format(textureResource->Format);
 
-        auto hr = device->CreateShaderResourceView(texture, NULL, m_shaderResourceView.GetAddressOf());
+        shaderViewDesc.ViewDimension = ConvertTODX11SRVDimension(textureResource->Type);
+
+        auto hr = device->CreateShaderResourceView(
+            static_cast<ID3D11Resource *>(textureResource->Get()),
+            NULL,
+            m_shaderResourceView.GetAddressOf()
+        );
 
         if (FAILED(hr)) {
             AE::Core::Debug::LogError("Unable to create shader resource view");

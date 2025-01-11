@@ -1,8 +1,13 @@
 #pragma once
+
+
+//TODO: I REALLY don't like this class, try to get rid of it soon
+//probably integrate it with the GLI
 #include <d3d11.h>
 
 #include "Graphics/TextureFormat.h"
 #include "Graphics/TextureBindFlag.h"
+#include "Graphics/TextureCreateInfo.h"
 #include "Core/Debug.h"
 
 namespace AE::Graphics {
@@ -48,5 +53,13 @@ namespace AE::Graphics {
 		}
 		
 		return result;
+	}
+
+	inline D3D11_SRV_DIMENSION ConvertTODX11SRVDimension(TextureType type) {
+		if (type == TextureType::Cubemap) {
+			return D3D11_SRV_DIMENSION_TEXTURECUBE;
+		}
+
+		return D3D11_SRV_DIMENSION_TEXTURE2D;
 	}
 }

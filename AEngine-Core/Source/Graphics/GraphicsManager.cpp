@@ -87,7 +87,7 @@ std::vector<char> GraphicsManager::LoadShaderRaw(std::string fileName) {
 std::shared_ptr<MaterialBase> GraphicsManager::CreateMaterialBase(
     const std::shared_ptr<IVertexShader> vertexShader,
     const std::shared_ptr<IFragmentShader> fragmentShader,
-    std::vector<UniformDescription> uniformDescription
+    UniformLayoutDescription& uniformDescription
 ) {
     return std::make_shared<MaterialBase>(vertexShader, fragmentShader, uniformDescription);
 }

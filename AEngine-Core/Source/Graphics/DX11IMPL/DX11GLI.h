@@ -5,6 +5,7 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include <memory>
 #include <wrl/client.h>
 
@@ -61,16 +62,14 @@ namespace AE::Graphics {
 		void createDevice();
 		void createSwapChainAndBackBuffer(const DeviceCreateInfo& info);
 		void setupViewport(const DeviceCreateInfo& info);
-		void setupRasterState();
+		void createRasterStates();
+		void setRasterState(std::string state);
 
 
 		std::shared_ptr<DX11ShaderObject> CreateShaderObject(const void* data, size_t dataSize, std::string entryPoint, std::string shaderTarget);
 		void setupDepthStencilState();
 		void D3DCreateCall(HRESULT hresult, std::string failInfo);
 		void PrintHResult(HRESULT result);
-
-		ID3D11Texture2D* CreateTextureD3D(void* data, unsigned int height, unsigned int width, unsigned int miplevel,
-			DXGI_FORMAT format, unsigned int sampleCount, unsigned int BindFlags);
 
 		//TODO: Find another solution for this
 		typedef float RGBA[4];
@@ -90,6 +89,8 @@ namespace AE::Graphics {
 		std::shared_ptr<DX11Buffer> m_quadIndexBuffer = nullptr;
 		std::shared_ptr<IVertexShader> m_screenQuadVertexShader;
 		std::shared_ptr<IFragmentShader> m_screenQuadFragmentShader;
+
+		std::unordered_map < std::string, Microsoft::WRL::ComPtr<ID3D11RasterizerState> > rasterStates;
 
 		void setUpScreenQuad();
 
@@ -124,6 +125,7 @@ namespace AE::Graphics {
 			};
 
 			float4 PShader(PixelInputType input) : SV_TARGET {
+				//return float4(1,0,0,0);
 				return shaderTexture.Sample(sampleType, input.texCoord);
 			}
 		)";

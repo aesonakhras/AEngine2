@@ -31,22 +31,22 @@ void DX11GLI::Init(const DeviceCreateInfo& info) {
     createDevice();
     createSwapChainAndBackBuffer(info);
     setupViewport(info);
-    setupRasterState();
+    createRasterStates();
     
 
     //render texture creation
-    D3D11_TEXTURE2D_DESC textureDesc = {};
-    textureDesc.Width = info.ScreenWidth;
-    textureDesc.Height = info.ScreenHeight;
-    textureDesc.MipLevels = 1;
-    textureDesc.ArraySize = 1;
-    textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-    textureDesc.SampleDesc.Count = 1;
-    textureDesc.Usage = D3D11_USAGE_DEFAULT;
-    textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+    D3D11_TEXTURE2D_DESC renderTextureDesc = {};
+    renderTextureDesc.Width = info.ScreenWidth;
+    renderTextureDesc.Height = info.ScreenHeight;
+    renderTextureDesc.MipLevels = 1;
+    renderTextureDesc.ArraySize = 1;
+    renderTextureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    renderTextureDesc.SampleDesc.Count = 1;
+    renderTextureDesc.Usage = D3D11_USAGE_DEFAULT;
+    renderTextureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
 
     ID3D11Texture2D* renderTexture = nullptr;
-    hr = m_device->CreateTexture2D(&textureDesc, nullptr, &renderTexture);
+    hr = m_device->CreateTexture2D(&renderTextureDesc, nullptr, &renderTexture);
     if (FAILED(hr)) {
         std::cerr << "Failed to create render texture\n";
     }
@@ -68,10 +68,10 @@ void DX11GLI::Init(const DeviceCreateInfo& info) {
     depthStencilDesc.Height = info.ScreenHeight;
     depthStencilDesc.MipLevels = 1;
     depthStencilDesc.ArraySize = 1;
-    depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT; // 24-bit depth, 8-bit stencil
+    depthStencilDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
     depthStencilDesc.SampleDesc.Count = 1;
     depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
-    depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+    depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
 
     ID3D11Texture2D* depthStencilBuffer = nullptr;
     hr = m_device->CreateTexture2D(&depthStencilDesc, nullptr, &depthStencilBuffer);
@@ -79,8 +79,13 @@ void DX11GLI::Init(const DeviceCreateInfo& info) {
         std::cerr << "Failed to create depth stencil buffer\n";
     }
 
+    D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
+    dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+    dsvDesc.Texture2D.MipSlice = 0;
+
     m_depthStencilView = nullptr;
-    hr = m_device->CreateDepthStencilView(depthStencilBuffer, nullptr, &m_depthStencilView);
+    hr = m_device->CreateDepthStencilView(depthStencilBuffer, &dsvDesc, &m_depthStencilView);
     if (FAILED(hr)) {
         std::cerr << "Failed to create depth stencil view\n";
     }
@@ -100,6 +105,8 @@ void DX11GLI::Init(const DeviceCreateInfo& info) {
     if (FAILED(hr)) {
         std::cerr << "Failed to create sampler state";
     }
+
+    m_deviceContext->OMSetRenderTargets(1, &m_renderTargetView, m_depthStencilView);
 
     setupDepthStencilState();
 
@@ -212,73 +219,68 @@ void DX11GLI::setupViewport(const DeviceCreateInfo& info) {
     m_deviceContext->RSSetViewports(1, &viewport);
 }
 
-void DX11GLI::setupRasterState() {
+void DX11GLI::createRasterStates() {
     //set up the raster state
-    D3D11_RASTERIZER_DESC  rasterDesc;
+    D3D11_RASTERIZER_DESC  defaultRasterDesc{};
 
-    rasterDesc.FillMode = D3D11_FILL_SOLID;
-    rasterDesc.CullMode = D3D11_CULL_BACK;
-    rasterDesc.FrontCounterClockwise = FALSE;
-    rasterDesc.DepthBias = 0;
-    rasterDesc.DepthBiasClamp = 0;
-    rasterDesc.SlopeScaledDepthBias = 0;
-    rasterDesc.DepthClipEnable = TRUE;
-    rasterDesc.ScissorEnable = FALSE;
-    rasterDesc.MultisampleEnable = TRUE;
-    rasterDesc.AntialiasedLineEnable = TRUE;
+    defaultRasterDesc.FillMode = D3D11_FILL_SOLID;
+    defaultRasterDesc.CullMode = D3D11_CULL_BACK;
+    defaultRasterDesc.FrontCounterClockwise = FALSE;
+    defaultRasterDesc.DepthBias = 0;
+    defaultRasterDesc.DepthBiasClamp = 0;
+    defaultRasterDesc.SlopeScaledDepthBias = 0;
+    defaultRasterDesc.DepthClipEnable = TRUE;
+    defaultRasterDesc.ScissorEnable = FALSE;
+    defaultRasterDesc.MultisampleEnable = TRUE;
+    defaultRasterDesc.AntialiasedLineEnable = TRUE;
 
-    ID3D11RasterizerState* rasterState;
-    D3DCreateCall(m_device->CreateRasterizerState(&rasterDesc, &rasterState), "Unable to create Raster State");
+    Microsoft::WRL::ComPtr < ID3D11RasterizerState> DefaultrasterState;
+    D3DCreateCall(
+        m_device->CreateRasterizerState(
+            &defaultRasterDesc,
+            DefaultrasterState.GetAddressOf()
+        ),
+        "Unable to create Raster State"
+    );
 
-    m_deviceContext->RSSetState(rasterState);
+    //TODO: Error code
+
+    
+    rasterStates["Default"] = DefaultrasterState;
+
+    Microsoft::WRL::ComPtr < ID3D11RasterizerState> quadRasterState;
+    D3D11_RASTERIZER_DESC quadRasterDesc = defaultRasterDesc;
+    quadRasterDesc.CullMode = D3D11_CULL_NONE;
+    quadRasterDesc.DepthClipEnable = FALSE;
+
+    D3DCreateCall(
+        m_device->CreateRasterizerState(
+            &quadRasterDesc,
+            quadRasterState.GetAddressOf()
+        ),
+        "Unable to create Raster State"
+    );
+
+    rasterStates["ScreenQuad"] = quadRasterState;
+
 }
+void DX11GLI::setRasterState(std::string state) {
+    auto newRasterState = rasterStates[state];
 
-ID3D11Texture2D* DX11GLI::CreateTextureD3D(void* data, unsigned int height, unsigned int width, unsigned int miplevel,
-    DXGI_FORMAT format, unsigned int sampleCount, unsigned int BindFlags) {
-    ID3D11Texture2D* texture = nullptr;
-
-    D3D11_TEXTURE2D_DESC desc;
-    ZeroMemory(&desc, sizeof(desc));
-
-    desc.Width = width;
-    desc.Height = height;
-    desc.MipLevels = miplevel;
-    desc.ArraySize = 1;
-    desc.Format = format;
-    desc.SampleDesc.Count = sampleCount;
-    desc.SampleDesc.Quality = 0;
-    desc.Usage = D3D11_USAGE_DEFAULT;
-    desc.BindFlags = BindFlags; //change
-    desc.CPUAccessFlags = 0;
-    desc.MiscFlags = 0;
-
-    std::string errorMsg("Unable to create texture.");
-
-    if (data == nullptr) {
-        //for depth/stencil buffer
-        D3DCreateCall(m_device->CreateTexture2D(&desc, NULL, &texture), errorMsg);
-    }
-    else {
-        D3D11_SUBRESOURCE_DATA initData;
-        initData.pSysMem = data;
-        initData.SysMemPitch = width * 4;
-        initData.SysMemSlicePitch = 0;
-
-        D3DCreateCall(m_device->CreateTexture2D(&desc, &initData, &texture), errorMsg);
-    }
-
-    return texture;
+    m_deviceContext->RSSetState(newRasterState.Get());
 }
-
 
 void DX11GLI::StartFrame() {
+    setRasterState("Default");
     m_deviceContext->OMSetRenderTargets(1, &m_renderTargetView, m_depthStencilView);
     m_deviceContext->ClearRenderTargetView(m_renderTargetView, RGBA{ 0.1f, 0.2f, 0.3f, 1.0f });
     m_deviceContext->ClearDepthStencilView(m_depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+    
 }
 
 void DX11GLI::PresentFrame() {
-    m_deviceContext->OMSetRenderTargets(1, m_backBuffer.GetAddressOf(), m_depthStencilView);
+    setRasterState("ScreenQuad");
+    m_deviceContext->OMSetRenderTargets(1, m_backBuffer.GetAddressOf(), nullptr);
 
     UINT stride = sizeof(ScreenQuadVertex);
     UINT offset = 0;
@@ -296,11 +298,16 @@ void DX11GLI::PresentFrame() {
 
     m_deviceContext->DrawIndexed(6, 0, 0);
 
-    m_swapChain->Present(1, 0);
-
-    //unbind the render texture
+    // Unbind the render texture from the shader resource slot
     ID3D11ShaderResourceView* nullSRV[1] = { nullptr };
     m_deviceContext->PSSetShaderResources(0, 1, nullSRV);
+
+    // Present the back buffer
+    m_swapChain->Present(1, 0);
+
+    // Reset the rasterizer and render target states (optional)
+    setRasterState("Default");
+    m_deviceContext->OMSetRenderTargets(1, &m_renderTargetView, m_depthStencilView);
 };
 
 void DX11GLI::D3DCreateCall(HRESULT hresult, std::string failInfo) {
@@ -325,11 +332,12 @@ std::shared_ptr<DX11ShaderObject> DX11GLI::CreateShaderObject(const void* data, 
 }
 
 std::shared_ptr<AE::Graphics::IShaderResourceView> DX11GLI::CreateShaderResourceView(const std::shared_ptr<AE::Graphics::ITextureResource> textureResource) {
+    auto dx11ShaderResourceView = std::static_pointer_cast<DX11TextureResource>(textureResource);
+
     return std::make_shared<DX11ShaderResourceView>(
             m_deviceContext, 
             m_device, 
-            static_cast<ID3D11Resource*>(textureResource->Get()), 
-            D3D11_SRV_DIMENSION_TEXTURE2D
+            dx11ShaderResourceView
     );
 }
 

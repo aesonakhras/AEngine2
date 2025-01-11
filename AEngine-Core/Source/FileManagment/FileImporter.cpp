@@ -10,39 +10,124 @@
 #include "stb_image.h"
 
 #include "FileImporter.h"
+#include "Core/Types.h"
 
-AE::Graphics::TextureCreateInfo FileImporter::ImportTexture(std::string textureName) {
-    AE::Graphics::TextureCreateInfo textureData{};
-    
-    const char* filename = textureName.c_str();
-    int channels= 0;
+using namespace AE::Graphics;
 
-     unsigned char* img = stbi_load(filename,
-                                (int*)&textureData.width, (int*)&textureData.height, &channels, 0);
+TextureCreateInfo FileImporter::ImportTexture(std::string textureName, bool isCubeMap) {
+    TextureCreateInfo textureData{};
 
-     textureData.data = (void*)img;
+    if (isCubeMap) {
+        ImportCubeMap(textureName, textureData);
+    }
+    else {
+        ImportTexture2D(textureName, textureData);
+    }
+
+    return textureData;
+}
+
+void FileImporter::ImportTexture2D(const std::string& fileName, TextureCreateInfo& textureCreateInfo) {
+    uint32 channels = 0;
+
+    void* img = static_cast<void*> (
+        ImportImageFile(
+            fileName,
+            textureCreateInfo.width,
+            textureCreateInfo.height,
+            channels
+        )
+    );
 
     if (img == nullptr) {
         std::cout << "image failed to load" << std::endl;
     }
 
+    textureCreateInfo.data.push_back(img);
+    textureCreateInfo.format = DetermineTextureFormat(channels);
+    textureCreateInfo.type = AE::Graphics::TextureType::Texture2D;
+    textureCreateInfo.arraySize = 1;
+}
+
+//Convention for import will be fileName = folderName/ <- make sure to put slash
+//then rely on naming convention in cubeMapNames
+void FileImporter::ImportCubeMap(const std::string& fileName, TextureCreateInfo& textureCreateInfo) {
+    static const int CUBE_MAP_SIDES = 6;
+
+    //in correct order for looping, and use by directx
+    static const std::vector<std::string> cubeMapNames {
+        "right",
+        "left",
+        "top",
+        "bottom",
+        "front",
+        "back"
+    };
+
+    uint32 channels = 0;
+
+    
+    for (int i = 0; i < CUBE_MAP_SIDES; i++) {
+        //TODO: Get rid of hardcoding eventually
+        std::string finalFileName = fileName + cubeMapNames[i] + ".png";
+
+        void* img = static_cast<void*> (
+            ImportImageFile(
+                finalFileName,
+                textureCreateInfo.width,
+                textureCreateInfo.height,
+                channels
+            )
+        );
+
+        if (img != nullptr) {
+            textureCreateInfo.data.push_back(img);
+        }
+    }
+
+    //we end up using the width, height, and channels from the last loaded image
+    //They need to be same width and textures
+    if (textureCreateInfo.data.size() != CUBE_MAP_SIDES) {
+        std::cout << "ERROR IN LOADING CUBE MAP" << std::endl;
+    }
+
+    textureCreateInfo.format = DetermineTextureFormat(channels);
+    textureCreateInfo.type = AE::Graphics::TextureType::Cubemap;
+    textureCreateInfo.arraySize = CUBE_MAP_SIDES;
+}
+
+unsigned char* FileImporter::ImportImageFile(const std::string& fileName, uint32& width, uint32& height, uint32& channels) {
+    unsigned char* img = stbi_load(
+        fileName.c_str(),
+        (int*)&width,
+        (int*)&height,
+        (int*)&channels,
+        0
+    );
+
+    //TODO: Some error checking
+    return img;
+
+}
+
+TextureFormat FileImporter::DetermineTextureFormat(uint32 channels) {
     switch (channels)
     {
         case(1):
-            textureData.format = TextureFormat::R8U;
+            return TextureFormat::R8U;
         case(2):
-            std::cout << "no support" << std::endl;
-            //textureData.format = R8B8;
+            std::cout << "no support yet" << std::endl;
+            return TextureFormat::NOFORMAT;
         case(3):
-            std::cout << "no support" << std::endl;
-            //textureData.format = R8B8G8;
+            std::cout << "no support yet" << std::endl;
+            return TextureFormat::NOFORMAT;
         case(4):
-            textureData.format = TextureFormat::RGBA8U;
+            return TextureFormat::RGBA8U;
         default:
             break;
     }
 
-    return textureData;
+    return TextureFormat::NOFORMAT;
 }
 
 MeshData FileImporter::ImportMesh(std::string fileName) {

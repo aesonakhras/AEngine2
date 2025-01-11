@@ -77,5 +77,8 @@ float4 PShader(
     float diffuseIntensity = max(dot(normalWorld, -dirLight.xyz), 0.0f);
     float4 diffuse = diffuseIntensity * dirColor * baseColor;
 
-    return ambient + diffuse;
+    float4 color = ambient + diffuse;
+
+
+    return color;
 }

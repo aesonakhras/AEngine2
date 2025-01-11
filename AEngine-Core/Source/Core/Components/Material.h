@@ -35,7 +35,7 @@ namespace AE::Graphics {
                 std::shared_ptr<MaterialBase> materialBase,
                 std::shared_ptr<IBuffer> ubo) : m_materialBase(materialBase), m_ubo(ubo) {
 
-                m_uniformData = std::shared_ptr<char[]>(new char[materialBase->UniformSize]);
+                m_uniformData = std::shared_ptr<char[]>(new char[materialBase->UniformDescription.Size]);
             }
 
             ~Material() {
@@ -46,8 +46,8 @@ namespace AE::Graphics {
             void SetUniform(const std::string name, const T& value) {
                 m_uniformNeedsUpdate = true;
 
-                if (m_materialBase->UniformDataLayout.contains(name)) {
-                    int offset = m_materialBase->UniformDataLayout[name];
+                if (m_materialBase->UniformDescription.UniformLayout.contains(name)) {
+                    int offset = m_materialBase->UniformDescription.UniformLayout[name];
                     std::memcpy(m_uniformData.get() + offset, &value, sizeof(T));
                 }
                 else {

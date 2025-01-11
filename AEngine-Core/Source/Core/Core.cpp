@@ -118,6 +118,7 @@ void AE::Core::Start(std::function<void(float32, JobSystem&, CommandBuffer&)> cb
     transformSystem.SetScene(SceneManager::GetInstance().Registry);
 
     AE::Core::SystemLocator::Register<AE::Core::TransformSystem>(&transformSystem);
+
 }
 
 

@@ -2,18 +2,40 @@
 
 #include <memory>
 #include <string>
+
+//TODO: This is for the Uniform Description which will be moved
+//to it's own file once I get this refactor working
 #include "Core/Types.h"
 
 namespace AE::Graphics {
 
-	struct UniformDescription {
+	struct UniformDescriptionElement {
 		std::string name;
 		uint32 size;  //size of data
-	};
-	//contains UBO layout
-	//vertexShdaer
-	//fragmentShader
 
+		UniformDescriptionElement(
+			const std::string& name,
+			size_t size
+		)
+		: name(name),
+		size(size) { }
+	};
+
+	struct UniformLayoutDescription {
+		UniformLayoutDescription() = delete;
+
+		UniformLayoutDescription(const std::vector<UniformDescriptionElement>& uniformLayout) {
+			Size = 0;
+			
+			for (const auto& uniform : uniformLayout) {
+					UniformLayout[uniform.name] = Size;
+					Size += uniform.size;
+			}
+		}
+
+		std::unordered_map <std::string, uint32> UniformLayout{};
+		uint32 Size;
+	};
 
 	//forward declares
 	class IVertexShader;
@@ -22,26 +44,14 @@ namespace AE::Graphics {
 	struct MaterialBase {
 		std::shared_ptr<IVertexShader> VertexShader;
 		std::shared_ptr<IFragmentShader> FragmentShader;
-		std::unordered_map <std::string, uint32> UniformDataLayout;
-
-		uint32 UniformSize;
+		UniformLayoutDescription UniformDescription;
 
 		MaterialBase(
 			std::shared_ptr<IVertexShader> vertexShader,
 			std::shared_ptr<IFragmentShader> fragmentShader,
-			const std::vector<UniformDescription>& uniformlayout
+			UniformLayoutDescription uniformDescription
 		) : VertexShader(vertexShader),
-			FragmentShader(fragmentShader) {
-			//uniform buffer all we need to do is specify a size?
-
-			uint32 totalSize = 0;
-
-			for (const auto& uniform : uniformlayout) {
-				UniformDataLayout[uniform.name] = totalSize;
-				totalSize += uniform.size;
-			}
-
-			UniformSize = totalSize;
-		}
+			FragmentShader(fragmentShader),
+			UniformDescription(std::move(uniformDescription)){ }
 	};
 }

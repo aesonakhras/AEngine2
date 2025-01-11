@@ -14,6 +14,7 @@
 #include "Core/Factories/StaticMeshFactory.h"
 
 #include "Core/Scene/SceneManager.h"
+#include "Core/Factories/SkyboxFactory.h"
 
 #include "FileManagment/MeshData.h"
 #include "FileManagment/FileImporter.h"
@@ -49,6 +50,8 @@ Vec3 Lookat = { 0.0f, 0.0f, 1.0f};
 
 entt::entity camera;
 
+entt::entity skybox;
+
 AE::App::PlayerSystem playerSystem;
 
 AE::App::WindmillSystem windmillSystem;
@@ -60,16 +63,21 @@ void setupPlayer(AE::Core::SceneManager& sceneManager) {
     //textures
     GraphicsManager& graphicsManager = GraphicsManager::GetInstance();
 
-    std::shared_ptr<Texture> baseColor = ResourceManager::GetInstance().GetTexture(std::string("Assets/Rock/basecolor.png"));
-    std::shared_ptr<Texture> normal = ResourceManager::GetInstance().GetTexture(std::string("Assets/Rock/normal.png"));
-
-    //std::shared_ptr<AE::Graphics::ISampler> PlayerSampler = graphicsManager.CreateSampler();
+    std::shared_ptr<Texture> baseColor = ResourceManager::GetInstance().GetTexture(std::string("Assets/Rock/basecolor.png"), false);
+    std::shared_ptr<Texture> normal = ResourceManager::GetInstance().GetTexture(std::string("Assets/Rock/normal.png"), false);
 
     sampler = graphicsManager.CreateSampler();
 
     std::shared_ptr<Mesh> PlayerMesh = ResourceManager::GetInstance().GetStaticMesh(std::string("Assets/Rock/rock.obj"));
 
-    auto playerMaterial = ResourceManager::GetInstance().LoadMaterial("Assets/shaders.shader", "Assets/shaders.shader", "RockMaterial");
+    std::vector<AE::Graphics::UniformDescriptionElement> PlayeruniformDescription = {
+        {"MVP", sizeof(DirectX::XMMATRIX)},
+        { "Model", sizeof(DirectX::XMMATRIX) },
+        { "ViewDir", sizeof(DirectX::XMVECTOR) },
+        { "DirLight", sizeof(DirectX::XMVECTOR) }
+    };
+
+    auto playerMaterial = ResourceManager::GetInstance().LoadMaterial("Assets/shaders.shader", "Assets/shaders.shader", "RockMaterial", PlayeruniformDescription);
 
     playerMaterial->SetTexture("diffuse1", 0, baseColor, sampler);
     playerMaterial->SetTexture("diffuse2", 1, normal, sampler);
@@ -92,7 +100,7 @@ void setupPlayer(AE::Core::SceneManager& sceneManager) {
 void setupEnvironment(AE::Core::SceneManager& sceneManager) {
     GraphicsManager& graphicsManager = GraphicsManager::GetInstance();
 
-    std::shared_ptr<Texture> normal = ResourceManager::GetInstance().GetTexture(std::string("Assets/Rock/normal.png"));
+    std::shared_ptr<Texture> normal = ResourceManager::GetInstance().GetTexture(std::string("Assets/Rock/normal.png"), false);
 
     std::shared_ptr<Mesh> planeMesh = ResourceManager::GetInstance().GetStaticMesh(std::string("Assets/plane.obj"));
 
@@ -117,7 +125,10 @@ void setupEnvironment(AE::Core::SceneManager& sceneManager) {
         "Plane"
     );
 
-    auto windMill = WindMillFactory::Create(sceneManager.Registry, *planeMaterial.get(), {});
+    //auto windMill = WindMillFactory::Create(sceneManager.Registry, *planeMaterial.get(), {});
+
+    //add the skybox
+    skybox = AE::Core::SkyboxFactory::Create(sceneManager.Registry, std::string("Assets/SkyBox/"));
 }
 
 
@@ -146,7 +157,7 @@ void Update(float32 deltaTime,
 ) {
     AE::Core::SceneManager& sceneManager = AE::Core::SceneManager::GetInstance();
 
-    windmillSystem.Update(deltaTime, sceneManager.Registry, jobSystem, commandBuffer);
+    //windmillSystem.Update(deltaTime, sceneManager.Registry, jobSystem, commandBuffer);
     playerSystem.Update(deltaTime, sceneManager.Registry, jobSystem, commandBuffer);
     
 }
