@@ -126,3 +126,7 @@ std::shared_ptr<ISampler> GraphicsManager::CreateSampler() {
 
     return sampler;
 }
+
+void GraphicsManager::SetDepthState(bool isSkybox) {
+    m_GLI->ChangeDepthState(isSkybox);
+}

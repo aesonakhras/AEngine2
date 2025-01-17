@@ -30,14 +30,13 @@ entt::entity CameraFactory::Create(
 	float pitch = std::asinf(lookDir.Y);
 	
 	Transform transform{
+		entity,
 		position,
 		DirectX::XMQuaternionRotationRollPitchYawFromVector({pitch, yaw, 0.0f}),
 		{ 1.0f, 1.0f, 1.0f },
 		nullptr,
 		"Camera"
 	};
-
-
 
 	registry.emplace<Transform>(entity, transform);
 

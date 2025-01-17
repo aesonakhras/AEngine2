@@ -23,11 +23,13 @@
 #include "System/Input/InputManager.h"
 
 #include "Core/Factories/CameraFactory.h"
+#include "Core/Factories/PointLightFactory.h"
 
 #include "Systems/PlayerSystem.h"
 #include "Factories/PlayerFactory.h"
 
 #include "Systems/WindmillSystem.h"
+#include "Systems/ProjectileSystem.h"
 #include "Factories/WindmillFactory.h"
 
 #include "Resources/ResourceManager.h"
@@ -41,20 +43,13 @@ using namespace AE::App;
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
 
-//Camera variables
-float fov = 1.0472f;
-float aspectRatio = (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT;
-float nearZ = 0.01f;
-float farZ = 1000.0f;
-Vec3 Lookat = { 0.0f, 0.0f, 1.0f};
-
-entt::entity camera;
-
 entt::entity skybox;
 
 AE::App::PlayerSystem playerSystem;
 
 AE::App::WindmillSystem windmillSystem;
+
+AE::App::ProjectileSystem projectileSystem;
 
 std::shared_ptr<AE::Graphics::ISampler> sampler;
 
@@ -68,7 +63,7 @@ void setupPlayer(AE::Core::SceneManager& sceneManager) {
 
     sampler = graphicsManager.CreateSampler();
 
-    std::shared_ptr<Mesh> PlayerMesh = ResourceManager::GetInstance().GetStaticMesh(std::string("Assets/Rock/rock.obj"));
+    //std::shared_ptr<Mesh> PlayerMesh = ResourceManager::GetInstance().GetStaticMesh(std::string("Assets/Rock/rock.obj"));
 
     std::vector<AE::Graphics::UniformDescriptionElement> PlayeruniformDescription = {
         {"MVP", sizeof(DirectX::XMMATRIX)},
@@ -82,7 +77,10 @@ void setupPlayer(AE::Core::SceneManager& sceneManager) {
     playerMaterial->SetTexture("diffuse1", 0, baseColor, sampler);
     playerMaterial->SetTexture("diffuse2", 1, normal, sampler);
 
+
+    //NOTE: THIS ONE IS NOT USED, maerked for deletion later
     Transform playerStart = {
+        {},
         { 0 , 0.0f, 15.0f},
         DirectX::XMQuaternionRotationRollPitchYawFromVector({ 1.5f, 0.0f, 0.0f, 0.0f }),
         {1.0f, 1.0f, 1.0f},
@@ -90,10 +88,25 @@ void setupPlayer(AE::Core::SceneManager& sceneManager) {
         "Player"
     };
 
-    auto& cameraTransform = SceneManager::GetInstance().Registry.get<Transform>(camera);
-
     auto player = PlayerFactory::Create(sceneManager.Registry, *playerMaterial.get(), playerStart);
 
+
+    auto& theRegistry = sceneManager.Registry;
+
+    //add a light for testing purposes
+    entt::entity testLight = theRegistry.create();
+
+    PointLightFactory::AddToEntity(
+        theRegistry,
+        testLight,
+        { 0.0f , 1.0f, 0.0f },
+        nullptr,
+        5.0f,
+        {1,0,0},
+        10,
+        0.09f,
+        0.032f
+    );
 }
 
 //set up environment
@@ -101,8 +114,12 @@ void setupEnvironment(AE::Core::SceneManager& sceneManager) {
     GraphicsManager& graphicsManager = GraphicsManager::GetInstance();
 
     std::shared_ptr<Texture> normal = ResourceManager::GetInstance().GetTexture(std::string("Assets/Rock/normal.png"), false);
+    std::shared_ptr<Texture> baseColor = ResourceManager::GetInstance().GetTexture(std::string("Assets/Rock/basecolor.png"), false);
 
     std::shared_ptr<Mesh> planeMesh = ResourceManager::GetInstance().GetStaticMesh(std::string("Assets/plane.obj"));
+
+    std::shared_ptr<Mesh> PlayerMesh = ResourceManager::GetInstance().GetStaticMesh(std::string("Assets/Rock/rock.obj"));
+
 
     auto planeMaterial = ResourceManager::GetInstance().GetSharedMaterial("RockMaterial");
 
@@ -111,21 +128,21 @@ void setupEnvironment(AE::Core::SceneManager& sceneManager) {
         sampler = graphicsManager.CreateSampler();
     }
 
-    planeMaterial->SetTexture("diffuse1", 0, normal, sampler);
-    planeMaterial->SetTexture("diffuse2", 0, normal, sampler);
-
+    planeMaterial->SetTexture("diffuse2", 0, baseColor, sampler);
+    planeMaterial->SetTexture("diffuse1", 1, normal, sampler);
+    
     auto ground = StaticMeshFactory::Create(
         sceneManager.Registry, 
-        *planeMesh.get(), 
+        *PlayerMesh.get(),
         *planeMaterial.get(), 
-        { 0.0f , -4.0f, 15.0f },
+        { 0.0f , 0.0f, 0.0f },
         DirectX::XMQuaternionRotationRollPitchYawFromVector({ 0.0f, 0.0f, 0.0f, 0.0f }),
-        { 5.0f, 5.0f, 5.0f },
+        { 1.0f, 1.0f, 1.0f },
         nullptr,
         "Plane"
     );
 
-    //auto windMill = WindMillFactory::Create(sceneManager.Registry, *planeMaterial.get(), {});
+    auto windMill = WindMillFactory::Create(sceneManager.Registry, *planeMaterial.get());
 
     //add the skybox
     skybox = AE::Core::SkyboxFactory::Create(sceneManager.Registry, std::string("Assets/SkyBox/"));
@@ -135,16 +152,6 @@ void setupEnvironment(AE::Core::SceneManager& sceneManager) {
 void SetupScene() {
     //get scene ref
     AE::Core::SceneManager& sceneManager = AE::Core::SceneManager::GetInstance();
-
-    camera = AE::Core::CameraFactory::Create(
-        sceneManager.Registry,
-        fov,
-        aspectRatio,
-        nearZ,
-        farZ,
-        {0.0, 0.0, -5.0},
-        Lookat
-    );
 
     setupPlayer(sceneManager);
 
@@ -157,9 +164,9 @@ void Update(float32 deltaTime,
 ) {
     AE::Core::SceneManager& sceneManager = AE::Core::SceneManager::GetInstance();
 
-    //windmillSystem.Update(deltaTime, sceneManager.Registry, jobSystem, commandBuffer);
+    windmillSystem.Update(deltaTime, sceneManager.Registry, jobSystem, commandBuffer);
     playerSystem.Update(deltaTime, sceneManager.Registry, jobSystem, commandBuffer);
-    
+    projectileSystem.Update(deltaTime, sceneManager.Registry, jobSystem, commandBuffer);
 }
 
 //startup

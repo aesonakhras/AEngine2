@@ -62,6 +62,10 @@ namespace AE::Graphics {
 
 		std::shared_ptr<ISampler> CreateSampler();
 
+
+		//TODO: This bad coding should be illegal, fix in the refactor
+		void SetDepthState(bool isSkybox);
+
 	protected:
 		bool initialize(const DeviceCreateInfo& info);
 		void shutdown();

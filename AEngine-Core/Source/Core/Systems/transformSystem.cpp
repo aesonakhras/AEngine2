@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "Core/Systems/TransformSystem.h"
 #include "Core/Scene/SceneManager.h"
 
@@ -63,7 +65,11 @@ void TransformSystem::Update() {
 
 		//dfs with root nodes only
 		if (transform.GetParent() == nullptr) {
-			transform.WorldMatrix = transform.GetLocalMatrix();
+			if (transform.GetDirty()) {
+				transform.WorldMatrix = transform.GetLocalMatrix();
+				registry->emplace<TransformUpdatedTag>(transform.Entity);
+			}
+			
 
 			updateWorldMatrix(&transform, transform.WorldMatrix, transform.GetDirty());
 
@@ -87,11 +93,17 @@ void TransformSystem::updateWorldMatrix(
 		
 		if (shouldUpdate) {
 			childTransform->WorldMatrix = childTransform->GetLocalMatrix() * parentWorldMatrix;
+
+			registry->emplace<TransformUpdatedTag>(childTransform->Entity);
 			childTransform->ClearDirty();
 		}
 
 		updateWorldMatrix(childTransform, childTransform->WorldMatrix, shouldUpdate);
 	}
+}
+
+void TransformSystem::ClearUpdated() {
+	registry->clear<TransformUpdatedTag>();
 }
 
 Vec3 TransformSystem::GetLocalPosition(entt::entity transform) {

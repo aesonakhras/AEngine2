@@ -8,6 +8,8 @@
 #include "Core/Components/Transform.h"
 
 namespace AE::Core {
+	struct TransformUpdatedTag {};
+
 	class TransformSystem {
 		public:
 			TransformSystem();
@@ -24,6 +26,8 @@ namespace AE::Core {
 
 			void Update();
 
+			void ClearUpdated();
+
 		private:
 			CommandBuffer transformCommandbuffer;
 			entt::registry* registry;
@@ -33,7 +37,5 @@ namespace AE::Core {
 				DirectX::XMMATRIX parentWorldMatrix, 
 				bool parentDirtyStatus
 			);
-
-			
 	};
 }

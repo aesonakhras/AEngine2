@@ -67,7 +67,7 @@ namespace AE::Graphics {
             void Bind() {
                 m_ubo->Update(m_uniformData.get(), m_ubo->Count);
                 m_uniformNeedsUpdate = false;
-                m_ubo->Bind();
+                m_ubo->Bind(0);
                 bindTextures();
                 m_materialBase->VertexShader->Bind();
                 m_materialBase->FragmentShader->Bind();

@@ -12,6 +12,8 @@ SDLInputHandler::SDLInputHandler(std::shared_ptr<IWindow> window) : m_window(win
         AE::Core::Debug::LogError("Unable to initalize SDL events(used for input)");
     }
 
+    SDL_SetRelativeMouseMode(SDL_TRUE);
+
     //Note: Could be a point of failure for other platforms, since windows support only I will use this to prevent
     //code bloat and extra work
     //SDL_SetHint(SDL_HINT_KEYBOARD_REPEAT_DELAY, "0");

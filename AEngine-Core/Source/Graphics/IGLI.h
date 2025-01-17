@@ -49,6 +49,8 @@ namespace AE::Graphics {
 		//Binding
 		virtual void BindBuffer(const std::shared_ptr<IBuffer>& ib) = 0;
 
+		virtual void ChangeDepthState(bool isSkybox) = 0;
+
 		virtual ~IGLI() {};
 	};
 }

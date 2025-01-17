@@ -1,6 +1,8 @@
 #pragma once
+#include <vector>
 #include "Utils/Singleton.h"
 #include "entt/entt.hpp"
+#include "Core/Components/Transform.h"
 
 namespace AE::Core {
 	//for now essentially used as a tool to wrap the entt registry
@@ -8,7 +10,15 @@ namespace AE::Core {
 	class SceneManager : public AE::Utils::Singleton<SceneManager> {
 		public:
 			entt::registry Registry;
+
+			entt::entity CreateEntity();
+			void DeleteEntity(entt::entity entity);
+
+			void RemoveDeletedEntities();
+
 		private:
+			void DFSMarkEntityDeletion(Transform* transform);
+
 			void initialize() {};
 			void shutdown() {};
 
@@ -16,5 +26,7 @@ namespace AE::Core {
 			~SceneManager() = default;
 
 			friend class AE::Utils::Singleton<SceneManager>;
+
+			std::vector<entt::entity> toDelete;
 	};
 }

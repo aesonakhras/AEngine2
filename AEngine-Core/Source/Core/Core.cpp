@@ -28,6 +28,8 @@
 #include "Core/Systems/SystemLocator.h"
 #include "Core/Systems/TransformSystem.h"
 #include "Core/Systems/RenderSystem.h"
+#include "Core/Systems/LightSystem.h"
+
 #include "Core/Scene/SceneManager.h"
 
 #include "Resources/ResourceManager.h"
@@ -39,6 +41,7 @@
 #define SCREEN_HEIGHT 1080
 
 using namespace AE::Core;
+using namespace AE::Graphics;
 
 RefCountPtr<AE::System::IWindow> window;
 
@@ -47,6 +50,8 @@ float32 deltaTime = 0.0f;
 std::function<void(float32, JobSystem&, CommandBuffer&)> appUpdate;
 
 RenderSystem renderSystem;
+LightSystem lightSystem;
+
 AE::Core::TransformSystem transformSystem;
 
 entt::registry* g_sceneRegistry;
@@ -78,8 +83,11 @@ void AE::Core::Run() {
         //execute command buffer for shared variable data in order
         commandBuffer.Execute();
 
+        lightSystem.Update();
         renderSystem.Render();
 
+        transformSystem.ClearUpdated();
+        SceneManager::GetInstance().RemoveDeletedEntities();
         AE::System::DeltaTimeManager::GetInstance().LimitFrameRate();
     }
 }
@@ -119,6 +127,7 @@ void AE::Core::Start(std::function<void(float32, JobSystem&, CommandBuffer&)> cb
 
     AE::Core::SystemLocator::Register<AE::Core::TransformSystem>(&transformSystem);
 
+    lightSystem.Initialize();
 }
 
 

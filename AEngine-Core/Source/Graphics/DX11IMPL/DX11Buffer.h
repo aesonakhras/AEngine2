@@ -17,9 +17,10 @@ namespace AE::Graphics {
 			const void* data,
 			BufferType bufferType
 		);
-		virtual void Bind() const final;
+		virtual void Bind(int slot) const final;
 		virtual void UnBind() const final;
 		virtual void Update(const void* data, size_t size) final;
+		virtual void Update2(const void* data, size_t offset, size_t size) final;
 		~DX11Buffer() final { };
 
 	private:

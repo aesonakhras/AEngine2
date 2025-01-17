@@ -53,6 +53,8 @@ namespace AE::Graphics {
 		virtual void RecompileVertexShader(const void* data, size_t dataSize, std::shared_ptr<IVertexShader>& vertexShader) final override;
 		virtual void RecompileFragmentShader(const void* data, size_t dataSize, std::shared_ptr <IFragmentShader>& fragmentShader) final override;
 
+		virtual void ChangeDepthState(bool isSkybox) final override;
+
 		//Binding
 		virtual void BindBuffer(const std::shared_ptr<IBuffer>& ib) final override;
 		///////////////////////////End of the IGLI functions
@@ -78,6 +80,9 @@ namespace AE::Graphics {
 		Microsoft::WRL::ComPtr <ID3D11DeviceContext> m_deviceContext = nullptr;
 		Microsoft::WRL::ComPtr <IDXGISwapChain> m_swapChain = nullptr;
 		Microsoft::WRL::ComPtr <ID3D11RenderTargetView> m_backBuffer = nullptr;
+
+		Microsoft::WRL::ComPtr <ID3D11DepthStencilState> m_defaultDepthStencilState = nullptr;
+		Microsoft::WRL::ComPtr <ID3D11DepthStencilState> m_skyBoxStencilState = nullptr;
 
 		ID3D11RenderTargetView* m_renderTargetView = nullptr;
 		ID3D11ShaderResourceView* m_shaderResourceView = nullptr;

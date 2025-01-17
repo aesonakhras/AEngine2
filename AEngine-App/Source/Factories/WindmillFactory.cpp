@@ -10,8 +10,7 @@ using namespace AE::Graphics;
 
 entt::entity WindMillFactory::Create(
 	entt::registry& registry,
-	AE::Graphics::Material& material,
-	Transform transform
+	AE::Graphics::Material& material
 ) {
 
 	//create the blade static meshes with proper parenting

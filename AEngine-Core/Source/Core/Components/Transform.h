@@ -1,4 +1,5 @@
 #pragma once
+#include "entt/entt.hpp"
 #include <set>
 #include <DirectXMath.h>
 //TODO: At some point only have name in debug config
@@ -12,15 +13,10 @@ struct Transform {
 	public:
 		DirectX::XMMATRIX WorldMatrix;
 
-		Transform() : 
-			Position{ 0.0f, 0.0f, 0.0f },
-			Rotation{ DirectX::XMQuaternionIdentity() },
-			Scale{ 1.0f, 1.0f, 1.0f },
-			isDirty{ false },
-			Parent{ nullptr },
-			WorldMatrix{ DirectX::XMMatrixIdentity() } { }
+		Transform() = delete;
 
 		Transform (
+			entt::entity entity,
 			Vec3 pos,
 			DirectX::XMVECTOR rot,
 			Vec3 scale,
@@ -33,7 +29,8 @@ struct Transform {
 			isDirty{ true },
 			Parent { parent },
 			Name{ name },
-			WorldMatrix{ DirectX::XMMatrixIdentity() }
+			WorldMatrix{ DirectX::XMMatrixIdentity() },
+			Entity(entity)
 		{
 			if (Parent != nullptr) {
 				Parent->AddChild(this);
@@ -59,6 +56,14 @@ struct Transform {
 			return Position;
 		}
 
+		//TODO: Some sort of logging ability
+
+		Vec3 GetWorldPosition() {
+			return Vec3(WorldMatrix.r[3].m128_f32[0],
+				WorldMatrix.r[3].m128_f32[1],
+				WorldMatrix.r[3].m128_f32[2]);
+		}
+
 		void SetLocalRotation(DirectX::XMVECTOR rot) {
 			Rotation = rot;
 			isDirty = true;
@@ -76,7 +81,6 @@ struct Transform {
 		Vec3 GetScale() {
 			return Scale;
 		}
-
 
 		//DO not use these in the application layer, you will break everything
 		bool GetDirty() {
@@ -97,8 +101,10 @@ struct Transform {
 			DirectX::XMVECTOR dxPos = { Position.X, Position.Y, Position.Z };
 			DirectX::XMVECTOR dxScale = { Scale.X, Scale.Y, Scale.Z };
 
+			DirectX::XMVECTOR normalizedRotation = DirectX::XMQuaternionNormalize(Rotation);
+
 			return DirectX::XMMatrixScalingFromVector(dxScale) *
-				DirectX::XMMatrixRotationQuaternion(Rotation) *
+				DirectX::XMMatrixRotationQuaternion(normalizedRotation) *
 				DirectX::XMMatrixTranslationFromVector(dxPos);
 		}
 
@@ -126,6 +132,23 @@ struct Transform {
 		const std::set<Transform*> GetChildren() {
 			return Children;
 		}
+
+		const Vec3 GetForwardDir() {
+
+			DirectX::XMVECTOR forward = DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
+
+			DirectX::XMVECTOR worldForward = DirectX::XMVector3TransformNormal(forward, WorldMatrix);
+
+			worldForward = DirectX::XMVector3Normalize(worldForward);
+
+			DirectX::XMFLOAT3 forwardVec3;
+			DirectX::XMStoreFloat3(&forwardVec3, worldForward);
+
+			return { forwardVec3.x, forwardVec3.y, forwardVec3.z };
+		}
+
+		entt::entity Entity;
+		Vec3 worldPosition;
 
 	private:
 		void AddChild(Transform* newChild) {

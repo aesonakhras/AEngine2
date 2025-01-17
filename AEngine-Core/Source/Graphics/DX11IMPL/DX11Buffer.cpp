@@ -42,18 +42,18 @@ DX11Buffer::DX11Buffer(ComPtr<ID3D11Device> device,
     }    
 }
 
-void DX11Buffer::Bind() const {
+void DX11Buffer::Bind(int slot) const {
     switch (m_bufferType)
     {
     case D3D11_BIND_INDEX_BUFFER:
         m_deviceContext->IASetIndexBuffer(m_Resource.Get(), DXGI_FORMAT_R32_UINT, 0);
         break;
     case D3D11_BIND_VERTEX_BUFFER:
-        m_deviceContext->IASetVertexBuffers(0, 1, m_Resource.GetAddressOf(), &m_stride, &m_offset);
+        m_deviceContext->IASetVertexBuffers(slot, 1, m_Resource.GetAddressOf(), &m_stride, &m_offset);
         break;
     case D3D11_BIND_CONSTANT_BUFFER:
-        m_deviceContext->VSSetConstantBuffers(0, 1, m_Resource.GetAddressOf());
-        m_deviceContext->PSSetConstantBuffers(0, 1, m_Resource.GetAddressOf());
+        m_deviceContext->VSSetConstantBuffers(slot, 1, m_Resource.GetAddressOf());
+        m_deviceContext->PSSetConstantBuffers(slot, 1, m_Resource.GetAddressOf());
         break;
     default:
         break;
@@ -88,6 +88,7 @@ D3D11_BIND_FLAG DX11Buffer::ConvertToDX11Buffer(BufferType bufferType) {
     return D3D11_BIND_INDEX_BUFFER;
 }
 
+//TODO: Probably bye bye
 void DX11Buffer::Update(const void* data, size_t size) {
     HRESULT hr;
     D3D11_MAPPED_SUBRESOURCE ms;
@@ -96,4 +97,15 @@ void DX11Buffer::Update(const void* data, size_t size) {
     assert(!FAILED(hr) && "Unable to map resource");
     memcpy(ms.pData, data, size);
     m_deviceContext->Unmap(m_Resource.Get(), NULL);
+}
+
+//TODO: This will replace update later
+void DX11Buffer::Update2(const void* data, size_t offset, size_t size) {
+    HRESULT hr;
+    D3D11_MAPPED_SUBRESOURCE ms;
+
+    hr = m_deviceContext->Map(m_Resource.Get(), 0, D3D11_MAP_WRITE_NO_OVERWRITE, 0, &ms);
+
+    memcpy(static_cast<char*>(ms.pData) + offset, data, size);
+    m_deviceContext->Unmap(m_Resource.Get(), 0);
 }

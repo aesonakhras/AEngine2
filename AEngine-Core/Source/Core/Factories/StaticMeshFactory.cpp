@@ -23,7 +23,7 @@ entt::entity StaticMeshFactory::Create(
 
 	registry.emplace<Mesh>(entity, meshName);
 	registry.emplace<Material>(entity, material);
-	registry.emplace<Transform>(entity, pos, rot, scale, parent, name);
+	registry.emplace<Transform>(entity, entity, pos, rot, scale, parent, name);
 
 	return entity;
 }

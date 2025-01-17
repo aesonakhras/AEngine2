@@ -52,6 +52,12 @@ std::shared_ptr<AE::Graphics::Texture> ResourceManager::GetTexture(std::string i
 }
 
 std::shared_ptr<AE::Graphics::Mesh> ResourceManager::GetStaticMesh(std::string id) {
+	auto resource = meshCache.GetItem(id);
+
+	if (resource) {
+		return resource;
+	}
+
 	GraphicsManager& graphicsManager = GraphicsManager::GetInstance();
 	MeshData meshData = FileImporter::ImportMesh(std::string(id));
 

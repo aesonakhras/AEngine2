@@ -6,12 +6,15 @@
 #include "Math/Vec3.h"
 #include "System/MultiThreading/JobSystem.h"
 #include "System/MultiThreading/CommandBuffer.h"
+#include "Core/Systems/TransformSystem.h"
 
 //forward declare
 struct Transform;
 
 namespace AE::App {
 	struct Movement;
+	struct Player;
+
 
 	class PlayerSystem {
 		public:
@@ -24,6 +27,16 @@ namespace AE::App {
 			void Start(entt::registry& scene);
 
 		private:
+			void UpdateRotation(AE::Core::TransformSystem& transformSystem, entt::entity playerEntity);
+			void UpdateTranslation(
+				AE::Core::TransformSystem& transformSystem,
+				entt::entity playerEntity,
+				Movement& playerMovement,
+				float32 deltaTime,
+				Player& player,
+				Transform& transform
+			);
+
 			//TODO: Refactor input system to avoid this mess
 			void OnForwardDown();
 			void OnForwardUp();
@@ -43,6 +56,8 @@ namespace AE::App {
 			void OnZDown();
 			void OnZUp();
 
+			void OnSpaceDown();
+
 			void OnVertical(float y);
 			void OnHorizontal(float x);
 
@@ -50,7 +65,10 @@ namespace AE::App {
 
 			entt::registry* m_scene;
 			Movement* playerMovementCache;
+			Transform* playerTransformCache;
 
-			Vec3 lookAxis{};
+			Vec3 lookAxisDelta{};
+			float32 currPitch;
+			float32 currYaw;
 	};
 }

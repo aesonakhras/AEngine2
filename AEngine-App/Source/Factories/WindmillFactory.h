@@ -15,8 +15,7 @@ namespace AE::App {
 	public:
 		static entt::entity Create(
 			entt::registry& registry,
-			AE::Graphics::Material& material,
-			Transform transform
+			AE::Graphics::Material& material
 		);
 	};
 }

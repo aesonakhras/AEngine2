@@ -40,7 +40,7 @@ bool DX11ShaderObject::Compile(
 		dataSize,
 		nullptr,
 		defines,
-		nullptr,
+		D3D_COMPILE_STANDARD_FILE_INCLUDE,
 		entryPoint.c_str(),
 		shaderTarget.c_str(),
 		compileFlags,

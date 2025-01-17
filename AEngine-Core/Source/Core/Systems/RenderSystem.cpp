@@ -59,13 +59,14 @@ void RenderSystem::Render() {
         ////Thank you DirectX very nice
         ////TODO: this needs to go into the dx11 impl somewhere
         auto tMVP = DirectX::XMMatrixTranspose(mvp);
+        //auto tModelMatrix = DirectX::XMMatrixTranspose(modelMatrix);
 
-        mesh.VertexBuffer->Bind();
-        mesh.IndexBuffer->Bind();
+        mesh.VertexBuffer->Bind(0);
+        mesh.IndexBuffer->Bind(0);
 
-        DirectX::XMVECTOR dirLight = { 0,-1,0,0 };
+        DirectX::XMVECTOR dirLight = { 0,1,0,0 };
 
-        material.SetUniform("MVP", tMVP);
+        material.SetUniform("MVP", mvp);
         material.SetUniform("Model", modelMatrix);
         material.SetUniform("ViewDir", viewDir);
         material.SetUniform("DirLight", dirLight);
@@ -76,8 +77,8 @@ void RenderSystem::Render() {
 
         //graphicsManager;
 	}
-    MaybeRenderSkyBox(view, projection);
     
+    MaybeRenderSkyBox(view, projection);
 
     graphicsManager.PresentFrame();
 }
@@ -86,12 +87,13 @@ void RenderSystem::MaybeRenderSkyBox(DirectX::XMMATRIX view, DirectX::XMMATRIX p
 
     SceneManager& sceneManager = SceneManager::GetInstance();
     GraphicsManager& graphicsManager = GraphicsManager::GetInstance();
+
+    graphicsManager.SetDepthState(true);
     //now do the skybox
     auto skyBoxView = sceneManager.Registry.view<SkyBox, Mesh, Material>();
     if (skyBoxView.begin() != skyBoxView.end()) {
 
         auto skyboxEntity = skyBoxView.front();
-
 
         auto& skyBoxMesh = skyBoxView.get<Mesh>(skyboxEntity);
         auto& skyBoxMaterial = skyBoxView.get<AE::Graphics::Material>(skyboxEntity);
@@ -107,9 +109,11 @@ void RenderSystem::MaybeRenderSkyBox(DirectX::XMMATRIX view, DirectX::XMMATRIX p
 
         skyBoxMaterial.SetUniform("vpNoPosition", tfinalViewMatrix);
         skyBoxMaterial.Bind();
-        skyBoxMesh.VertexBuffer->Bind();
-        skyBoxMesh.IndexBuffer->Bind();
+        skyBoxMesh.VertexBuffer->Bind(0);
+        skyBoxMesh.IndexBuffer->Bind(0);
 
         graphicsManager.Draw(skyBoxMesh.IndexBuffer->Count);
     }
+
+    graphicsManager.SetDepthState(false);
 }

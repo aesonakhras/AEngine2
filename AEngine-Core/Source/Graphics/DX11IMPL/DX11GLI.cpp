@@ -201,9 +201,40 @@ void DX11GLI::setupDepthStencilState() {
     dsDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
 
     // Create depth stencil state
-    ID3D11DepthStencilState* pDSState;
-    D3DCreateCall(m_device->CreateDepthStencilState(&dsDesc, &pDSState), "Unable to create Depth Stencil state");
-    m_deviceContext->OMSetDepthStencilState(pDSState, 0);
+    D3DCreateCall(m_device->CreateDepthStencilState(&dsDesc, m_defaultDepthStencilState.GetAddressOf()), "Unable to create Depth Stencil state");
+    m_deviceContext->OMSetDepthStencilState(m_defaultDepthStencilState.Get(), 0);
+
+
+    //create the skyboxstate 
+    D3D11_DEPTH_STENCIL_DESC skyboxDSDesc = {};
+    skyboxDSDesc.DepthEnable = true;
+    skyboxDSDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO; // Prevent overwriting depth buffer
+    skyboxDSDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;      // Allow fragments farthest from the camera
+    skyboxDSDesc.StencilEnable = false;
+
+    // Stencil test parameters
+    dsDesc.StencilEnable = true;
+    dsDesc.StencilReadMask = 0xFF;
+    dsDesc.StencilWriteMask = 0xFF;
+
+    // Stencil operations if pixel is front-facing
+    dsDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+    dsDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+    dsDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+    dsDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+    // Stencil operations if pixel is back-facing
+    dsDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+    dsDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+    dsDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+    dsDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+    
+    HRESULT hr = m_device->CreateDepthStencilState(&skyboxDSDesc, m_skyBoxStencilState.GetAddressOf());
+    if (FAILED(hr)) {
+        std::cerr << "Failed to create depth stencil state for skybox.\n";
+    }
+    
 }
 
 void DX11GLI::setupViewport(const DeviceCreateInfo& info) {
@@ -284,10 +315,10 @@ void DX11GLI::PresentFrame() {
 
     UINT stride = sizeof(ScreenQuadVertex);
     UINT offset = 0;
-    m_quadVertexBuffer->Bind();
+    m_quadVertexBuffer->Bind(0);
 
     // Bind index buffer
-    m_quadIndexBuffer->Bind();
+    m_quadIndexBuffer->Bind(0);
 
     m_screenQuadFragmentShader->Bind();
     m_screenQuadVertexShader->Bind();
@@ -391,10 +422,18 @@ void DX11GLI::RecompileFragmentShader(const void* data, size_t dataSize, std::sh
     dx11fragmentShader->Recreate();
 }
 
+void DX11GLI::ChangeDepthState(bool isSkybox) {
+    if (isSkybox) {
+        m_deviceContext->OMSetDepthStencilState(m_skyBoxStencilState.Get(), 0);
+    }
+    else {
+        m_deviceContext->OMSetDepthStencilState(m_defaultDepthStencilState.Get(), 0);
+    }
+}
 
 //Binding
 void DX11GLI::BindBuffer(const std::shared_ptr<IBuffer>& ib) {
-    ib->Bind();
+    ib->Bind(0);
 }
 
 

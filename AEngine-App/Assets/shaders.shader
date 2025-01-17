@@ -1,3 +1,5 @@
+#include "Assets/LightBuffer.shader"
+
 Texture2D baseColorMap: register(t0);
 SamplerState baseColorSampler: register(s0);
 
@@ -22,6 +24,7 @@ struct VIn {
 
 struct VOut {
     float4 position : SV_POSITION;
+    float3 fragPos : TEXCOORD0;
     float3 normal : NORMAL;
     float2 uv : UV;
     float3 TtoW0 : CUSTOM0;
@@ -35,7 +38,7 @@ VOut VShader(
 {
     VOut output;
 
-    output.position = mul(float4(input.position, 1.0f), ModelViewProj);
+    output.position = mul(ModelViewProj, float4(input.position, 1.0f));
     output.normal = normalize(mul(Model, float4(input.normal,0)));
     output.uv = input.uv;
 
@@ -50,9 +53,31 @@ VOut VShader(
     output.TtoW1 = TBN[1];
     output.TtoW2 = TBN[2];
 
+    float4 worldPosition = mul(Model, float4(input.position, 1.0));
+    output.fragPos = worldPosition.xyz;
+
     return output;
 }
 
+
+float4 CalculatePointLight(Light light, float3 fragPos, float3 normal, float4 diffColor) {
+    // Direction from the fragment to the light source
+    float3 lightDir = light.position.xyz - fragPos;
+    float distance = length(lightDir);
+    lightDir = normalize(lightDir);
+
+    // Attenuation calculation
+    //float attenuation = 1.0 / (1.0 + light.linearAttenuation * distance + light.quadraticAttenuation * distance * distance);
+
+    float attenuation = 1.0 / (1.0 + 0.09f * distance + 0.032f * distance * distance);
+
+    float NdotL = max(dot(normal, lightDir), 0.0);
+
+    float3 finalColor = light.color * NdotL * attenuation * diffColor;
+
+    // Combine light color, intensity, and attenuation
+    return float4(finalColor, 1.0);
+}
 
 float4 PShader(
     VOut input
@@ -60,9 +85,7 @@ float4 PShader(
 {
     float4 dirColor = float4(1, 1, 1, 1);
 
-    float4 baseColor = baseColorMap.Sample(baseColorSampler, input.uv);
     float4 normal = normalMap.Sample(normalMapSampler, input.uv);
-
     //extract normal
     normal = normalize(normal * 2.0f - 1.0f);
 
@@ -72,13 +95,19 @@ float4 PShader(
         normal.z * input.TtoW2
     );
 
+    float4 baseColor = baseColorMap.Sample(baseColorSampler, input.uv);
     float4 ambient = 0.05f * baseColor;
+    float4 color = ambient;
 
-    float diffuseIntensity = max(dot(normalWorld, -dirLight.xyz), 0.0f);
-    float4 diffuse = diffuseIntensity * dirColor * baseColor;
+    // Calculate point light contribution
+    for (int i = 0; i < 2; i++) {
+        color += CalculatePointLight(lights[i], input.fragPos, normalWorld, baseColor);
+    }
 
-    float4 color = ambient + diffuse;
-
+    float3 dirLightDir = normalize(dirLight.xyz);
+    float DirLightIntensity = max(dot(normalWorld, dirLightDir), 0.0f);
+    float4 DirLightColor = DirLightIntensity * dirColor * baseColor / 3;
+    color += DirLightColor;
 
     return color;
 }
