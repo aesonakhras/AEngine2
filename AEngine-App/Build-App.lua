@@ -27,7 +27,8 @@ project "AEngine-App"
       -- move the assets into the build folder
       postbuildcommands {
         "{COPYDIR} \"../AEngine-App/Assets\" \"%{cfg.targetdir}/Assets\"",
-        "{COPY} \"../AEngine-Core/ThirdParty/SDL2.0/bin/x64/SDL2.dll\" \"%{cfg.targetdir}\""
+        "{COPY} \"../AEngine-Core/ThirdParty/SDL2.0/bin/x64/SDL2.dll\" \"%{cfg.targetdir}\"",
+        "{COPY} \"../AEngine-Core/ThirdParty/OpenCL/bin/x64/OpenCL.dll\" \"%{cfg.targetdir}\""
      }
 
    filter "system:windows"

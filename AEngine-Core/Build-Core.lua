@@ -13,7 +13,14 @@ project "AEngine-Core"
       "ThirdParty/stbi/include",
       "ThirdParty/assimp/include",
       "ThirdParty/SDL2.0/include",
-      "ThirdParty/entt/include"
+      "ThirdParty/entt/include",
+      "ThirdParty/Bullet/src",
+      "ThirdParty/OpenCL"
+   }
+
+   links
+   {
+      "Bullet"
    }
 
    targetdir ("../Binaries/" .. OutputDir .. "/%{prj.name}")
@@ -23,7 +30,7 @@ project "AEngine-Core"
 
    filter "system:windows"
        systemversion "latest"
-       defines { "D3D11_MODE" }
+       defines { "D3D11_MODE", "BT_USE_SSE_IN_API" }
 
         -- Handle x64 libraries for all
         filter { "architecture:x64" }

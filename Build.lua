@@ -10,6 +10,10 @@ workspace "AEngine"
 
 OutputDir = "%{cfg.system}-%{cfg.architecture}/%{cfg.buildcfg}"
 
+group "Bullet-Physics"
+   include "AEngine-Core/ThirdParty/Bullet/Build-Bullet.lua"
+group ""
+
 group "Core"
 	include "AEngine-Core/Build-Core.lua"
 group ""

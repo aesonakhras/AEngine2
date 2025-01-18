@@ -3,6 +3,7 @@
 #include <memory.h>
 #include <string>
 #include <vector>
+#include <btBulletDynamicsCommon.h>
 
 //AEngine Specific
 
@@ -61,8 +62,6 @@ JobSystem jobSystem{8};
 CommandBuffer commandBuffer {};
 
 
-
-
 void AE::Core::Run() {
     //force delta time to zero for the first frame
     AE::System::DeltaTimeManager::GetInstance().StartFrame();
@@ -90,6 +89,78 @@ void AE::Core::Run() {
         SceneManager::GetInstance().RemoveDeletedEntities();
         AE::System::DeltaTimeManager::GetInstance().LimitFrameRate();
     }
+}
+
+void physicsTest() {
+    // Step 1: Set up Bullet components
+    // Collision configuration contains default setup for memory, collision setup
+    btDefaultCollisionConfiguration collisionConfig;
+
+    // Use the default collision dispatcher
+    btCollisionDispatcher dispatcher(&collisionConfig);
+
+    // Broadphase handles collision detection over large areas
+    btDbvtBroadphase broadphase;
+
+    // Default constraint solver
+    btSequentialImpulseConstraintSolver solver;
+
+    // Create the dynamics world
+    btDiscreteDynamicsWorld dynamicsWorld(&dispatcher, &broadphase, &solver, &collisionConfig);
+
+    // Set gravity in the world
+    dynamicsWorld.setGravity(btVector3(0, -9.81f, 0));
+
+    // Step 2: Create a ground plane
+    btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(0, 1, 0), 1);
+    btDefaultMotionState* groundMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, -1, 0)));
+
+    btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(0, groundMotionState, groundShape);
+    btRigidBody* groundRigidBody = new btRigidBody(groundRigidBodyCI);
+
+    // Add the ground to the world
+    dynamicsWorld.addRigidBody(groundRigidBody);
+
+    // Step 3: Create a dynamic sphere
+    btCollisionShape* sphereShape = new btSphereShape(1);
+    btDefaultMotionState* sphereMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, 10, 0)));
+
+    int hi = 1;
+
+    // Mass and inertia for the sphere
+    btScalar sphereMass = 1;
+    btVector3 sphereInertia(0, 0, 0);
+    sphereShape->calculateLocalInertia(sphereMass, sphereInertia);
+
+    btRigidBody::btRigidBodyConstructionInfo sphereRigidBodyCI(sphereMass, sphereMotionState, sphereShape, sphereInertia);
+    btRigidBody* sphereRigidBody = new btRigidBody(sphereRigidBodyCI);
+
+    // Add the sphere to the world
+    dynamicsWorld.addRigidBody(sphereRigidBody);
+
+    // Step 4: Simulate the world
+    for (int i = 0; i < 300; i++) {
+        dynamicsWorld.stepSimulation(1.0f / 60.0f, 10);
+
+        // Get and print the sphere's position
+        btTransform trans;
+        sphereRigidBody->getMotionState()->getWorldTransform(trans);
+
+        std::cout << "Step " << i << ": Sphere height = " << trans.getOrigin().getY() << std::endl;
+    }
+
+    // Clean up
+    dynamicsWorld.removeRigidBody(sphereRigidBody);
+    delete sphereRigidBody->getMotionState();
+    delete sphereRigidBody;
+    delete sphereShape;
+
+    dynamicsWorld.removeRigidBody(groundRigidBody);
+    delete groundRigidBody->getMotionState();
+    delete groundRigidBody;
+    delete groundShape;
+
+  
 }
 
 void AE::Core::Start(std::function<void(float32, JobSystem&, CommandBuffer&)> cb) {
@@ -128,6 +199,8 @@ void AE::Core::Start(std::function<void(float32, JobSystem&, CommandBuffer&)> cb
     AE::Core::SystemLocator::Register<AE::Core::TransformSystem>(&transformSystem);
 
     lightSystem.Initialize();
+
+    physicsTest();
 }
 
 
