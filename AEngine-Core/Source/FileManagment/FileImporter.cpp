@@ -9,13 +9,23 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+#include "ktx.h"
+
 #include "FileImporter.h"
 #include "Core/Types.h"
 
 using namespace AE::Graphics;
 
+
 TextureCreateInfo FileImporter::ImportTexture(std::string textureName, bool isCubeMap) {
     TextureCreateInfo textureData{};
+
+    //check if file is .ktx
+    if (textureName.ends_with(".ktx2")) {
+        ImportKTXFile(textureName, textureData);
+
+        return textureData;
+    }
 
     if (isCubeMap) {
         ImportCubeMap(textureName, textureData);
@@ -43,7 +53,8 @@ void FileImporter::ImportTexture2D(const std::string& fileName, TextureCreateInf
         std::cout << "image failed to load" << std::endl;
     }
 
-    textureCreateInfo.data.push_back(img);
+    textureCreateInfo.data = std::unique_ptr<uint8[]>(static_cast<uint8_t*>(img));
+    textureCreateInfo.dataSize = textureCreateInfo.width * textureCreateInfo.height * channels;
     textureCreateInfo.format = DetermineTextureFormat(channels);
     textureCreateInfo.type = AE::Graphics::TextureType::Texture2D;
     textureCreateInfo.arraySize = 1;
@@ -205,4 +216,44 @@ MeshData FileImporter::ImportMesh(std::string fileName) {
     meshData.vertexCount = scene->mMeshes[0]->mNumVertices;
 
     return meshData;
+}
+
+
+//TODO: This function needs double the amount of memory then it really should
+//Due to copying over the ktxTexture managed data to our managed data.
+//I want to keep this abstraction
+//Could benefit from a new library later potentially
+void FileImporter::ImportKTXFile(const std::string& filename, AE::Graphics::TextureCreateInfo& textureCreateInfo) {
+    ktxTexture* texture = nullptr;
+
+    // Load the KTX file
+    KTX_error_code result = ktxTexture_CreateFromNamedFile(
+        filename.c_str(),
+        KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT,
+        &texture
+    );
+
+    if (result != KTX_SUCCESS) {
+        //Todo assert
+    }
+
+    std::cout << "Successfully loaded KTX file: " << filename << std::endl;
+    std::cout << "Texture dimensions: " << texture->baseWidth << "x" << texture->baseHeight << std::endl;
+    std::cout << "Number of mip levels: " << texture->numLevels << std::endl;
+    std::cout << "Depth" << texture->baseDepth << std::endl;
+    
+    textureCreateInfo.width = texture->baseWidth;
+    textureCreateInfo.height = texture->baseHeight;
+    textureCreateInfo.depth = texture->baseDepth;
+    textureCreateInfo.mipLevels = texture->numLevels;
+    textureCreateInfo.format = DetermineTextureFormat(4);
+    textureCreateInfo.type = AE::Graphics::TextureType::Texture2D;
+    textureCreateInfo.arraySize = 1;
+    textureCreateInfo.dataSize = texture->dataSize;
+
+    //copy data
+    textureCreateInfo.data = std::make_unique<uint8[]>(textureCreateInfo.dataSize);
+    memcpy(textureCreateInfo.data.get(), ktxTexture_GetData(texture), textureCreateInfo.dataSize);
+
+    ktxTexture_Destroy(texture);
 }

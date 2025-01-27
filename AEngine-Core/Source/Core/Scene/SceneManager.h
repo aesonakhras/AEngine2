@@ -20,7 +20,7 @@ namespace AE::Core {
 			void DFSMarkEntityDeletion(Transform* transform);
 
 			void initialize() {};
-			void shutdown() {};
+			void shutdown();
 
 			SceneManager() = default;
 			~SceneManager() = default;

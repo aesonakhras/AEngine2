@@ -1,4 +1,5 @@
 #include <DirectXMath.h>
+#include <iostream>
 #include "WindmillSystem.h"
 
 #include "Components/Windmill.h"
@@ -7,9 +8,21 @@
 
 #include "Core/Systems/SystemLocator.h"
 #include "Core/Systems/TransformSystem.h"
+#include "Core/Components/RigidBody.h"
+
+#include "Core/Scene/SceneManager.h"
 
 using namespace AE::Core;
 using namespace AE::App;
+using namespace AE::Physics;
+
+void WindmillSystem::Start(entt::registry& scene, entt::entity self) {
+	//register with the on collision
+	auto& rb = scene.get<RigidBody>(self);
+
+	rb.OnCollision = std::bind(&WindmillSystem::OnCollision, this, std::placeholders::_1);
+
+}
 
 void WindmillSystem::Update(float32 deltaTime,
 	entt::registry& scene,
@@ -39,4 +52,8 @@ void WindmillSystem::Update(float32 deltaTime,
 	});
 
 
+}
+
+void WindmillSystem::OnCollision(const AE::Physics::OnCollisionInfo& collisionInfo) {
+	AE::Core::SceneManager::GetInstance().DeleteEntity(collisionInfo.Other);
 }

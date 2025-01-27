@@ -6,6 +6,7 @@
 #include "Core/Scene/SceneManager.h"
 
 #include "Core/Factories/StaticMeshFactory.h"
+#include "Core/Components/RigidBody.h"
 
 #include "Core/Components/PointLight.h" 
 #include "Resources/ResourceManager.h"
@@ -44,6 +45,23 @@ namespace AE::App {
 					0.09f,
 					0.032f
 				);
+
+			AE::Physics::RigidBodyCreateInfo info = {
+				AE::Physics::RigidBodyShape::SPHERE,
+				AE::Physics::SpherePhysicsShapeCreateInfo(1.0f),
+				AE::Physics::RigidBodyType::Dynamic,
+				startPosition,
+				0.25f,
+				direction * 20.0f,
+				100000.0f,
+				1.0f
+			};
+
+			sceneManager.Registry.emplace<AE::Physics::RigidBody>(
+				bulletEntity,
+				//rigidbody
+				bulletEntity,
+				info);
 
 			return bulletEntity;
 		}

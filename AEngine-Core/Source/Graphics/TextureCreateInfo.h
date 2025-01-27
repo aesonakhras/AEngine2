@@ -1,6 +1,6 @@
 #pragma once
 #include <memory>
-#include <vector>
+
 
 #include "TextureFormat.h"
 #include "TextureBindFlag.h"
@@ -14,8 +14,9 @@ namespace AE::Graphics {
 	};
 
 	struct TextureCreateInfo {
-		//TODO: stop using void?
-		std::vector<const void*> data;
+
+		std::unique_ptr<uint8[]> data;
+		uint32 dataSize;
 		uint32 width;
 		uint32 height;
 		uint32 depth = 1;

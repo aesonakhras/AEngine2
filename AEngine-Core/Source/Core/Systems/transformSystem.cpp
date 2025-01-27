@@ -3,6 +3,11 @@
 #include "Core/Systems/TransformSystem.h"
 #include "Core/Scene/SceneManager.h"
 
+#include "Core/Components/RigidBody.h"
+
+using namespace AE::Core;
+using namespace AE::Physics;
+
 void PrintMatrix(const DirectX::XMMATRIX& matrix, std::string name) {
 	// Convert the SIMD matrix to a 4x4 float matrix for easier access
 	DirectX::XMFLOAT4X4 matValues;
@@ -17,7 +22,7 @@ void PrintMatrix(const DirectX::XMMATRIX& matrix, std::string name) {
 	std::cout << std::endl;
 }
 
-using namespace AE::Core;
+
 
 TransformSystem::TransformSystem()
 {
@@ -69,13 +74,16 @@ void TransformSystem::Update() {
 				transform.WorldMatrix = transform.GetLocalMatrix();
 				registry->emplace<TransformUpdatedTag>(transform.Entity);
 			}
-			
 
 			updateWorldMatrix(&transform, transform.WorldMatrix, transform.GetDirty());
 
 			transform.ClearDirty();
 		}
 	}
+}
+
+void TransformSystem::UpdateKinematicTransforms() {
+
 }
 
 void TransformSystem::updateWorldMatrix(

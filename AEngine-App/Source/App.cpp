@@ -34,11 +34,15 @@
 
 #include "Resources/ResourceManager.h"
 
+#include "Physics/RigidBodyCreateInfo.h"
+#include "Core/Components/RigidBody.h"
+
 #include <iostream>
 
 using namespace AE::Core;
 using namespace AE::Graphics;
 using namespace AE::App;
+using namespace AE::Physics;
 
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
@@ -60,6 +64,9 @@ void setupPlayer(AE::Core::SceneManager& sceneManager) {
 
     std::shared_ptr<Texture> baseColor = ResourceManager::GetInstance().GetTexture(std::string("Assets/Rock/basecolor.png"), false);
     std::shared_ptr<Texture> normal = ResourceManager::GetInstance().GetTexture(std::string("Assets/Rock/normal.png"), false);
+
+    std::shared_ptr<Texture> ornament = ResourceManager::GetInstance().GetTexture(std::string("Assets/Ornament/ornament.ktx2"), false);
+
 
     sampler = graphicsManager.CreateSampler();
 
@@ -131,21 +138,47 @@ void setupEnvironment(AE::Core::SceneManager& sceneManager) {
     planeMaterial->SetTexture("diffuse2", 0, baseColor, sampler);
     planeMaterial->SetTexture("diffuse1", 1, normal, sampler);
     
+    Vec3 groundPos = { 0.0f, -1.0f, 0.0f };
+
     auto ground = StaticMeshFactory::Create(
         sceneManager.Registry, 
-        *PlayerMesh.get(),
+        *planeMesh.get(),
         *planeMaterial.get(), 
-        { 0.0f , 0.0f, 0.0f },
+        groundPos,
         DirectX::XMQuaternionRotationRollPitchYawFromVector({ 0.0f, 0.0f, 0.0f, 0.0f }),
-        { 1.0f, 1.0f, 1.0f },
+        { 5.0f, 5.0f, 5.0f },
         nullptr,
         "Plane"
     );
 
-    auto windMill = WindMillFactory::Create(sceneManager.Registry, *planeMaterial.get());
+    AE::Physics::RigidBodyCreateInfo info = {
+            AE::Physics::RigidBodyShape::BOX,
+            AE::Physics::BoxPhysicsShapeCreateInfo({5.0f,0.01f,5.0f}),
+            AE::Physics::RigidBodyType::Static,
+            groundPos,
+            0.0f,
+            {0,0,0},
+            5.0f,
+            1.0f
+    };
+
+    sceneManager.Registry.emplace<AE::Physics::RigidBody>(
+        ground, 
+        //rigidBody
+        ground,
+        info
+        );
+
+    auto windMill = WindMillFactory::Create(
+        sceneManager.Registry,
+        *planeMaterial.get(),
+        {0.0f, 4.5, 4.0f}
+    );
 
     //add the skybox
     skybox = AE::Core::SkyboxFactory::Create(sceneManager.Registry, std::string("Assets/SkyBox/"));
+
+    windmillSystem.Start(sceneManager.Registry, windMill);
 }
 
 

@@ -4,13 +4,18 @@
 #include "Resources/ResourceManager.h"
 #include "Core/Factories/StaticMeshFactory.h"
 
+#include "Physics/RigidBodyCreateInfo.h"
+#include "Core/Components/RigidBody.h"
+
 using namespace AE::App;
 using namespace AE::Core;
 using namespace AE::Graphics;
+using namespace AE::Physics;
 
 entt::entity WindMillFactory::Create(
 	entt::registry& registry,
-	AE::Graphics::Material& material
+	AE::Graphics::Material& material,
+    const Vec3& startPosition
 ) {
 
 	//create the blade static meshes with proper parenting
@@ -23,12 +28,28 @@ entt::entity WindMillFactory::Create(
         registry, 
         *houseMesh.get(), 
         material, 
-        { 0.0f , 0.0, 6.0f },
+        startPosition,
         DirectX::XMQuaternionRotationRollPitchYawFromVector({ 0.0f, 1.5708f, 0.0f, 0.0f }),
         { 0.2f, 0.2f, 0.2f},
         nullptr,
         "House"
     );
+
+    AE::Physics::RigidBodyCreateInfo info = {
+        AE::Physics::RigidBodyShape::BOX,
+        AE::Physics::BoxPhysicsShapeCreateInfo({ 2.5f, 5.0f, 2.5f}),
+        AE::Physics::RigidBodyType::Static,
+        startPosition,
+        0.0f,
+        {0,0,0}
+    };
+
+    registry.emplace<RigidBody>(
+            house,
+            //rigidBody
+            house,
+            info
+        );
 
     auto& houseTransform = registry.get<Transform>(house);
 

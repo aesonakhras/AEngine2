@@ -10,10 +10,13 @@ project "AEngine-App"
    includedirs
    {
       "Source",
-
+    
 	  -- Include Core
 	  "../AEngine-Core/Source",
-      "../AEngine-Core/ThirdParty/entt/include"
+      "../AEngine-Core/ThirdParty/entt/include",
+
+      --Todo remove this later
+      "../AEngine-Core/ThirdParty/Bullet/src"
    }
 
    links

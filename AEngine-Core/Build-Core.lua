@@ -15,7 +15,8 @@ project "AEngine-Core"
       "ThirdParty/SDL2.0/include",
       "ThirdParty/entt/include",
       "ThirdParty/Bullet/src",
-      "ThirdParty/OpenCL"
+      "ThirdParty/OpenCL",
+      "ThirdParty/KTX/include"
    }
 
    links
@@ -30,30 +31,40 @@ project "AEngine-Core"
 
    filter "system:windows"
        systemversion "latest"
-       defines { "D3D11_MODE", "BT_USE_SSE_IN_API" }
+       defines { "D3D11_MODE", "BT_USE_SSE_IN_API", "KHRONOS_STATIC" }
 
         -- Handle x64 libraries for all
         filter { "architecture:x64" }
-            libdirs { "ThirdParty/SDL2.0/lib/x64" }
+            libdirs {
+                "ThirdParty/SDL2.0/lib/x64"
+            }
             links { 
                 "SDL2",
-                "SDL2main" 
+                "SDL2main"
             }
 
         -- Handle x64 libraries for Debug
         filter { "architecture:x64", "configurations:Debug" }
-            libdirs { "ThirdParty/assimp/lib/Debug/x64" }
+            libdirs {
+                "ThirdParty/assimp/lib/Debug/x64",
+                "ThirdParty/KTX/lib/Debug/x64" 
+            }
             links { 
                 "assimp-vc143-mtd",
-                "zlibstaticd" 
+                "zlibstaticd",
+                "ktx-d"
             }
 
         -- Handle x64 libraries for Release
         filter { "architecture:x64", "configurations:Release" }
-            libdirs { "ThirdParty/assimp/lib/Release/x64" }
+            libdirs {
+                "ThirdParty/assimp/lib/Release/x64",
+                "ThirdParty/KTX/lib/Release/x64"
+            }
             links { 
                 "assimp-vc143-mt",
-                "zlibstatic"
+                "zlibstatic",
+                "ktx"
             }
 
    filter "configurations:Debug"

@@ -13,7 +13,7 @@ using namespace AE::Core;
 void LightSystem::Initialize() {
 	
 	//allocate the buffer to zero
-	uint32 bufferSize = sizeof(PointLightGPU) * MAX_LIGHTS;
+	uint32 bufferSize = sizeof(PointLightGPU) * MAX_LIGHTS ;
 
 	std::vector<uint32> initalBuffer(bufferSize, 0);
 
@@ -83,4 +83,5 @@ void LightSystem::UpdateLightGPU(uint32 index, AE::Graphics::PointLight& pointli
 	lightCount++;
 
 	lightBuffer->Update2(&gpuLight, sizeof(PointLightGPU) * index, sizeof(PointLightGPU));
+	//lightBuffer->Update2(&lightCount, lightCountLocation, sizeof(unsigned int));
 }

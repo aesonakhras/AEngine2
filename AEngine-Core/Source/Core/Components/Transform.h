@@ -64,6 +64,33 @@ struct Transform {
 				WorldMatrix.r[3].m128_f32[2]);
 		}
 
+		void SetWorldPosition(Vec3 pos) {
+			//DirectX::XMVECTOR worldPosition = {pos.X, pos.Y, pos.Z, 1.0f};
+
+			//DirectX::XMMATRIX inverseWorldMatrix = DirectX::XMMatrixInverse(nullptr, WorldMatrix);
+
+			//DirectX::XMVECTOR localPosition = DirectX::XMVector3TransformCoord(worldPosition, inverseWorldMatrix);
+
+			//DirectX::XMFLOAT3 localPositionVec3;
+			//DirectX::XMStoreFloat3(&localPositionVec3, localPosition);
+
+			//Position = { localPositionVec3.x, localPositionVec3.y, localPositionVec3.z };
+
+			Position = pos;
+
+			UpdateWorldMatrix();
+		}
+
+		void UpdateWorldMatrix() {
+			DirectX::XMMATRIX scaleMatrix = DirectX::XMMatrixScaling(Scale.X, Scale.Y, Scale.Z);
+
+			DirectX::XMMATRIX rotationMatrix = DirectX::XMMatrixRotationQuaternion(Rotation);
+
+			DirectX::XMMATRIX translationMatrix = DirectX::XMMatrixTranslation(Position.X, Position.Y, Position.Z);
+
+			WorldMatrix = scaleMatrix * rotationMatrix * translationMatrix;
+		}
+
 		void SetLocalRotation(DirectX::XMVECTOR rot) {
 			Rotation = rot;
 			isDirty = true;

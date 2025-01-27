@@ -16,6 +16,7 @@ private:
 	static unsigned char* ImportImageFile(const std::string& fileName, uint32& width, uint32& height, uint32& channels);
 	static AE::Graphics::TextureFormat DetermineTextureFormat(uint32 channels);
 
+	static void ImportKTXFile(const std::string& filename, AE::Graphics::TextureCreateInfo& textureCreateInfo);
 	FileImporter() {/*Intentionally left blank*/ };
 	~FileImporter() {/*Intentionally left blank*/ };
 

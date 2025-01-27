@@ -15,7 +15,8 @@ namespace AE::App {
 	public:
 		static entt::entity Create(
 			entt::registry& registry,
-			AE::Graphics::Material& material
+			AE::Graphics::Material& material,
+			const Vec3& startPosition
 		);
 	};
 }

@@ -39,3 +39,7 @@ void SceneManager::RemoveDeletedEntities() {
 
 	toDelete.clear();
 }
+
+void SceneManager::shutdown() {
+	Registry.clear();
+}

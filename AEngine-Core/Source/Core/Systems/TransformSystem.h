@@ -26,6 +26,8 @@ namespace AE::Core {
 
 			void Update();
 
+			void UpdateKinematicTransforms();
+
 			void ClearUpdated();
 
 		private:

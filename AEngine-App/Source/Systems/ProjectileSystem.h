@@ -47,7 +47,7 @@ namespace AE::App {
 
 				if (timeSinceLastDelete > timeToDelete) {
 					timeSinceLastDelete = 0;
-					deleteRandomProjectile(regsitry);
+					//deleteRandomProjectile(regsitry);
 				}
 			});
 		}
