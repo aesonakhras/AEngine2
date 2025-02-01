@@ -22,8 +22,6 @@ void RenderSystem::Render() {
     SceneManager& sceneManager = SceneManager::GetInstance();
     GraphicsManager& graphicsManager = GraphicsManager::GetInstance();
 
-    graphicsManager.StartFrame();
-
     //before this grab the camera
     auto cameraView = sceneManager.Registry.view<Camera, Transform>();
     
@@ -35,8 +33,6 @@ void RenderSystem::Render() {
 
     auto projection = camera.ProjectionMatrix;
     auto view = DirectX::XMMatrixInverse(nullptr, cameraTransform.WorldMatrix);
-
-    
 
     auto vp2 = view * projection;
 

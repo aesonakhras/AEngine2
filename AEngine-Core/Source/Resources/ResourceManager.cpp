@@ -14,7 +14,7 @@ bool ResourceManager::initialize() {
 	return true;
 }
 
-std::shared_ptr<AE::Graphics::Texture> ResourceManager::GetTexture(std::string id, bool isCubeMap) {
+std::shared_ptr<AE::Graphics::Texture> ResourceManager::GetTexture(std::string id, bool isCubeMap, bool generateMipMaps) {
 	//check to see if resource exists
 	auto resource = textureCache.GetItem(id);
 
@@ -28,16 +28,16 @@ std::shared_ptr<AE::Graphics::Texture> ResourceManager::GetTexture(std::string i
 		AE::Graphics::TextureCreateInfo textureData = FileImporter::ImportTexture(id, isCubeMap);
 
 		textureData.depth = 1;
-		textureData.mipLevels = 1;
 		textureData.bindFlags = AE::Graphics::ShaderResource;
 		textureData.generateMipMaps = false;
 		textureData.sampleCount = 1;
+		textureData.generateMipMaps = generateMipMaps;
 
-		auto texture = graphicsManager.CreateTextureUnsafe(textureData);
+		auto texture = graphicsManager.CreateTexture(textureData);
 
 		bool result = textureCache.addItem(
 			id,
-			std::make_unique<Texture>(texture),
+			std::shared_ptr<Texture>(texture.release()),
 			textureData.arraySize,
 			false
 		);

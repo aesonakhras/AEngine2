@@ -24,7 +24,7 @@
 namespace AE::Core {
 	class ResourceManager : public AE::Utils::Singleton<ResourceManager> {
 		public:
-			std::shared_ptr<AE::Graphics::Texture> GetTexture(std::string id, bool isCubeMap);
+			std::shared_ptr<AE::Graphics::Texture> GetTexture(std::string id, bool isCubeMap, bool generateMipMaps);
 			std::shared_ptr<AE::Graphics::Mesh> GetStaticMesh(std::string id);
 			
 			std::shared_ptr<AE::Graphics::Material> LoadMaterial(

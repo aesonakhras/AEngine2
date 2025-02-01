@@ -63,6 +63,12 @@ struct Transform {
 				WorldMatrix.r[3].m128_f32[1],
 				WorldMatrix.r[3].m128_f32[2]);
 		}
+		
+		void SetWorldRotation(DirectX::XMVECTOR rotation) {
+			Rotation = rotation;
+
+			UpdateWorldMatrix();
+		}
 
 		void SetWorldPosition(Vec3 pos) {
 			//DirectX::XMVECTOR worldPosition = {pos.X, pos.Y, pos.Z, 1.0f};

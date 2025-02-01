@@ -1,5 +1,5 @@
 #include "SceneManager.h"
-
+#include "Core/Debug.h"
 
 using namespace AE::Core;
 
@@ -34,7 +34,12 @@ void SceneManager::DFSMarkEntityDeletion(Transform* transform) {
 
 void SceneManager::RemoveDeletedEntities() {
 	for (auto entity : toDelete) {
-		Registry.destroy(entity);
+		if (Registry.valid(entity)) {
+			Registry.destroy(entity);
+		}
+		else {
+			Debug::LogError("Attempting to delete entity twice");
+		}
 	}
 
 	toDelete.clear();

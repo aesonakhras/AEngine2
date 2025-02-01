@@ -1,6 +1,6 @@
 #pragma once
 #include <memory>
-
+#include <array>
 
 #include "TextureFormat.h"
 #include "TextureBindFlag.h"
@@ -22,6 +22,7 @@ namespace AE::Graphics {
 		uint32 depth = 1;
 		uint32 mipLevels = 1;
 		TextureFormat format;
+		std::array<uint32, 100> imageOffsets; //supports texture up to size 32k x 32k
 		TextureBindFlag bindFlags;
 		bool generateMipMaps = false;
 		uint32 arraySize = 1;

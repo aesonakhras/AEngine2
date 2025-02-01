@@ -27,15 +27,19 @@ void LightSystem::Initialize() {
 	);
 
 	lightBuffer->Bind(3);
+
+	//SceneManager& sceneManager = SceneManager::GetInstance();
+	//auto& registry = sceneManager.Registry;
+
+	//dirLight = registry.create();
+
+	//registry.emplace<DirectionalLight>(dirLight, Vec3{ 0,-1,0 }, Vec3{1,1,1});
 }
 
 void LightSystem::Update() {
 	SceneManager& sceneManager = SceneManager::GetInstance();
-	GraphicsManager& graphicsManager = GraphicsManager::GetInstance();
 
 	auto& registry = sceneManager.Registry;
-
-	graphicsManager.StartFrame();
 
 	//before this grab the camera
 	auto updatedLightsView = sceneManager.Registry.view<PointLight, Transform, TransformUpdatedTag>();
@@ -53,6 +57,12 @@ void LightSystem::Update() {
 		}
 		i++;
 	}
+
+	//process dirlight(can be done in parallel with above function)
+	//set rasterizer
+	//update render targets
+	//gather all shadow behaving objects, and then render them
+	
 }
 
 void LightSystem::AddLightGPU(AE::Graphics::PointLight& pointlight, Transform& transform) {

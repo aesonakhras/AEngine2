@@ -30,6 +30,9 @@ namespace AE::Graphics {
 		case TextureFormat::RGBA32F:
 			return DXGI_FORMAT_R32G32B32A32_FLOAT;
 			break;
+		case TextureFormat::BC7_UNORM:
+			return DXGI_FORMAT_BC7_UNORM;
+			break;
 		default:
 			AE::Core::Debug::LogWarning("Unsupported texture format used");
 			break;

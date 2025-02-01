@@ -362,13 +362,17 @@ std::shared_ptr<DX11ShaderObject> DX11GLI::CreateShaderObject(const void* data, 
     return std::make_shared<DX11ShaderObject>(m_deviceContext.Get(), m_device.Get(), data, dataSize, entryPoint, shaderTarget);
 }
 
-std::shared_ptr<AE::Graphics::IShaderResourceView> DX11GLI::CreateShaderResourceView(const std::shared_ptr<AE::Graphics::ITextureResource> textureResource) {
+std::shared_ptr<AE::Graphics::IShaderResourceView> DX11GLI::CreateShaderResourceView(
+    const std::shared_ptr<AE::Graphics::ITextureResource> textureResource,
+    const AE::Graphics::TextureCreateInfo& info
+) {
     auto dx11ShaderResourceView = std::static_pointer_cast<DX11TextureResource>(textureResource);
 
     return std::make_shared<DX11ShaderResourceView>(
             m_deviceContext, 
             m_device, 
-            dx11ShaderResourceView
+            dx11ShaderResourceView,
+            info
     );
 }
 

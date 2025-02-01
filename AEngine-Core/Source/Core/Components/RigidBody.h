@@ -1,4 +1,5 @@
 #pragma once
+#include <DirectXMath.h>
 #include <memory>
 #include <functional>
 #include <entt/entt.hpp>
@@ -22,6 +23,8 @@ namespace AE::Physics {
         std::function<void(const OnCollisionInfo&)> OnCollision;
 
         Vec3 GetPosition();
+        DirectX::XMVECTOR GetRotation();
+
         void SetPosition(Vec3 pos);
         bool IsStatic();
         void ApplyForce(const Vec3& force);

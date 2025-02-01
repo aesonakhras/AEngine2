@@ -16,6 +16,8 @@ using namespace AE::Core;
 using namespace AE::App;
 using namespace AE::Physics;
 
+static int counter = 0;
+
 void WindmillSystem::Start(entt::registry& scene, entt::entity self) {
 	//register with the on collision
 	auto& rb = scene.get<RigidBody>(self);
@@ -51,9 +53,12 @@ void WindmillSystem::Update(float32 deltaTime,
 		transforSystem->SetLocalRotation(playerEntity, newRot);
 	});
 
-
+	counter++;
 }
 
 void WindmillSystem::OnCollision(const AE::Physics::OnCollisionInfo& collisionInfo) {
+
+	std::cout << "Collision times: " << counter << std::endl;
+	
 	AE::Core::SceneManager::GetInstance().DeleteEntity(collisionInfo.Other);
 }

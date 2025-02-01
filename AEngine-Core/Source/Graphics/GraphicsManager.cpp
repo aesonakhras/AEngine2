@@ -103,22 +103,13 @@ std::shared_ptr<Material> GraphicsManager::CreateMaterialInstance(
 }
 
 
-std::shared_ptr<Texture> GraphicsManager::CreateTexture(const AE::Graphics::TextureCreateInfo& info) {
+std::unique_ptr<Texture> GraphicsManager::CreateTexture(const AE::Graphics::TextureCreateInfo& info) {
     auto textureResource = m_GLI->CreateTextureResource(info);
     
-    auto shaderResourceView = m_GLI->CreateShaderResourceView(textureResource);
+    auto shaderResourceView = m_GLI->CreateShaderResourceView(textureResource, info);
     
 
-    return std::make_shared<Texture>(shaderResourceView, textureResource);
-}
-
-Texture GraphicsManager::CreateTextureUnsafe(const AE::Graphics::TextureCreateInfo& info) {
-    auto textureResource = m_GLI->CreateTextureResource(info);
-
-    auto shaderResourceView = m_GLI->CreateShaderResourceView(textureResource);
-
-
-    return Texture { shaderResourceView, textureResource };
+    return std::make_unique<Texture>(shaderResourceView, textureResource);
 }
 
 std::shared_ptr<ISampler> GraphicsManager::CreateSampler() {

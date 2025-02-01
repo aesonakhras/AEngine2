@@ -103,6 +103,19 @@ Vec3 RigidBody::GetPosition() {
     return { origin.x(), origin.y(), origin.z() };
 }
 
+DirectX::XMVECTOR RigidBody::GetRotation() {
+    const auto& transform = rigidBodyBullet->getWorldTransform();
+
+    const auto& rotation = transform.getRotation();
+
+    return {
+        rotation.x(),
+        rotation.y(),
+        rotation.z(),
+        rotation.w()
+    };
+}
+
 void RigidBody::SetPosition(Vec3 pos) {
     btTransform transform = rigidBodyBullet->getWorldTransform();
     transform.setOrigin(btVector3(pos.X, pos.Y, pos.Z));

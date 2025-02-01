@@ -39,7 +39,10 @@ namespace AE::Graphics {
 
 		virtual std::shared_ptr<IFragmentShader> CreateFragmentShader(const void* data,size_t dataSize) = 0;
 
-		virtual std::shared_ptr<AE::Graphics::IShaderResourceView> CreateShaderResourceView(const std::shared_ptr<AE::Graphics::ITextureResource> textureResource) = 0;
+		virtual std::shared_ptr<AE::Graphics::IShaderResourceView> CreateShaderResourceView(
+			const std::shared_ptr<AE::Graphics::ITextureResource> textureResource,
+			const AE::Graphics::TextureCreateInfo& info
+		) = 0;
 		virtual std::shared_ptr<AE::Graphics::ISampler> CreateSampler() = 0;
 		virtual std::shared_ptr<AE::Graphics::ITextureResource> CreateTextureResource(const AE::Graphics::TextureCreateInfo& createInfo) = 0;
 

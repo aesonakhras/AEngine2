@@ -14,7 +14,7 @@ entt::entity SkyboxFactory::Create(
 
 	//load the mesh
 	std::shared_ptr<Mesh> skyBoxMesh = ResourceManager::GetInstance().GetStaticMesh(std::string("Assets/skybox.obj"));
-	std::shared_ptr<Texture> skyBoxTexture = ResourceManager::GetInstance().GetTexture(cubeMapName, true);
+	std::shared_ptr<Texture> skyBoxTexture = ResourceManager::GetInstance().GetTexture(cubeMapName, true, false);
 
 	std::shared_ptr<AE::Graphics::ISampler> sampler = graphicsManager.CreateSampler();
 

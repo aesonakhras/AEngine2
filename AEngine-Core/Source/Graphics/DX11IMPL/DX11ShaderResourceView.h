@@ -8,6 +8,7 @@
 namespace AE::Graphics {
 	//forward declares
 	class DX11TextureResource;
+	struct TextureCreateInfo;
 
 	class DX11ShaderResourceView : public IShaderResourceView {
 	public:
@@ -15,7 +16,8 @@ namespace AE::Graphics {
 		DX11ShaderResourceView(
 			Microsoft::WRL::ComPtr<ID3D11DeviceContext>deviceContext,
 			Microsoft::WRL::ComPtr <ID3D11Device> device,
-			std::shared_ptr<DX11TextureResource> textureResource
+			std::shared_ptr<DX11TextureResource> textureResource,
+			const AE::Graphics::TextureCreateInfo& info
 		);
 		virtual ~DX11ShaderResourceView() {};
 

@@ -40,7 +40,10 @@ namespace AE::Graphics {
 		//Creation
 		virtual std::shared_ptr <IBuffer> CreateBuffer(const void* data, size_t count, size_t stride, BufferType bufferType) final override;
 		
-		virtual std::shared_ptr<AE::Graphics::IShaderResourceView> CreateShaderResourceView(const std::shared_ptr<AE::Graphics::ITextureResource> textureResource) final override;
+		virtual std::shared_ptr<AE::Graphics::IShaderResourceView> CreateShaderResourceView(
+			const std::shared_ptr<AE::Graphics::ITextureResource> textureResource,
+			const AE::Graphics::TextureCreateInfo& info
+		) final override;
 		virtual std::shared_ptr<AE::Graphics::ISampler> CreateSampler() final override;
 		virtual std::shared_ptr<AE::Graphics::ITextureResource> CreateTextureResource(const AE::Graphics::TextureCreateInfo& createInfo) final override;
 

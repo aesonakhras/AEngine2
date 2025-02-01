@@ -62,12 +62,8 @@ void setupPlayer(AE::Core::SceneManager& sceneManager) {
     //textures
     GraphicsManager& graphicsManager = GraphicsManager::GetInstance();
 
-    std::shared_ptr<Texture> baseColor = ResourceManager::GetInstance().GetTexture(std::string("Assets/Rock/basecolor.png"), false);
-    std::shared_ptr<Texture> normal = ResourceManager::GetInstance().GetTexture(std::string("Assets/Rock/normal.png"), false);
-
-    std::shared_ptr<Texture> ornament = ResourceManager::GetInstance().GetTexture(std::string("Assets/Ornament/ornament.ktx2"), false);
-
-
+    std::shared_ptr<Texture> baseColor = ResourceManager::GetInstance().GetTexture(std::string("Assets/Rock/basecolor.png"), false, true);
+    std::shared_ptr<Texture> normal = ResourceManager::GetInstance().GetTexture(std::string("Assets/Rock/normal.png"), false, true);
     sampler = graphicsManager.CreateSampler();
 
     //std::shared_ptr<Mesh> PlayerMesh = ResourceManager::GetInstance().GetStaticMesh(std::string("Assets/Rock/rock.obj"));
@@ -120,12 +116,13 @@ void setupPlayer(AE::Core::SceneManager& sceneManager) {
 void setupEnvironment(AE::Core::SceneManager& sceneManager) {
     GraphicsManager& graphicsManager = GraphicsManager::GetInstance();
 
-    std::shared_ptr<Texture> normal = ResourceManager::GetInstance().GetTexture(std::string("Assets/Rock/normal.png"), false);
-    std::shared_ptr<Texture> baseColor = ResourceManager::GetInstance().GetTexture(std::string("Assets/Rock/basecolor.png"), false);
+    std::shared_ptr<Texture> normal = ResourceManager::GetInstance().GetTexture(std::string("Assets/Rock/normal.png"), false, true);
+    std::shared_ptr<Texture> baseColor = ResourceManager::GetInstance().GetTexture(std::string("Assets/Rock/basecolor.png"), false, true);
 
     std::shared_ptr<Mesh> planeMesh = ResourceManager::GetInstance().GetStaticMesh(std::string("Assets/plane.obj"));
 
     std::shared_ptr<Mesh> PlayerMesh = ResourceManager::GetInstance().GetStaticMesh(std::string("Assets/Rock/rock.obj"));
+    std::shared_ptr<Texture> ornament = ResourceManager::GetInstance().GetTexture(std::string("Assets/Ornament/ornament.ktx2"), false, false);
 
 
     auto planeMaterial = ResourceManager::GetInstance().GetSharedMaterial("RockMaterial");
@@ -135,7 +132,7 @@ void setupEnvironment(AE::Core::SceneManager& sceneManager) {
         sampler = graphicsManager.CreateSampler();
     }
 
-    planeMaterial->SetTexture("diffuse2", 0, baseColor, sampler);
+    planeMaterial->SetTexture("diffuse2", 0, ornament, sampler);
     planeMaterial->SetTexture("diffuse1", 1, normal, sampler);
     
     Vec3 groundPos = { 0.0f, -1.0f, 0.0f };
@@ -176,6 +173,8 @@ void setupEnvironment(AE::Core::SceneManager& sceneManager) {
     );
 
     //add the skybox
+    //skybox = AE::Core::SkyboxFactory::Create(sceneManager.Registry, std::string("Assets/SkyBox/alley_i.ktx2"));
+
     skybox = AE::Core::SkyboxFactory::Create(sceneManager.Registry, std::string("Assets/SkyBox/"));
 
     windmillSystem.Start(sceneManager.Registry, windMill);

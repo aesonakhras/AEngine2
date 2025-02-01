@@ -100,6 +100,8 @@ void AE::Core::Run() {
             timeSinceLastPhysicsStep -= physicsTimeStep;
         }
 
+        GraphicsManager::GetInstance().StartFrame();
+
         lightSystem.Update();
         renderSystem.Render();
 

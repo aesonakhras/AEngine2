@@ -55,9 +55,10 @@ void FileImporter::ImportTexture2D(const std::string& fileName, TextureCreateInf
 
     textureCreateInfo.data = std::unique_ptr<uint8[]>(static_cast<uint8_t*>(img));
     textureCreateInfo.dataSize = textureCreateInfo.width * textureCreateInfo.height * channels;
-    textureCreateInfo.format = DetermineTextureFormat(channels);
+    textureCreateInfo.format = DetermineTextureFormatFromChannels(channels);
     textureCreateInfo.type = AE::Graphics::TextureType::Texture2D;
     textureCreateInfo.arraySize = 1;
+    textureCreateInfo.mipLevels = 1;
 }
 
 //Convention for import will be fileName = folderName/ <- make sure to put slash
@@ -76,8 +77,8 @@ void FileImporter::ImportCubeMap(const std::string& fileName, TextureCreateInfo&
     };
 
     uint32 channels = 0;
-
-    
+    //allocate enough for All of the images and put the consecutevly
+    textureCreateInfo.mipLevels = 1;
     for (int i = 0; i < CUBE_MAP_SIDES; i++) {
         //TODO: Get rid of hardcoding eventually
         std::string finalFileName = fileName + cubeMapNames[i] + ".png";
@@ -92,17 +93,37 @@ void FileImporter::ImportCubeMap(const std::string& fileName, TextureCreateInfo&
         );
 
         if (img != nullptr) {
-            textureCreateInfo.data.push_back(img);
+            if (textureCreateInfo.data == nullptr) {
+                //allocate necessary memory
+                textureCreateInfo.dataSize = textureCreateInfo.width * textureCreateInfo.height * channels * CUBE_MAP_SIDES;
+
+                textureCreateInfo.data = std::make_unique<uint8[]>(textureCreateInfo.dataSize);
+
+                if (textureCreateInfo.data == nullptr) {
+                    //TODO: Failure lmao
+                }
+            }
+
+            uint32 singleSize = textureCreateInfo.width * textureCreateInfo.height * channels;
+
+            std::memcpy(
+                textureCreateInfo.data.get() + (singleSize * i),
+                img,
+                singleSize
+            );
+        }
+        else {
+            //TODO: Failure loading image
         }
     }
 
     //we end up using the width, height, and channels from the last loaded image
     //They need to be same width and textures
-    if (textureCreateInfo.data.size() != CUBE_MAP_SIDES) {
-        std::cout << "ERROR IN LOADING CUBE MAP" << std::endl;
-    }
+    //if (textureCreateInfo.data.size() != CUBE_MAP_SIDES) {
+    //    std::cout << "ERROR IN LOADING CUBE MAP" << std::endl;
+    //}
 
-    textureCreateInfo.format = DetermineTextureFormat(channels);
+    textureCreateInfo.format = DetermineTextureFormatFromChannels(channels);
     textureCreateInfo.type = AE::Graphics::TextureType::Cubemap;
     textureCreateInfo.arraySize = CUBE_MAP_SIDES;
 }
@@ -121,7 +142,7 @@ unsigned char* FileImporter::ImportImageFile(const std::string& fileName, uint32
 
 }
 
-TextureFormat FileImporter::DetermineTextureFormat(uint32 channels) {
+TextureFormat FileImporter::DetermineTextureFormatFromChannels(uint32 channels) {
     switch (channels)
     {
         case(1):
@@ -240,20 +261,42 @@ void FileImporter::ImportKTXFile(const std::string& filename, AE::Graphics::Text
     std::cout << "Successfully loaded KTX file: " << filename << std::endl;
     std::cout << "Texture dimensions: " << texture->baseWidth << "x" << texture->baseHeight << std::endl;
     std::cout << "Number of mip levels: " << texture->numLevels << std::endl;
-    std::cout << "Depth" << texture->baseDepth << std::endl;
+    //std::cout << "format" << ktxTexture2_Expand(texture) << std::endl;
     
     textureCreateInfo.width = texture->baseWidth;
     textureCreateInfo.height = texture->baseHeight;
-    textureCreateInfo.depth = texture->baseDepth;
+    //textureCreateInfo.depth = texture->baseDepth;
     textureCreateInfo.mipLevels = texture->numLevels;
-    textureCreateInfo.format = DetermineTextureFormat(4);
-    textureCreateInfo.type = AE::Graphics::TextureType::Texture2D;
-    textureCreateInfo.arraySize = 1;
-    textureCreateInfo.dataSize = texture->dataSize;
+    
+    
+    textureCreateInfo.format = TextureFormat::BC7_UNORM;
+
+    if (texture->isCubemap) {
+        textureCreateInfo.type = AE::Graphics::TextureType::Cubemap;
+    }
+    else {
+        textureCreateInfo.type = AE::Graphics::TextureType::Texture2D;
+    }
+    textureCreateInfo.arraySize = texture->numFaces;
+    textureCreateInfo.dataSize = ktxTexture_GetDataSize(texture);
+
+    //pack in the ability for locations for the mip maps
+   
+    textureCreateInfo.imageOffsets[0] = 0;
+
+
+    for (uint32 mip = 0; mip < texture->numLevels; mip++) {
+        for (uint32 face = 0; face < texture->numFaces; face++) {
+            //convert to face major ordering
+            ktx_size_t offset;
+            ktxTexture_GetImageOffset(ktxTexture(texture), mip, 0, face, &offset);
+            textureCreateInfo.imageOffsets[face * texture->numLevels + mip] = static_cast<uint32>(offset);
+        }
+    }
 
     //copy data
     textureCreateInfo.data = std::make_unique<uint8[]>(textureCreateInfo.dataSize);
-    memcpy(textureCreateInfo.data.get(), ktxTexture_GetData(texture), textureCreateInfo.dataSize);
+    std::memcpy(textureCreateInfo.data.get(), ktxTexture_GetData(texture), textureCreateInfo.dataSize);
 
     ktxTexture_Destroy(texture);
 }

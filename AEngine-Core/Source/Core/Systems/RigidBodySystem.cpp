@@ -1,3 +1,5 @@
+#include <DirectXMath.h>
+
 #include "RigidBodySystem.h"
 #include "Core/Components/Transform.h"
 
@@ -19,10 +21,11 @@ void RigidBodySystem::Update(entt::registry& registry, float32 timeStep) {
 		if (!rigidBody.IsStatic()) {
 			//only need to update the world transform and not the parent matricies
 			Vec3 rigidBodyPosition = rigidBody.GetPosition();
-
-			//std::cout << "X: " << rigidBodyPosition.X << "Y: " << rigidBodyPosition.Y << "Z: " << rigidBodyPosition.Z << std::endl;
+			DirectX::XMVECTOR rigidBodyRotation = rigidBody.GetRotation();
 
 			transform.SetWorldPosition(rigidBodyPosition);
+
+			transform.SetWorldRotation(rigidBodyRotation);
 		}
 	}
 
