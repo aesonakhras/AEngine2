@@ -31,6 +31,8 @@ entt::entity PlayerFactory::Create(
 		aspectRatio,
 		nearZ,
 		farZ,
+		false,
+		0,
 		{ 0.0, 0.0, 0.0f },
 		Lookat
 	);

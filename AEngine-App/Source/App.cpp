@@ -173,9 +173,9 @@ void setupEnvironment(AE::Core::SceneManager& sceneManager) {
     );
 
     //add the skybox
-    //skybox = AE::Core::SkyboxFactory::Create(sceneManager.Registry, std::string("Assets/SkyBox/alley_i.ktx2"));
+    skybox = AE::Core::SkyboxFactory::Create(sceneManager.Registry, std::string("Assets/SkyBox/alley_r.ktx2"));
 
-    skybox = AE::Core::SkyboxFactory::Create(sceneManager.Registry, std::string("Assets/SkyBox/"));
+    //skybox = AE::Core::SkyboxFactory::Create(sceneManager.Registry, std::string("Assets/SkyBox/"));
 
     windmillSystem.Start(sceneManager.Registry, windMill);
 }

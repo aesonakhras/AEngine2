@@ -8,5 +8,6 @@ namespace AE::Graphics {
 
         virtual void Bind(unsigned int slot) = 0;
         virtual void Unbind(unsigned int slot) = 0;
+        virtual void BindAsRenderTarget() = 0;
     };
 }

@@ -1,9 +1,11 @@
 #pragma once
+#include <variant>
 #include <memory>
 #include <d3d11.h>
 #include <wrl/client.h>
 
 #include "Graphics/IShaderResourceView.h"
+#include "Graphics/TextureCreateInfo.h"
 
 namespace AE::Graphics {
 	//forward declares
@@ -23,10 +25,29 @@ namespace AE::Graphics {
 
 		virtual void Bind(unsigned int slot) override;
 		virtual void Unbind(unsigned int slot) override {};
+		virtual void BindAsRenderTarget() override;
 	private:
+
+		std::variant<
+			std::monostate, 
+			Microsoft::WRL::ComPtr<ID3D11RenderTargetView>,
+			Microsoft::WRL::ComPtr<ID3D11DepthStencilView>
+		> m_renderView;
 
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_shaderResourceView;
 		Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_deviceContext;
 		Microsoft::WRL::ComPtr<ID3D11Device> m_device;
+
+		void CreateShaderResourceView(
+			std::shared_ptr<DX11TextureResource> textureResource,
+			const AE::Graphics::TextureCreateInfo& info
+		);
+
+		void CreateDepthStencilView(
+			std::shared_ptr<DX11TextureResource> textureResource,
+			DXGI_FORMAT format
+		);
+
+		TextureUse m_use;
 	};
 }

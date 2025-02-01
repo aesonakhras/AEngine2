@@ -28,10 +28,17 @@ std::shared_ptr<AE::Graphics::Texture> ResourceManager::GetTexture(std::string i
 		AE::Graphics::TextureCreateInfo textureData = FileImporter::ImportTexture(id, isCubeMap);
 
 		textureData.depth = 1;
-		textureData.bindFlags = AE::Graphics::ShaderResource;
+		textureData.use = AE::Graphics::TextureUse::ShaderResource;
 		textureData.generateMipMaps = false;
 		textureData.sampleCount = 1;
 		textureData.generateMipMaps = generateMipMaps;
+		if (isCubeMap) {
+			textureData.type = TextureType::Cubemap;
+		}
+		else
+		{
+			textureData.type = TextureType::Texture2D;
+		}
 
 		auto texture = graphicsManager.CreateTexture(textureData);
 

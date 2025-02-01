@@ -10,22 +10,42 @@ namespace AE::Core {
 		float32 NearZ;
 		float32 FarZ;
 		DirectX::XMMATRIX ProjectionMatrix;
+		bool IsOrthographic;
+		float32 OrthographicSize;
 
 		Camera(
 			float32 fov,
 			float32 aspectRatio,
 			float32 nearZ,
-			float32 farZ
+			float32 farZ,
+			bool isOrthographic,
+			float32 orthographicSize
 		) : Fov(fov),
 			AspectRatio(aspectRatio),
 			NearZ(nearZ),
-			FarZ(farZ)
+			FarZ(farZ),
+			IsOrthographic(isOrthographic)
 		{
 			ProjectionMatrix = UpdateProjectionMatrix();
 		}
 
 		DirectX::XMMATRIX UpdateProjectionMatrix() {
-			return DirectX::XMMatrixPerspectiveFovLH(Fov, AspectRatio, NearZ, FarZ);
+			if (IsOrthographic) {
+				return DirectX::XMMatrixOrthographicLH(
+					OrthographicSize,
+					OrthographicSize,
+					NearZ,
+					FarZ
+				);
+			}
+			else {
+				return DirectX::XMMatrixPerspectiveFovLH(
+					Fov,
+					AspectRatio,
+					NearZ,
+					FarZ
+				);
+			}
 		}
 		
 	};

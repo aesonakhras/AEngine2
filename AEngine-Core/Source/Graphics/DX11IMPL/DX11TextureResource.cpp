@@ -51,10 +51,10 @@ D3D11_TEXTURE2D_DESC DX11TextureResource::CreateTextureDescription(const Texture
 	desc.Format = ConvertToDX11Format(Format);
 	desc.SampleDesc.Count = 1; // No multisampling for now
 	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.BindFlags = ConvertToDX11TextureBinding(createInfo.bindFlags);
+	desc.BindFlags = ConvertToDX11TextureBinding(createInfo.use);
 	desc.CPUAccessFlags = 0;
 	desc.MiscFlags = 0;
-
+	
 	if (Type == TextureType::Cubemap) {
 		desc.MiscFlags |= D3D11_RESOURCE_MISC_TEXTURECUBE;
 	}

@@ -14,12 +14,22 @@ entt::entity CameraFactory::Create(
 	float32 aspectRatio,
 	float32 nearZ,
 	float32 farZ,
+	bool isOrthographic,
+	float32 orthographicSize,
 	Vec3 position,
 	Vec3 lookAt
 ) {
 	entt::entity entity = registry.create();
 
-	registry.emplace<Camera>(entity, fov, aspectRatio, nearZ, farZ);
+	registry.emplace<Camera>(
+		entity,
+		fov,
+		aspectRatio,
+		nearZ,
+		farZ,
+		isOrthographic,
+		orthographicSize
+	);
 	
 
 	auto lookDir = lookAt - position;

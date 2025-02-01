@@ -4,7 +4,7 @@ namespace AE::Graphics {
 	enum class TextureFormat
 	{
 		R32_TYPELESS,
-		R24F,
+		R24G8_TYPELESS,
 		R8U,
 		RGBA8U,
 		RG32F,

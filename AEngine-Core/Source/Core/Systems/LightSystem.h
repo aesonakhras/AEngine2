@@ -42,5 +42,40 @@ namespace AE::Graphics {
 		void AddLightGPU(AE::Graphics::PointLight& pointlight, Transform& transform);
 
 		void UpdateLightGPU(uint32 index, AE::Graphics::PointLight& pointlight, Transform& transform);
+
+		entt::entity dirLight;
+
+		std::string shadow = R"(
+			struct VS_Input
+			{
+				float3 position : POSITION;
+				float3 normal   : NORMAL;
+				float3 tangent  : TANGENT;
+				float3 bitangent : BITANGENT;
+				float2 uv       : TEXCOORD;
+			};
+
+			struct VS_Output
+			{
+				float4 posLightSpace : SV_POSITION;
+			};
+
+			cbuffer LightMatrices : register(b0)
+			{
+				matrix lightViewProj;
+			}
+
+			VS_Output VS_Shadow(VS_Input input)
+			{
+				VS_Output output;
+				output.posLightSpace = mul(lightViewProj, float4(input.position, 1.0f));
+				return output;
+			}
+
+			void PS_Shadow(VS_Output input)
+			{
+				//depth only
+			}
+		)";
 	};
 }

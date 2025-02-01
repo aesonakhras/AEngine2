@@ -3,6 +3,7 @@
 #include <vector>
 #include "LightSystem.h"
 //#include "Core/Components/PointLight.h"
+#include "Core/Components/DirectionalLight.h"
 
 #include "Core/Scene/SceneManager.h"
 #include "Core/Systems/TransformSystem.h"
@@ -28,12 +29,12 @@ void LightSystem::Initialize() {
 
 	lightBuffer->Bind(3);
 
-	//SceneManager& sceneManager = SceneManager::GetInstance();
-	//auto& registry = sceneManager.Registry;
+	SceneManager& sceneManager = SceneManager::GetInstance();
+	auto& registry = sceneManager.Registry;
 
-	//dirLight = registry.create();
+	dirLight = registry.create();
 
-	//registry.emplace<DirectionalLight>(dirLight, Vec3{ 0,-1,0 }, Vec3{1,1,1});
+	registry.emplace<DirectionalLight>(dirLight, Vec3{ 0, -1, 0 }, Vec3{1, 1, 1});
 }
 
 void LightSystem::Update() {

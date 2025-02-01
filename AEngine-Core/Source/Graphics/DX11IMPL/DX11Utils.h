@@ -33,6 +33,12 @@ namespace AE::Graphics {
 		case TextureFormat::BC7_UNORM:
 			return DXGI_FORMAT_BC7_UNORM;
 			break;
+		case TextureFormat::R32_TYPELESS:
+			return DXGI_FORMAT_R32_TYPELESS;
+			break;
+		case TextureFormat::R24G8_TYPELESS:
+			return DXGI_FORMAT_R24G8_TYPELESS;
+			break;
 		default:
 			AE::Core::Debug::LogWarning("Unsupported texture format used");
 			break;
@@ -40,21 +46,34 @@ namespace AE::Graphics {
 	}
 
 	//Does not prevent invalid combinations assumes you know what you are doing
-	inline UINT ConvertToDX11TextureBinding(TextureBindFlag usage) {
-		UINT result = 0;
+	//inline UINT ConvertToDX11TextureBinding(TextureBindFlag usage) {
+	//	UINT result = 0;
 
-		if (usage & TextureBindFlag::ShaderResource ) {
-			result |= D3D11_BIND_FLAG::D3D11_BIND_SHADER_RESOURCE;
-		}
+	//	if (usage & TextureBindFlag::ShaderResource ) {
+	//		result |= D3D11_BIND_FLAG::D3D11_BIND_SHADER_RESOURCE;
+	//	}
 
-		if (usage & TextureBindFlag::RenderTarget) {
+	//	if (usage & TextureBindFlag::RenderTarget) {
+	//		result |= D3D11_BIND_FLAG::D3D11_BIND_RENDER_TARGET;
+	//	}
+
+	//	if (usage & TextureBindFlag::DepthStencil) {
+	//		result |= D3D11_BIND_FLAG::D3D11_BIND_DEPTH_STENCIL;
+	//	}
+	//	
+	//	return result;
+	//}
+
+	inline UINT ConvertToDX11TextureBinding(TextureUse use) {
+		UINT result = D3D11_BIND_FLAG::D3D11_BIND_SHADER_RESOURCE;
+
+		if (use == TextureUse::RenderTexture) {
 			result |= D3D11_BIND_FLAG::D3D11_BIND_RENDER_TARGET;
 		}
-
-		if (usage & TextureBindFlag::DepthStencil) {
+		else if (use == TextureUse::DepthTexture) {
 			result |= D3D11_BIND_FLAG::D3D11_BIND_DEPTH_STENCIL;
 		}
-		
+
 		return result;
 	}
 

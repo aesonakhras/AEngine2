@@ -13,6 +13,12 @@ namespace AE::Graphics {
 		Cubemap
 	};
 
+	enum class TextureUse {
+		ShaderResource,
+		RenderTexture,
+		DepthTexture
+	};
+
 	struct TextureCreateInfo {
 
 		std::unique_ptr<uint8[]> data;
@@ -23,10 +29,11 @@ namespace AE::Graphics {
 		uint32 mipLevels = 1;
 		TextureFormat format;
 		std::array<uint32, 100> imageOffsets; //supports texture up to size 32k x 32k
-		TextureBindFlag bindFlags;
+		//TextureBindFlag bindFlags;
 		bool generateMipMaps = false;
 		uint32 arraySize = 1;
 		uint32 sampleCount;
 		TextureType type;
+		TextureUse use;
 	};
 }

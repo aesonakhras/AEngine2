@@ -14,6 +14,8 @@ namespace AE::Core {
 			float32 aspectRatio,
 			float32 nearZ,
 			float32 farZ,
+			bool isOrthographic,
+			float32 orthographicSize,
 			Vec3 position,
 			Vec3 lookAt
 		);
