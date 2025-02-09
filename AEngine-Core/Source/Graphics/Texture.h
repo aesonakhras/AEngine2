@@ -8,7 +8,14 @@ namespace AE::Graphics {
 	public:
 		Texture(std::shared_ptr<AE::Graphics::IShaderResourceView> _shaderResourceView,
 			std::shared_ptr<AE::Graphics::ITextureResource> _textureResource);
+		
 		void Bind(unsigned int slot);
+		void UnBind(unsigned int slot);
+
+		void BindAsRenderTarget(unsigned int slot);
+		void UnBindRenderTarget(unsigned int slot);
+		
+		void ClearRenderTarget();
 		~Texture();
 
 	private:

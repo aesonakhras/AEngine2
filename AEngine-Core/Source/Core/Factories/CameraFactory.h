@@ -17,7 +17,8 @@ namespace AE::Core {
 			bool isOrthographic,
 			float32 orthographicSize,
 			Vec3 position,
-			Vec3 lookAt
+			Vec3 lookAt,
+			bool isMainCamera
 		);
 	};
 }

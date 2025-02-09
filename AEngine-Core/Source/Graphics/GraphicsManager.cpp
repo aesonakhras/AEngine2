@@ -47,6 +47,10 @@ void GraphicsManager::PresentFrame() {
     m_GLI->PresentFrame();
 }
 
+void GraphicsManager::SetRasterState(std::string stateName) {
+    m_GLI->SetRasterState(stateName);
+}
+
 std::shared_ptr<IVertexShader> GraphicsManager::CreateVertexShader(std::string fileName, const std::vector<VertexAttribute>& attributes) {
     auto shaderData = LoadShaderRaw(fileName);
 
@@ -112,10 +116,14 @@ std::unique_ptr<Texture> GraphicsManager::CreateTexture(const AE::Graphics::Text
     return std::make_unique<Texture>(shaderResourceView, textureResource);
 }
 
-std::shared_ptr<ISampler> GraphicsManager::CreateSampler() {
-    auto sampler = m_GLI->CreateSampler();
+std::shared_ptr<ISampler> GraphicsManager::CreateSampler(bool isDepth) {
+    auto sampler = m_GLI->CreateSampler(isDepth);
 
     return sampler;
+}
+
+std::shared_ptr<IViewport> GraphicsManager::CreateViewPort(const AE::Graphics::ViewPortCreateInfo& info) {
+    return m_GLI->CreateViewPort(info);
 }
 
 void GraphicsManager::SetDepthState(bool isSkybox) {

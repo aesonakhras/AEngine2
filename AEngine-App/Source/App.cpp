@@ -57,6 +57,8 @@ AE::App::ProjectileSystem projectileSystem;
 
 std::shared_ptr<AE::Graphics::ISampler> sampler;
 
+std::shared_ptr<AE::Graphics::ISampler> depthSampler;
+
 //set up player
 void setupPlayer(AE::Core::SceneManager& sceneManager) {
     //textures
@@ -64,14 +66,20 @@ void setupPlayer(AE::Core::SceneManager& sceneManager) {
 
     std::shared_ptr<Texture> baseColor = ResourceManager::GetInstance().GetTexture(std::string("Assets/Rock/basecolor.png"), false, true);
     std::shared_ptr<Texture> normal = ResourceManager::GetInstance().GetTexture(std::string("Assets/Rock/normal.png"), false, true);
-    sampler = graphicsManager.CreateSampler();
+    sampler = graphicsManager.CreateSampler(false);
+
+    //TODO: Now this is epic
+    depthSampler = graphicsManager.CreateSampler(true);
+
+    depthSampler->Bind(10);
 
     //std::shared_ptr<Mesh> PlayerMesh = ResourceManager::GetInstance().GetStaticMesh(std::string("Assets/Rock/rock.obj"));
 
     std::vector<AE::Graphics::UniformDescriptionElement> PlayeruniformDescription = {
-        {"MVP", sizeof(DirectX::XMMATRIX)},
+        { "MVP", sizeof(DirectX::XMMATRIX) },
         { "Model", sizeof(DirectX::XMMATRIX) },
-        { "ViewDir", sizeof(DirectX::XMVECTOR) },
+        { "LightSpaceMatrix", sizeof(DirectX::XMMATRIX) },
+        { "viewPos", sizeof(DirectX::XMVECTOR) },
         { "DirLight", sizeof(DirectX::XMVECTOR) }
     };
 
@@ -116,26 +124,52 @@ void setupPlayer(AE::Core::SceneManager& sceneManager) {
 void setupEnvironment(AE::Core::SceneManager& sceneManager) {
     GraphicsManager& graphicsManager = GraphicsManager::GetInstance();
 
-    std::shared_ptr<Texture> normal = ResourceManager::GetInstance().GetTexture(std::string("Assets/Rock/normal.png"), false, true);
-    std::shared_ptr<Texture> baseColor = ResourceManager::GetInstance().GetTexture(std::string("Assets/Rock/basecolor.png"), false, true);
+
+    std::shared_ptr<Texture> baseColor = ResourceManager::GetInstance().GetTexture(std::string("Assets/pbrTest/basecolor.png"), false, true);
+    std::shared_ptr<Texture> normal = ResourceManager::GetInstance().GetTexture(std::string("Assets/pbrTest/normal.png"), false, true);
+    std::shared_ptr<Texture> Metallic = ResourceManager::GetInstance().GetTexture(std::string("Assets/pbrTest/metallic.png"), false, true);
+    std::shared_ptr<Texture> Roughness = ResourceManager::GetInstance().GetTexture(std::string("Assets/pbrTest/roughness.png"), false, true);
+    
 
     std::shared_ptr<Mesh> planeMesh = ResourceManager::GetInstance().GetStaticMesh(std::string("Assets/plane.obj"));
 
-    std::shared_ptr<Mesh> PlayerMesh = ResourceManager::GetInstance().GetStaticMesh(std::string("Assets/Rock/rock.obj"));
-    std::shared_ptr<Texture> ornament = ResourceManager::GetInstance().GetTexture(std::string("Assets/Ornament/ornament.ktx2"), false, false);
+    std::shared_ptr<Mesh> sphereMesh = ResourceManager::GetInstance().GetStaticMesh(std::string("Assets/Sphere.obj"));
 
+    std::shared_ptr<Mesh> PlayerMesh = ResourceManager::GetInstance().GetStaticMesh(std::string("Assets/Rock/rock.obj"));
+    //std::shared_ptr<Texture> ornament = ResourceManager::GetInstance().GetTexture(std::string("Assets/Ornament/ornament.ktx2"), false, false);
+
+    std::shared_ptr<Texture> brdfLUT = ResourceManager::GetInstance().GetTexture(std::string("Assets/ibl_brdf_lut.png"), false, false);
 
     auto planeMaterial = ResourceManager::GetInstance().GetSharedMaterial("RockMaterial");
 
 
     if (sampler == nullptr) {
-        sampler = graphicsManager.CreateSampler();
+        sampler = graphicsManager.CreateSampler(false);
     }
 
-    planeMaterial->SetTexture("diffuse2", 0, ornament, sampler);
-    planeMaterial->SetTexture("diffuse1", 1, normal, sampler);
     
+
+
+    planeMaterial->SetTexture("BaseColor", 0, baseColor, sampler);
+    planeMaterial->SetTexture("Normal", 1, normal, sampler);
+    planeMaterial->SetTexture("Metallic", 2, Metallic, sampler);
+    planeMaterial->SetTexture("Roughness", 3, Roughness, sampler);
+
+
+    planeMaterial->SetTexture("brdf_lut", 4, brdfLUT, sampler);
+
     Vec3 groundPos = { 0.0f, -1.0f, 0.0f };
+
+    auto rizzler = StaticMeshFactory::Create(
+        sceneManager.Registry,
+        *sphereMesh.get(),
+        *planeMaterial.get(),
+        { 0.0f, 1.0f, -2.5f },
+        DirectX::XMQuaternionRotationRollPitchYawFromVector({ 0.0f, 0.0f, 0.0f, 0.0f }),
+        { 2.0f, 2.0f, 2.0f },
+        nullptr,
+        "Sphere"
+    );
 
     auto ground = StaticMeshFactory::Create(
         sceneManager.Registry, 
@@ -143,14 +177,15 @@ void setupEnvironment(AE::Core::SceneManager& sceneManager) {
         *planeMaterial.get(), 
         groundPos,
         DirectX::XMQuaternionRotationRollPitchYawFromVector({ 0.0f, 0.0f, 0.0f, 0.0f }),
-        { 5.0f, 5.0f, 5.0f },
+        { 10.0f, 10.0f, 10.0f },
         nullptr,
         "Plane"
     );
 
+
     AE::Physics::RigidBodyCreateInfo info = {
             AE::Physics::RigidBodyShape::BOX,
-            AE::Physics::BoxPhysicsShapeCreateInfo({5.0f,0.01f,5.0f}),
+            AE::Physics::BoxPhysicsShapeCreateInfo({50.0f,0.01f,50.0f}),
             AE::Physics::RigidBodyType::Static,
             groundPos,
             0.0f,
@@ -169,11 +204,16 @@ void setupEnvironment(AE::Core::SceneManager& sceneManager) {
     auto windMill = WindMillFactory::Create(
         sceneManager.Registry,
         *planeMaterial.get(),
-        {0.0f, 4.5, 4.0f}
+        {0.0f, 5.0f, 4.0f}
     );
 
     //add the skybox
-    skybox = AE::Core::SkyboxFactory::Create(sceneManager.Registry, std::string("Assets/SkyBox/alley_r.ktx2"));
+    skybox = AE::Core::SkyboxFactory::Create(
+        sceneManager.Registry,
+        std::string("Assets/SkyBox/alley_v.ktx2"),
+        std::string("Assets/SkyBox/alley_r.ktx2"),
+        std::string("Assets/SkyBox/alley_i.ktx2")
+    );
 
     //skybox = AE::Core::SkyboxFactory::Create(sceneManager.Registry, std::string("Assets/SkyBox/"));
 

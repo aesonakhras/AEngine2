@@ -44,7 +44,7 @@ namespace AE::Graphics {
 			const std::shared_ptr<AE::Graphics::ITextureResource> textureResource,
 			const AE::Graphics::TextureCreateInfo& info
 		) final override;
-		virtual std::shared_ptr<AE::Graphics::ISampler> CreateSampler() final override;
+		virtual std::shared_ptr<AE::Graphics::ISampler> CreateSampler(bool isDepth) final override;
 		virtual std::shared_ptr<AE::Graphics::ITextureResource> CreateTextureResource(const AE::Graphics::TextureCreateInfo& createInfo) final override;
 
 		virtual std::shared_ptr<IVertexShader> CreateVertexShader(const void* data,
@@ -52,7 +52,7 @@ namespace AE::Graphics {
 			const std::vector<VertexAttribute>& attributes) final override;
 
 		virtual std::shared_ptr<IFragmentShader> CreateFragmentShader(const void* data, size_t dataSize) final override;
-
+		virtual std::shared_ptr<IViewport> CreateViewPort(const ViewPortCreateInfo& createInfo) final override;
 		virtual void RecompileVertexShader(const void* data, size_t dataSize, std::shared_ptr<IVertexShader>& vertexShader) final override;
 		virtual void RecompileFragmentShader(const void* data, size_t dataSize, std::shared_ptr <IFragmentShader>& fragmentShader) final override;
 
@@ -62,15 +62,14 @@ namespace AE::Graphics {
 		virtual void BindBuffer(const std::shared_ptr<IBuffer>& ib) final override;
 		///////////////////////////End of the IGLI functions
 
+		virtual void SetRasterState(std::string state) final override;
 	private:
 		//creation helper functions
 		void createDevice();
 		void createSwapChainAndBackBuffer(const DeviceCreateInfo& info);
 		void setupViewport(const DeviceCreateInfo& info);
 		void createRasterStates();
-		void setRasterState(std::string state);
-
-
+		
 		std::shared_ptr<DX11ShaderObject> CreateShaderObject(const void* data, size_t dataSize, std::string entryPoint, std::string shaderTarget);
 		void setupDepthStencilState();
 		void D3DCreateCall(HRESULT hresult, std::string failInfo);
@@ -97,6 +96,7 @@ namespace AE::Graphics {
 		std::shared_ptr<DX11Buffer> m_quadIndexBuffer = nullptr;
 		std::shared_ptr<IVertexShader> m_screenQuadVertexShader;
 		std::shared_ptr<IFragmentShader> m_screenQuadFragmentShader;
+		D3D11_VIEWPORT m_viewport {};
 
 		std::unordered_map < std::string, Microsoft::WRL::ComPtr<ID3D11RasterizerState> > rasterStates;
 

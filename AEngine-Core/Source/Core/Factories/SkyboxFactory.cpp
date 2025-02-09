@@ -7,16 +7,22 @@ using namespace AE::Graphics;
 
 entt::entity SkyboxFactory::Create(
 	entt::registry& registry,
-	std::string cubeMapName
+	std::string Visual,
+	std::string Radiance,
+	std::string Irradiance
 ) {
 	//set up the material
 	GraphicsManager& graphicsManager = GraphicsManager::GetInstance();
 
 	//load the mesh
 	std::shared_ptr<Mesh> skyBoxMesh = ResourceManager::GetInstance().GetStaticMesh(std::string("Assets/skybox.obj"));
-	std::shared_ptr<Texture> skyBoxTexture = ResourceManager::GetInstance().GetTexture(cubeMapName, true, false);
+	
 
-	std::shared_ptr<AE::Graphics::ISampler> sampler = graphicsManager.CreateSampler();
+	std::shared_ptr<Texture> VisualTexture = ResourceManager::GetInstance().GetTexture(Visual, true, false);
+	std::shared_ptr<Texture> RadianceTexture = ResourceManager::GetInstance().GetTexture(Radiance, true, false);
+	std::shared_ptr<Texture> IrradianceTexture = ResourceManager::GetInstance().GetTexture(Irradiance, true, false);
+
+	std::shared_ptr<AE::Graphics::ISampler> sampler = graphicsManager.CreateSampler(false);
 
 
 	std::vector<AE::Graphics::UniformDescriptionElement> skyboxuniformLayout = {
@@ -31,7 +37,10 @@ entt::entity SkyboxFactory::Create(
 			skyboxuniformLayout
 		);
 
-	skyBoxMaterial->SetTexture("skyboxTexture", 0, skyBoxTexture, sampler);
+	//haha why is 9 afraid of 7?? ahaha
+	skyBoxMaterial->SetTexture("sdfgsdrgdrger", 7, VisualTexture, sampler);
+	skyBoxMaterial->SetTexture("skyboxRadiance", 8, RadianceTexture, sampler);
+	skyBoxMaterial->SetTexture("skyboxIrradiance", 9, IrradianceTexture, sampler);
 
 	entt::entity skybox = registry.create();
 

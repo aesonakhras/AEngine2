@@ -1,8 +1,10 @@
 #pragma once
+#include <memory>
 #include <vector>
 #include "Utils/Singleton.h"
 #include "entt/entt.hpp"
 #include "Core/Components/Transform.h"
+#include "Core/Components/Camera.h"
 
 namespace AE::Core {
 	//for now essentially used as a tool to wrap the entt registry
@@ -10,6 +12,7 @@ namespace AE::Core {
 	class SceneManager : public AE::Utils::Singleton<SceneManager> {
 		public:
 			entt::registry Registry;
+			entt::entity mainCameraEntity = entt::null;
 
 			entt::entity CreateEntity();
 			void DeleteEntity(entt::entity entity);

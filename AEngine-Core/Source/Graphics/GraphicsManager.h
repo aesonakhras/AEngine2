@@ -30,8 +30,10 @@ namespace AE::Graphics {
 		
 		void Draw(uint32 count);
 
+		void SetRasterState(std::string stateName);
 		void StartFrame();
 		void PresentFrame();
+		
 
 		//CreateBuffer
 		std::shared_ptr<IBuffer> CreateBuffer(const void* data, size_t count, size_t stride, BufferType bufferType);
@@ -58,8 +60,9 @@ namespace AE::Graphics {
 		//Pass in the data to the texture, call it make texture
 		std::unique_ptr<Texture> CreateTexture(const AE::Graphics::TextureCreateInfo& info);
 
-		std::shared_ptr<ISampler> CreateSampler();
+		std::shared_ptr<ISampler> CreateSampler(bool isDepth);
 
+		std::shared_ptr<IViewport> CreateViewPort(const AE::Graphics::ViewPortCreateInfo& info);
 
 		//TODO: This bad coding should be illegal, fix in the refactor
 		void SetDepthState(bool isSkybox);

@@ -24,16 +24,17 @@ namespace AE::Core {
 			AspectRatio(aspectRatio),
 			NearZ(nearZ),
 			FarZ(farZ),
-			IsOrthographic(isOrthographic)
+			IsOrthographic(isOrthographic),
+			OrthographicSize(orthographicSize)
 		{
 			ProjectionMatrix = UpdateProjectionMatrix();
 		}
 
 		DirectX::XMMATRIX UpdateProjectionMatrix() {
 			if (IsOrthographic) {
-				return DirectX::XMMatrixOrthographicLH(
-					OrthographicSize,
-					OrthographicSize,
+				return DirectX::XMMatrixOrthographicOffCenterLH(
+					-OrthographicSize/2.0f, OrthographicSize / 2.0f,
+					-OrthographicSize/2.0f, OrthographicSize / 2.0f,
 					NearZ,
 					FarZ
 				);

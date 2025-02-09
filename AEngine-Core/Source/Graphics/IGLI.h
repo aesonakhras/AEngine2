@@ -13,6 +13,7 @@
 #include "TextureCreateInfo.h"
 #include "IFragmentShader.h"
 #include "IVertexShader.h" 
+#include "IViewport.h"
 
 //TODO: Must refactor, this is a D3D11 class.  need to determine abstraction
 namespace AE::Graphics {
@@ -27,6 +28,7 @@ namespace AE::Graphics {
 
 		virtual void StartFrame() = 0;
 		virtual void PresentFrame() = 0;
+		virtual void SetRasterState(std::string state) = 0;
 
 		virtual void Draw(unsigned int size) = 0;
 
@@ -43,8 +45,9 @@ namespace AE::Graphics {
 			const std::shared_ptr<AE::Graphics::ITextureResource> textureResource,
 			const AE::Graphics::TextureCreateInfo& info
 		) = 0;
-		virtual std::shared_ptr<AE::Graphics::ISampler> CreateSampler() = 0;
+		virtual std::shared_ptr<AE::Graphics::ISampler> CreateSampler(bool isDepth) = 0;
 		virtual std::shared_ptr<AE::Graphics::ITextureResource> CreateTextureResource(const AE::Graphics::TextureCreateInfo& createInfo) = 0;
+		virtual std::shared_ptr<AE::Graphics::IViewport> CreateViewPort(const AE::Graphics::ViewPortCreateInfo& createInfo) = 0;
 
 		virtual void RecompileVertexShader(const void* data, size_t dataSize, std::shared_ptr<IVertexShader>& vertexShader) = 0;
 		virtual void RecompileFragmentShader(const void* data, size_t dataSize, std::shared_ptr <IFragmentShader>& fragmentShader) = 0;

@@ -13,8 +13,30 @@
 
 #include "FileImporter.h"
 #include "Core/Types.h"
+#include "FileManagment/FileManager.h"
 
 using namespace AE::Graphics;
+//
+void FileImporter::ImportBinTextureBRDFLUT128x128R16G16(const std::string& fileName, AE::Graphics::TextureCreateInfo& textureCreateInfo) {
+    AE::System::FileManager& fileManager = AE::System::FileManager::GetInstance();
+    
+    //TODO: Redo the readAll function to return a unique_ptr
+    auto fileHandle = fileManager.GetFile(fileName, AE::System::FileOperation::Read);
+
+    std::vector<char> data = fileHandle->ReadAll();
+
+    std::unique_ptr<uint8_t[]> dataUint8 = std::make_unique<uint8_t[]>(data.size());
+    std::memcpy(dataUint8.get(), data.data(), data.size());
+
+    textureCreateInfo.data = std::move(dataUint8);
+    textureCreateInfo.dataSize = data.size();
+    textureCreateInfo.width = 128;
+    textureCreateInfo.height = 128;
+    textureCreateInfo.format =TextureFormat::R16G16;
+    textureCreateInfo.generateMipMaps = false;
+    textureCreateInfo.arraySize = 1;
+    textureCreateInfo.use = TextureUse::ShaderResource;
+}
 
 
 TextureCreateInfo FileImporter::ImportTexture(std::string textureName, bool isCubeMap) {
@@ -23,6 +45,11 @@ TextureCreateInfo FileImporter::ImportTexture(std::string textureName, bool isCu
     //check if file is .ktx
     if (textureName.ends_with(".ktx2")) {
         ImportKTXFile(textureName, textureData);
+
+        return textureData;
+    }
+    else  if (textureName.ends_with(".bin")) {
+        ImportBinTextureBRDFLUT128x128R16G16(textureName, textureData);
 
         return textureData;
     }

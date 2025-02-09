@@ -6,6 +6,8 @@
 #include "Core/Components/Transform.h"
 #include "Core/Components/Camera.h"
 
+#include "Core/Scene/SceneManager.h"
+
 using namespace AE::Core;
 
 entt::entity CameraFactory::Create(
@@ -17,7 +19,8 @@ entt::entity CameraFactory::Create(
 	bool isOrthographic,
 	float32 orthographicSize,
 	Vec3 position,
-	Vec3 lookAt
+	Vec3 lookAt,
+	bool isMainCamera
 ) {
 	entt::entity entity = registry.create();
 
@@ -30,6 +33,19 @@ entt::entity CameraFactory::Create(
 		isOrthographic,
 		orthographicSize
 	);
+
+	if (isMainCamera) {
+		//set this in the scene manager
+		//TODO: ERROR if multiple or none are set
+		
+		if (SceneManager::GetInstance().mainCameraEntity == entt::null) {
+			SceneManager::GetInstance().mainCameraEntity = entity;
+		}
+		else {
+			AE::Core::Debug::LogWarning("Multiple Main cameras set");
+		}
+		
+	}
 	
 
 	auto lookDir = lookAt - position;
@@ -39,7 +55,7 @@ entt::entity CameraFactory::Create(
 	float yaw = std::atan2f(lookDir.X, lookDir.Z);
 	float pitch = std::asinf(lookDir.Y);
 	
-	Transform transform{
+	Transform transform {
 		entity,
 		position,
 		DirectX::XMQuaternionRotationRollPitchYawFromVector({pitch, yaw, 0.0f}),

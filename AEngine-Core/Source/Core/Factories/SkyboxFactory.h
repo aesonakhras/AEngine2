@@ -8,7 +8,9 @@ namespace AE::Core {
 	public:
 		static entt::entity Create(
 			entt::registry& registry,
-			std::string cubeMapName
+			std::string Visual,
+			std::string Radiance,
+			std::string Irradiance
 		);
 	};
 }

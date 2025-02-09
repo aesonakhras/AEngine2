@@ -1,5 +1,5 @@
-TextureCube skyboxTexture : register(t0); 
-SamplerState samplerState : register(s0);
+TextureCube skyboxTexture : register(t7); 
+SamplerState samplerState : register(s7);
 
 cbuffer VS_CONSTANT_BUFFER : register(b0)
 {

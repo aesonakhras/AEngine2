@@ -13,6 +13,7 @@
 #include "DX11TextureResource.h"
 #include "DX11FragmentShader.h"
 #include "DX11VertexShader.h"
+#include "DX11Viewport.h"
 
 
 using namespace AE::Graphics;
@@ -238,16 +239,13 @@ void DX11GLI::setupDepthStencilState() {
 }
 
 void DX11GLI::setupViewport(const DeviceCreateInfo& info) {
-    D3D11_VIEWPORT viewport{};
-    ZeroMemory(&viewport, sizeof(D3D11_VIEWPORT));
-
-    viewport.TopLeftX = 0;
-    viewport.TopLeftY = 0;
-    viewport.Width = info.ScreenWidth;
-    viewport.Height = info.ScreenHeight;
-    viewport.MinDepth = 0.0f;
-    viewport.MaxDepth = 1.0f;
-    m_deviceContext->RSSetViewports(1, &viewport);
+    m_viewport.TopLeftX = 0;
+    m_viewport.TopLeftY = 0;
+    m_viewport.Width = info.ScreenWidth;
+    m_viewport.Height = info.ScreenHeight;
+    m_viewport.MinDepth = 0.0f;
+    m_viewport.MaxDepth = 1.0f;
+    m_deviceContext->RSSetViewports(1, &m_viewport);
 }
 
 void DX11GLI::createRasterStates() {
@@ -294,23 +292,50 @@ void DX11GLI::createRasterStates() {
 
     rasterStates["ScreenQuad"] = quadRasterState;
 
+
+    Microsoft::WRL::ComPtr < ID3D11RasterizerState> shadowRasterState;
+
+    D3D11_RASTERIZER_DESC shadowRasterDesc = {};
+
+    shadowRasterDesc.FillMode = D3D11_FILL_SOLID;
+    shadowRasterDesc.CullMode = D3D11_CULL_FRONT;
+    shadowRasterDesc.FrontCounterClockwise = FALSE;
+    shadowRasterDesc.DepthBias = 125;
+    shadowRasterDesc.DepthBiasClamp = 0.0001f;
+    shadowRasterDesc.SlopeScaledDepthBias =0.4f;
+    shadowRasterDesc.DepthClipEnable = TRUE;
+    shadowRasterDesc.ScissorEnable = FALSE;
+    shadowRasterDesc.MultisampleEnable = FALSE;
+    shadowRasterDesc.AntialiasedLineEnable = FALSE;
+
+    D3DCreateCall(
+        m_device->CreateRasterizerState(
+            &shadowRasterDesc,
+            shadowRasterState.GetAddressOf()
+        ),
+        "Unable to create shadow Raster State"
+    );
+
+    rasterStates["Shadow"] = shadowRasterState;
 }
-void DX11GLI::setRasterState(std::string state) {
+void DX11GLI::SetRasterState(std::string state) {
     auto newRasterState = rasterStates[state];
 
     m_deviceContext->RSSetState(newRasterState.Get());
 }
 
 void DX11GLI::StartFrame() {
-    setRasterState("Default");
+    SetRasterState("Default");
+    m_deviceContext->RSSetViewports(1, &m_viewport);
     m_deviceContext->OMSetRenderTargets(1, &m_renderTargetView, m_depthStencilView);
     m_deviceContext->ClearRenderTargetView(m_renderTargetView, RGBA{ 0.1f, 0.2f, 0.3f, 1.0f });
     m_deviceContext->ClearDepthStencilView(m_depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
     
 }
 
 void DX11GLI::PresentFrame() {
-    setRasterState("ScreenQuad");
+    SetRasterState("ScreenQuad");
     m_deviceContext->OMSetRenderTargets(1, m_backBuffer.GetAddressOf(), nullptr);
 
     UINT stride = sizeof(ScreenQuadVertex);
@@ -337,7 +362,7 @@ void DX11GLI::PresentFrame() {
     m_swapChain->Present(1, 0);
 
     // Reset the rasterizer and render target states (optional)
-    setRasterState("Default");
+    SetRasterState("Default");
     m_deviceContext->OMSetRenderTargets(1, &m_renderTargetView, m_depthStencilView);
 };
 
@@ -376,10 +401,11 @@ std::shared_ptr<AE::Graphics::IShaderResourceView> DX11GLI::CreateShaderResource
     );
 }
 
-std::shared_ptr<AE::Graphics::ISampler> DX11GLI::CreateSampler() {
+std::shared_ptr<AE::Graphics::ISampler> DX11GLI::CreateSampler(bool isDepth) {
     return std::make_shared<DX11Sampler>(
             m_deviceContext,
-            m_device
+            m_device,
+            isDepth
     );
 }
 
@@ -406,11 +432,20 @@ std::shared_ptr<IFragmentShader> DX11GLI::CreateFragmentShader(const void* data,
 
 }
 
+std::shared_ptr<IViewport> DX11GLI::CreateViewPort(const ViewPortCreateInfo& createInfo) {
+    return std::make_shared<DX11Viewport>(m_deviceContext, createInfo);
+}
+
 void DX11GLI::RecompileVertexShader(const void* data, size_t dataSize, std::shared_ptr<IVertexShader>& vertexShader) {
     auto dx11vertexShader = std::static_pointer_cast<DX11VertexShader>(vertexShader);
 
     //recompile the shdaer itself first
-    dx11vertexShader->Shader->Compile(data, dataSize, "VShader", "vs_4_0");
+    bool result = dx11vertexShader->Shader->Compile(data, dataSize, "VShader", "vs_4_0");
+
+    if (!result) {
+        std::cout << "vertex shader compiler error, not reloading" << std::endl;
+        return;
+    }
 
     //recompile the vertex shader and layout, which is currently in the vertex shader
     dx11vertexShader->Recreate();
@@ -420,7 +455,12 @@ void DX11GLI::RecompileFragmentShader(const void* data, size_t dataSize, std::sh
     auto dx11fragmentShader = std::static_pointer_cast<DX11FragmentShader>(fragmentShader);
 
     //recompile the shdaer itself first
-    dx11fragmentShader->Shader->Compile(data, dataSize, "PShader", "ps_4_0");
+    bool result = dx11fragmentShader->Shader->Compile(data, dataSize, "PShader", "ps_4_0");
+
+    if (!result) {
+        std::cout << "nope" << std::endl;
+        return;
+    }
 
     //recompile the vertex shader and layout, which is currently in the vertex shader
     dx11fragmentShader->Recreate();

@@ -39,6 +39,9 @@ namespace AE::Graphics {
 		case TextureFormat::R24G8_TYPELESS:
 			return DXGI_FORMAT_R24G8_TYPELESS;
 			break;
+		case TextureFormat::R16G16:
+			return DXGI_FORMAT_R16G16_FLOAT;
+			break;
 		default:
 			AE::Core::Debug::LogWarning("Unsupported texture format used");
 			break;

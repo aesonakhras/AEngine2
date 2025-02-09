@@ -11,10 +11,11 @@
 #include "Graphics/GraphicsManager.h"
 
 #include "Core/Scene/SceneManager.h"
+#include "Core/Components/DirectionalLight.h"
 
 using namespace AE::Core;
 using namespace AE::Graphics;
-
+using namespace DirectX;
 
 //TODO: Break this into multiple functions
 void RenderSystem::Render() {
@@ -26,7 +27,12 @@ void RenderSystem::Render() {
     auto cameraView = sceneManager.Registry.view<Camera, Transform>();
     
     //create the vp
-    auto cameraEntity = cameraView.front();
+    auto cameraEntity = sceneManager.mainCameraEntity;
+
+    if (cameraEntity == entt::null) {
+        AE::Core::Debug::LogError("No main camera set in scene");
+        return;
+    }
 
     auto& camera = cameraView.get<Camera>(cameraEntity);
     auto& cameraTransform = cameraView.get<Transform>(cameraEntity);
@@ -42,6 +48,19 @@ void RenderSystem::Render() {
 
     DirectX::XMVECTOR viewDir = DirectX::XMVector3Rotate(forward, cameraTransform.GetLocalRotation());
 
+    //TODO: So silly but IM trying to get it working
+    auto DirLightView = sceneManager.Registry.view<AE::Core::DirectionalLight>();
+
+    auto dirLightEntity = DirLightView.front();
+
+    auto& dirLightTransform = sceneManager.Registry.get<Transform>(dirLightEntity);
+    auto& dirLightCamera = sceneManager.Registry.get<Camera>(dirLightEntity);
+
+    auto inBetween = DirectX::XMMatrixInverse(nullptr, dirLightTransform.WorldMatrix);
+
+    DirectX::XMMATRIX lightSpaceMatrix = DirectX::XMMatrixInverse(nullptr, dirLightTransform.WorldMatrix) * dirLightCamera.ProjectionMatrix;
+
+
 	for (auto entity : staticMeshView) {
 		//get the model matrix and transform into the necessary thing
 
@@ -54,7 +73,7 @@ void RenderSystem::Render() {
         auto mvp = modelMatrix * vp2;
         ////Thank you DirectX very nice
         ////TODO: this needs to go into the dx11 impl somewhere
-        auto tMVP = DirectX::XMMatrixTranspose(mvp);
+        //auto tMVP = DirectX::XMMatrixTranspose(mvp);
         //auto tModelMatrix = DirectX::XMMatrixTranspose(modelMatrix);
 
         mesh.VertexBuffer->Bind(0);
@@ -64,7 +83,8 @@ void RenderSystem::Render() {
 
         material.SetUniform("MVP", mvp);
         material.SetUniform("Model", modelMatrix);
-        material.SetUniform("ViewDir", viewDir);
+        material.SetUniform("LightSpaceMatrix", lightSpaceMatrix);
+        material.SetUniform("viewPos", cameraTransform.GetWorldPosition());
         material.SetUniform("DirLight", dirLight);
 
         material.Bind();

@@ -32,9 +32,10 @@ entt::entity PlayerFactory::Create(
 		nearZ,
 		farZ,
 		false,
-		0,
+		10,
 		{ 0.0, 0.0, 0.0f },
-		Lookat
+		Lookat,
+		true
 	);
 
 	//auto playerMesh = ResourceManager::GetInstance().GetStaticMesh(std::string("Assets/Rock/Rock.obj"));

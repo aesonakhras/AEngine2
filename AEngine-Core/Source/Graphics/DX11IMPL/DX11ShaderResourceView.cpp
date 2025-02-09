@@ -28,6 +28,11 @@ void DX11ShaderResourceView::Bind(unsigned int slot) {
 	m_deviceContext->PSSetShaderResources(slot, 1, m_shaderResourceView.GetAddressOf());
 }
 
+void DX11ShaderResourceView::Unbind(unsigned int slot) {
+    ID3D11ShaderResourceView* nullSRV[1] = { nullptr };
+    m_deviceContext->PSSetShaderResources(slot, 1, nullSRV);
+}
+
 void DX11ShaderResourceView::CreateDepthStencilView(
     std::shared_ptr<DX11TextureResource> textureResource,
     DXGI_FORMAT format
@@ -95,20 +100,58 @@ void DX11ShaderResourceView::CreateShaderResourceView(
     }
 }
 
-void DX11ShaderResourceView::BindAsRenderTarget() {
+void DX11ShaderResourceView::BindAsRenderTarget() {    
     switch (m_use) {
-    case TextureUse::RenderTexture: {
-            auto rtv = std::get<Microsoft::WRL::ComPtr<ID3D11RenderTargetView>>(m_renderView);
-            m_deviceContext->OMSetRenderTargets(1, rtv.GetAddressOf(), nullptr);
+        case TextureUse::RenderTexture: {
+                auto rtv = std::get<Microsoft::WRL::ComPtr<ID3D11RenderTargetView>>(m_renderView);
+                m_deviceContext->OMSetRenderTargets(1, rtv.GetAddressOf(), nullptr);
+                break;
+            }
+        case TextureUse::DepthTexture: {
+            auto dsv = std::get<Microsoft::WRL::ComPtr<ID3D11DepthStencilView>>(m_renderView);
+            m_deviceContext->OMSetRenderTargets(0, nullptr, dsv.Get());
             break;
         }
-    case TextureUse::DepthTexture: {
-        auto dsv = std::get<Microsoft::WRL::ComPtr<ID3D11DepthStencilView>>(m_renderView);
-        m_deviceContext->OMSetRenderTargets(0, nullptr, dsv.Get());
+            default:
+                AE::Core::Debug::LogError("Attempting to bind a non-renderable texture to OM Stage.");
+                break;
+    }
+}
+
+void DX11ShaderResourceView::UnBindAsRenderTarget() {
+    switch (m_use) {
+    case TextureUse::RenderTexture: {
+        auto rtv = std::get<Microsoft::WRL::ComPtr<ID3D11RenderTargetView>>(m_renderView);
+        ID3D11RenderTargetView* nullRTV[1] = { nullptr };
+        m_deviceContext->OMSetRenderTargets(1, nullRTV, nullptr);
         break;
     }
-        default:
-            AE::Core::Debug::LogError("Attempting to bind a non-renderable texture to OM Stage.");
-            break;
+    case TextureUse::DepthTexture: {
+        auto dsv = std::get<Microsoft::WRL::ComPtr<ID3D11DepthStencilView>>(m_renderView);
+        ID3D11DepthStencilView* nullDSV[1] = { nullptr };
+        m_deviceContext->OMSetRenderTargets(0, nullptr, *nullDSV);
+        break;
+    }
+    default:
+        AE::Core::Debug::LogError("Attempting to bind a non-renderable texture to OM Stage.");
+        break;
+    }
+}
+
+void DX11ShaderResourceView::ClearRenderTarget() {
+    switch (m_use) {
+    case TextureUse::RenderTexture: {
+        auto rtv = std::get<Microsoft::WRL::ComPtr<ID3D11RenderTargetView>>(m_renderView);
+        m_deviceContext->ClearRenderTargetView(rtv.Get(), RGBA{0.1f, 0.2f, 0.3f, 1.0f});
+        break;
+    }
+    case TextureUse::DepthTexture: {
+        auto dsv = std::get<Microsoft::WRL::ComPtr<ID3D11DepthStencilView>>(m_renderView);
+        m_deviceContext->ClearDepthStencilView(dsv.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+        break;
+    }
+    default:
+        AE::Core::Debug::LogError("Attempting to bind a non-renderable texture to OM Stage.");
+        break;
     }
 }

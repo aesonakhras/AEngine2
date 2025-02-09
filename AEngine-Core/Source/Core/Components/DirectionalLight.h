@@ -6,6 +6,7 @@
 
 #include "Graphics/GraphicsManager.h"
 #include "Core/Debug.h"
+#include "Resources/ResourceManager.h"
 
 namespace AE::Core {
 	struct DirectionalLight
@@ -13,6 +14,9 @@ namespace AE::Core {
 		Vec3 Dir;
 		Vec3 Color;
 		std::unique_ptr<AE::Graphics::Texture> DepthTexture;
+		std::shared_ptr<AE::Graphics::Material> DirLightMaterial;
+
+		std::shared_ptr<AE::Graphics::IViewport> ViewPort;
 
 		DirectionalLight(Vec3 dir, Vec3 color) : Dir(dir), Color(color) {
 			AE::Graphics::TextureCreateInfo info{};
@@ -32,6 +36,26 @@ namespace AE::Core {
 			if (!DepthTexture) {
 				Debug::Log("Unable to create Dir light depth texture.");
 			}
+
+			//create the material
+			std::vector<AE::Graphics::UniformDescriptionElement> PlayeruniformDescription = {
+				{"lightViewProj", sizeof(DirectX::XMMATRIX)},
+			};
+
+			DirLightMaterial = ResourceManager::GetInstance().LoadMaterial(dirLightShaderName, dirLightShaderName, "DirLightShader", PlayeruniformDescription);
+			
+			AE::Graphics::ViewPortCreateInfo viewportInfo{};
+			viewportInfo.height = 2048;
+			viewportInfo.width = 2048;
+			viewportInfo.x = 0;
+			viewportInfo.y = 0;
+			viewportInfo.minDepth = 0;
+			viewportInfo.maxDepth = 1;
+			
+			ViewPort = AE::Graphics::GraphicsManager::GetInstance().CreateViewPort(viewportInfo);
 		}
+
+	private:
+		const std::string dirLightShaderName = "Assets/DirLightShader.shader";
 	};
 }

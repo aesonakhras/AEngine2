@@ -24,8 +24,12 @@ namespace AE::Graphics {
 		virtual ~DX11ShaderResourceView() {};
 
 		virtual void Bind(unsigned int slot) override;
-		virtual void Unbind(unsigned int slot) override {};
+		virtual void Unbind(unsigned int slot) override;
+
 		virtual void BindAsRenderTarget() override;
+		virtual void UnBindAsRenderTarget() override;
+
+		virtual void ClearRenderTarget() override;
 	private:
 
 		std::variant<
@@ -49,5 +53,9 @@ namespace AE::Graphics {
 		);
 
 		TextureUse m_use;
+
+		//TODO: Find another solution for this
+		//TODO: Tie this in with DX11_GLI HACK
+		typedef float RGBA[4];
 	};
 }
