@@ -177,7 +177,7 @@ void setupEnvironment(AE::Core::SceneManager& sceneManager) {
         *planeMaterial.get(), 
         groundPos,
         DirectX::XMQuaternionRotationRollPitchYawFromVector({ 0.0f, 0.0f, 0.0f, 0.0f }),
-        { 10.0f, 10.0f, 10.0f },
+        { 50.0f, 50.0f, 50.0f },
         nullptr,
         "Plane"
     );
@@ -193,6 +193,19 @@ void setupEnvironment(AE::Core::SceneManager& sceneManager) {
             5.0f,
             1.0f
     };
+
+    AE::Physics::RigidBodyCreateInfo sphereInfo = {
+        AE::Physics::RigidBodyShape::SPHERE,
+        AE::Physics::BoxPhysicsShapeCreateInfo({2.0f,2.0f,2.0f}),
+        AE::Physics::RigidBodyType::Static,
+        { 0.0f, 1.0f, -2.5f },
+        0.0f,
+        {0,0,0},
+        5.0f,
+        1.0f
+    };
+
+    //sceneManager.Registry.emplace < AE::Physics::RigidBody>(rizzler, rizzler, sphereInfo);
 
     sceneManager.Registry.emplace<AE::Physics::RigidBody>(
         ground, 

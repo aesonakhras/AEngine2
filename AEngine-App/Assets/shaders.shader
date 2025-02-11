@@ -278,7 +278,7 @@ float4 PShader(
     float shadowFactor = calculateShadows(input.FragPosLightSpace, input.uv, N, normalize(dirLight.xyz));
 
     // Calculate point light contribution
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < NumLights; i++) {
         color += CalculatePointLight(
             lights[i].position,
             lights[i].color,

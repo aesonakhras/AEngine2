@@ -11,26 +11,55 @@
 
 #include "Core/Components/SkyBox.h"
 
+
+//TODO: Move to a smarter place
+#include "Core/Events/EventManager.h"
+
+
 using namespace AE::Graphics;
 using namespace AE::Core;
 using namespace DirectX;
 
 void LightSystem::Initialize() {
-	
+	//set up light removal code
+
+
+	//AE::System::InputManager::GetInstance().RegisterButtonEvent(
+	//	AE::System::Button::W,
+	//	AE::System::InputState::Pressed,
+	//	std::bind(&PlayerSystem::OnForwardDown, this)
+	//);
+
+	EventManager::Subscribe<EntityDestroyedEvent>(
+		std::bind(
+			&LightSystem::RemoveLight,
+			this,
+			std::placeholders::_1
+		)
+	);
+
 	//allocate the buffer to zero
 	uint32 bufferSize = sizeof(PointLightGPU) * MAX_LIGHTS ;
 
 	std::vector<uint32> initalBuffer(bufferSize, 0);
 
-	lightCountLocation = sizeof(PointLight) * MAX_LIGHTS;
-
 	lightBuffer = GraphicsManager::GetInstance().CreateBuffer(
 		initalBuffer.data(),
-		MAX_LIGHTS,
+		bufferSize,
 		0,
 		BufferType::Uniform
 	);
 
+	uint32 lightCount = 0;
+
+	lightCountBuffer = GraphicsManager::GetInstance().CreateBuffer(
+		&lightCount,
+		sizeof(uint32) * 4,
+		0,
+		BufferType::Uniform
+	);
+
+	lightCountBuffer->Bind(2);
 	lightBuffer->Bind(3);
 
 	SceneManager& sceneManager = SceneManager::GetInstance();
@@ -83,11 +112,11 @@ void LightSystem::Update() {
 		auto& pointLight = registry.get<PointLight>(light);
 		auto& pointLightTransform = registry.get<Transform>(light);
 
-		if (lightMap.contains(&pointLight)) {
-			UpdateLightGPU(lightMap[&pointLight], pointLight, pointLightTransform);
+		if (lightMap.contains(light)) {
+			UpdateLightGPU(lightMap[light]);
 		}
 		else {
-			AddLightGPU(pointLight, pointLightTransform);
+			AddLightGPU(light, pointLight, pointLightTransform);
 		}
 		i++;
 	}
@@ -96,35 +125,72 @@ void LightSystem::Update() {
 	handleDirLightPass();
 }
 
-void LightSystem::AddLightGPU(AE::Graphics::PointLight& pointlight, Transform& transform) {
-	uint32 insertIndex = nextAvailableLight++;
+void LightSystem::AddLightGPU(
+	entt::entity entity,
+	AE::Graphics::PointLight& pointlight,
+	Transform& transform
+) {
+	int index = lightArray.Add(PointLightData{ &pointlight, &transform, entity });
 
-	lightMap[&pointlight] =  insertIndex;
+	//insert into the map
+	lightMap[entity] = index;
 
-	UpdateLightGPU(insertIndex, pointlight, transform);
+	//mark index dirty
+	dirtyLights.Set(index);
+
+	UpdateLightGPU(index);
+
+	uint32 size = lightArray.Size();
+
+	lightCountBuffer->Update2(&size, 0, sizeof(uint32));
 }
 
-void LightSystem::UpdateLightGPU(uint32 index, AE::Graphics::PointLight& pointlight, Transform& transform) {
-	Vec3 Position = transform.GetWorldPosition();
+void LightSystem::UpdateLightGPU(uint32 index) {
+	auto& data = lightArray.Get(index);
 
-	DirectX::XMVECTOR dxPosition = { Position.X, Position.Y, Position.Z, 1.0f };
+	Vec3 worldPosition = data.transform->GetWorldPosition();
+	
+	PointLight* pointLight = data.pointLight;
+
+	pointLight->Color.X;
+
+	DirectX::XMVECTOR dxPosition = { worldPosition.X, worldPosition.Y, worldPosition.Z, 1.0f};
 
 	PointLightGPU gpuLight = {
 		dxPosition,
-		{pointlight.Color.X, pointlight.Color.Y, pointlight.Color.Z, 0.0f},
-		pointlight.Radius,
-		pointlight.Linear,
-		pointlight.Quad,
+		{
+			pointLight->Color.X,
+			pointLight->Color.Y,
+			pointLight->Color.Z,
+			0.0f
+		},
+		pointLight->Radius,
+		pointLight->Linear,
+		pointLight->Quad,
 		0.0f
 	};
 
-	assert((sizeof(PointLightGPU) * index) % 16 == 0 && "GPU buffer update must be 16-byte aligned");
-
-
-	lightCount++;
-
 	lightBuffer->Update2(&gpuLight, sizeof(PointLightGPU) * index, sizeof(PointLightGPU));
-	//lightBuffer->Update2(&lightCount, lightCountLocation, sizeof(unsigned int));
+}
+
+void LightSystem::RemoveLight(const EntityDestroyedEvent& event) {
+	//check if entity is in the map
+
+	uint32 pointLightIndex = -1;
+
+	if (lightMap.contains(event.entity)) {
+		uint32 pointLightIndex = lightMap[event.entity];
+
+		lightArray.Remove(pointLightIndex);
+
+		lightMap[lightArray.Get(pointLightIndex).entity] = pointLightIndex;
+
+		//the data at pointLightIndex is now dirty
+		UpdateLightGPU(pointLightIndex);
+
+		uint32 size = lightArray.Size();
+		lightCountBuffer->Update2(&size, 0, sizeof(uint32));
+	}
 }
 
 void LightSystem::handleDirLightPass() {

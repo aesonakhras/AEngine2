@@ -5,9 +5,11 @@
 
 using namespace AE::Graphics;
 
-DX11FragmentShader::DX11FragmentShader(Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext, 
+DX11FragmentShader::DX11FragmentShader(
+	Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext, 
 	Microsoft::WRL::ComPtr<ID3D11Device> device, 
-	std::shared_ptr<DX11ShaderObject> shader) : 
+	std::shared_ptr<DX11ShaderObject> shader
+) : 
 	m_deviceContext(deviceContext),
 	m_device(device),
 	Shader(shader) {

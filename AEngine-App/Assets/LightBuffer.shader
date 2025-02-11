@@ -1,6 +1,10 @@
 #ifndef LIGHTBUFFER_HLSL
 #define LIGHTBUFFER_HLSL
 
+cbuffer LightCount : register(b2) {
+    int NumLights;
+};
+
 cbuffer LightBuffer : register(b3) {
     struct Light {
         float4 position;
