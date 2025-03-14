@@ -21,8 +21,8 @@ namespace AE::Core {
 		DirectionalLight(Vec3 dir, Vec3 color) : Dir(dir), Color(color) {
 			AE::Graphics::TextureCreateInfo info{};
 
-			info.height = 2048;
-			info.width = 2048;
+			info.height = 4096;
+			info.width = 4096;
 			info.data = nullptr;
 			info.generateMipMaps = false;
 			info.type = AE::Graphics::TextureType::Texture2D;
@@ -45,8 +45,8 @@ namespace AE::Core {
 			DirLightMaterial = ResourceManager::GetInstance().LoadMaterial(dirLightShaderName, dirLightShaderName, "DirLightShader", PlayeruniformDescription);
 			
 			AE::Graphics::ViewPortCreateInfo viewportInfo{};
-			viewportInfo.height = 2048;
-			viewportInfo.width = 2048;
+			viewportInfo.height = 4096;
+			viewportInfo.width = 4096;
 			viewportInfo.x = 0;
 			viewportInfo.y = 0;
 			viewportInfo.minDepth = 0;

@@ -43,14 +43,6 @@ namespace AE::System {
                 std::free(ptr);
             }
 
-            static void DonaldDUMP() {
-
-                for (const auto& allocation : memoryAllocations) {
-                    std::cout << "Leak at adress: " << allocation.first 
-                        << "on line: " << allocation.second.Line << "in file: " << allocation.second.fileName << std::endl;
-                }
-            }
-
         private:
             static AE::Core::AEHashMap<void*, MemInfo, 1024> memoryAllocations;
     };

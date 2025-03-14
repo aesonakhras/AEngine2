@@ -15,7 +15,8 @@ namespace AE::App {
 		static entt::entity Create(
 			entt::registry& registry,
 			AE::Graphics::Material& material,
-			Transform transform
+			Transform transform,
+			std::shared_ptr<AE::Graphics::ISampler> sampler
 		);
 	};
 }

@@ -33,13 +33,14 @@ namespace AE::Physics {
             //I HATE that this is here, but it is necessary evil
             std::unique_ptr<btRigidBody> rigidBodyBullet;
         private:
-            std::unique_ptr<btCollisionShape> collisionShapeBullet;
+            std::shared_ptr<btCollisionShape> collisionShapeBullet;
             
             std::unique_ptr<btDefaultMotionState> motionStateBullet;
 
             void HandleInfinitePlaneCreate(const AE::Physics::PlanePhysicsShapeCreateInfo& info);
             void HandleSphereCreate(const AE::Physics::SpherePhysicsShapeCreateInfo& info);
             void HandleBoxCreate(const AE::Physics::BoxPhysicsShapeCreateInfo& info);
+            void HandleConvexHullCreate(const AE::Physics::ConvexHullShapeCreateInfo& info);
     };
 
 }

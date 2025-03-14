@@ -20,6 +20,10 @@ RigidBody::RigidBody(entt::entity entity, const RigidBodyCreateInfo& info) : Typ
             break;
         case(RigidBodyShape::BOX):
             HandleBoxCreate(std::get<BoxPhysicsShapeCreateInfo>(info.ShapeCreateInfo));
+            break;
+        case(RigidBodyShape::CUSTOM):
+            HandleConvexHullCreate(std::get<ConvexHullShapeCreateInfo>(info.ShapeCreateInfo));
+            break;
         default:
             break;
     }
@@ -72,15 +76,19 @@ RigidBody::RigidBody(entt::entity entity, const RigidBodyCreateInfo& info) : Typ
 
 void RigidBody::HandleInfinitePlaneCreate(const AE::Physics::PlanePhysicsShapeCreateInfo& info) {
     //INFNITE PLANE btw
-    collisionShapeBullet = std::make_unique<btStaticPlaneShape>(btVector3(info.Normal.X, info.Normal.Y, info.Normal.Z), info.Offset);
+    collisionShapeBullet = std::make_shared<btStaticPlaneShape>(btVector3(info.Normal.X, info.Normal.Y, info.Normal.Z), info.Offset);
+}
+
+void RigidBody::HandleConvexHullCreate(const AE::Physics::ConvexHullShapeCreateInfo& info) {
+    collisionShapeBullet = info.convexHull;
 }
 
 void RigidBody::HandleSphereCreate(const AE::Physics::SpherePhysicsShapeCreateInfo& info) {
-    collisionShapeBullet = std::make_unique <btSphereShape>(info.Radius);
+    collisionShapeBullet = std::make_shared <btSphereShape>(info.Radius);
 }
 
 void RigidBody::HandleBoxCreate(const AE::Physics::BoxPhysicsShapeCreateInfo& info) {
-    collisionShapeBullet = std::make_unique<btBoxShape>(
+    collisionShapeBullet = std::make_shared<btBoxShape>(
         btVector3(
             info.HalfExtent.X,
             info.HalfExtent.Y,

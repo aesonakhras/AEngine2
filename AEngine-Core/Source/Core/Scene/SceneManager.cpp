@@ -4,6 +4,9 @@
 #include "Core/Events/EventManager.h"
 #include "Core/Events/DestroyEntityEvent.h"
 
+#include "Core/Systems/SystemLocator.h"
+#include "Core/Systems/TransformSystem.h"
+
 using namespace AE::Core;
 
 entt::entity SceneManager::CreateEntity() {
@@ -15,11 +18,13 @@ entt::entity SceneManager::CreateEntity() {
 }
 
 void SceneManager::DeleteEntity(entt::entity entity) {
-	if (auto transform = Registry.try_get<Transform>(entity)) {
+	if (auto* transform = Registry.try_get<Transform>(entity)) {
 		//remove self from the parent(not being deleted)
-		transform->DetachParent();
+		TransformSystem* transformSystem = SystemLocator::Get<TransformSystem>();
 
-		DFSMarkEntityDeletion(transform);
+		transformSystem->DetachParent(entity);
+
+		DFSMarkEntityDeletion(entity);
 	}
 	else {
 		//does not have transform, just mark for deletion
@@ -27,18 +32,28 @@ void SceneManager::DeleteEntity(entt::entity entity) {
 	}
 }
 
-void SceneManager::DFSMarkEntityDeletion(Transform* transform) {
-	toDelete.push_back(transform->Entity);
+void SceneManager::DFSMarkEntityDeletion(entt::entity entity) {
+	if (entity == entt::null) return;
+
+	toDelete.push_back(entity);
 	
-	for (Transform* child : transform->GetChildren()) {
+	Transform* transformComponent = Registry.try_get<Transform>(entity);
+
+	for (entt::entity child : transformComponent->GetChildren()) {
 		DFSMarkEntityDeletion(child);
 	}
 }
 
 void SceneManager::RemoveDeletedEntities() {
-	for (auto entity : toDelete) {
+	auto transforSystem = SystemLocator::Get<TransformSystem>();
+
+	for (auto& entity : toDelete) {
 		if (Registry.valid(entity)) {
-			EventManager::Emit<EntityDestroyedEvent>({entity});
+			if (auto transform = Registry.try_get<Transform>(entity)) {
+				transforSystem->RemoveFromWorld(entity);
+			}
+
+			EventManager::Emit<EntityDestroyedEvent>({ entity });
 			Registry.destroy(entity);
 		}
 		else {

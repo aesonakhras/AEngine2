@@ -3,6 +3,8 @@
 #include <DirectXMath.h>
 #include <unordered_map>
 
+#include <set>
+
 #include "Graphics/GraphicsManager.h"
 #include "Core/Components/PointLight.h"
 #include "Core/Components/Transform.h"
@@ -11,6 +13,8 @@
 #include "Core/Containers/PackedArray.h"
 
 #include "Core/Events/DestroyEntityEvent.h"
+
+
 
 #include "Core/Types.h"
 
@@ -38,7 +42,6 @@ namespace AE::Graphics {
 		struct PointLightData
 		{
 			PointLight* pointLight;
-			Transform* transform;
 			entt::entity entity;
 		};
 
@@ -65,9 +68,7 @@ namespace AE::Graphics {
 		void handleDirLightPass();
 		entt::entity dirLight;
 
-
 		DirtyFlagArray<MAX_LIGHTS> dirtyLights;
 		PackedArray<PointLightData, MAX_LIGHTS> lightArray;
-
 	};
 }

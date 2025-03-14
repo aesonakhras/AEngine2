@@ -3,6 +3,9 @@
 #include <vector>
 #include <btBulletDynamicsCommon.h>
 
+#include "FileManagment/MeshData.h"
+#include "Physics/Bounds.h"
+
 #include "Utils/Singleton.h"
 #include "RigidBodyCreateInfo.h"
 #include "Core/Components/RigidBody.h"
@@ -21,6 +24,13 @@ namespace AE::Physics {
 			void CheckCollisionRigidBody(
 				btRigidBody& rigidBody,
 				CollisionTracker& collisionTracker
+			);
+
+
+			std::shared_ptr<btConvexHullShape> CreateBounds(
+				const MeshData& meshData,
+				int vertexStride,
+				AABB& Aabb
 			);
 
 			btDiscreteDynamicsWorld dynamicsWorld;

@@ -1,6 +1,9 @@
 #pragma once
 
+#include <memory>
 #include <variant>
+
+#include "btBulletDynamicsCommon.h"
 
 #include "Core/Types.h"
 
@@ -16,7 +19,8 @@ namespace AE::Physics {
 	enum class RigidBodyShape {
 		PLANE,
 		SPHERE,
-		BOX
+		BOX,
+		CUSTOM //Convex Hull
 	};
 
 	struct PlanePhysicsShapeCreateInfo
@@ -35,13 +39,18 @@ namespace AE::Physics {
 		Vec3 HalfExtent;
 	};
 
+	struct ConvexHullShapeCreateInfo {
+		std::shared_ptr<btConvexHullShape> convexHull;
+	};
+
 	struct RigidBodyCreateInfo
 	{
 		RigidBodyShape Shape;
 		std::variant<
 			PlanePhysicsShapeCreateInfo,
 			SpherePhysicsShapeCreateInfo,
-			BoxPhysicsShapeCreateInfo
+			BoxPhysicsShapeCreateInfo,
+			ConvexHullShapeCreateInfo
 		> ShapeCreateInfo;
 
 		//parameters

@@ -8,6 +8,7 @@
 
 #include "Physics/OnCollisionInfo.h"
 
+
 //forward declare
 struct Transform;
 
@@ -16,7 +17,7 @@ namespace AE::App {
 
 	class WindmillSystem {
 	public:
-		void Start(entt::registry& scene, entt::entity self);
+		void Start(entt::registry& scene);
 
 		void Update(
 			float32 deltaTime,
@@ -25,6 +26,11 @@ namespace AE::App {
 			AE::Core::CommandBuffer& commandBuffer
 		);
 
-		void OnCollision(const AE::Physics::OnCollisionInfo& collisionInfo);
+		void OnCollision(const AE::Physics::OnCollisionInfo& collisionInfo, entt::entity);
+
+	private:
+		entt::registry* scene;
+
+		float fireRate = 6.0f;
 	};
 }

@@ -11,9 +11,10 @@
 
 #include "Core/Components/SkyBox.h"
 
-
 //TODO: Move to a smarter place
 #include "Core/Events/EventManager.h"
+
+#include "Core/Scene/SceneManager.h"
 
 
 using namespace AE::Graphics;
@@ -21,15 +22,6 @@ using namespace AE::Core;
 using namespace DirectX;
 
 void LightSystem::Initialize() {
-	//set up light removal code
-
-
-	//AE::System::InputManager::GetInstance().RegisterButtonEvent(
-	//	AE::System::Button::W,
-	//	AE::System::InputState::Pressed,
-	//	std::bind(&PlayerSystem::OnForwardDown, this)
-	//);
-
 	EventManager::Subscribe<EntityDestroyedEvent>(
 		std::bind(
 			&LightSystem::RemoveLight,
@@ -67,17 +59,17 @@ void LightSystem::Initialize() {
 
 	dirLight = registry.create();
 
-	registry.emplace<DirectionalLight>(dirLight, Vec3{ 0, -1, 0 }, Vec3{1, 1, 1});
+	registry.emplace<DirectionalLight>(dirLight, Vec3{ 0, -1, 0 }, Vec3{1, 0.8f, 0.0f});
 	
 	Transform transform {
 		dirLight,
-		{0, 20, 0},
+		{0, 50, 0},
 		DirectX::XMQuaternionRotationAxis(
 			DirectX::XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f),
 			DirectX::XM_PIDIV2 + 0.45f 
 		),
 		{ 1.0f, 1.0f, 1.0f },
-		nullptr,
+		entt::null,
 		"DirLight"
 	};
 
@@ -90,7 +82,7 @@ void LightSystem::Initialize() {
 		0.01,
 		100,
 		true,
-		50
+		100
 	);
 
 	auto camera = registry.get<Camera>(dirLight);
@@ -128,9 +120,9 @@ void LightSystem::Update() {
 void LightSystem::AddLightGPU(
 	entt::entity entity,
 	AE::Graphics::PointLight& pointlight,
-	Transform& transform
+	Transform& transform	//TODO: This is useless now, remove during refactor
 ) {
-	int index = lightArray.Add(PointLightData{ &pointlight, &transform, entity });
+	int index = lightArray.Add(PointLightData{ &pointlight, entity });
 
 	//insert into the map
 	lightMap[entity] = index;
@@ -148,8 +140,12 @@ void LightSystem::AddLightGPU(
 void LightSystem::UpdateLightGPU(uint32 index) {
 	auto& data = lightArray.Get(index);
 
-	Vec3 worldPosition = data.transform->GetWorldPosition();
-	
+	//TODO: THIS is a bug but dont worry about it now
+	//prevents a nullpointer which should not happen
+	if (data.pointLight == nullptr) return;
+
+	Vec3 worldPosition = SceneManager::GetInstance().Registry.try_get<Transform>(data.entity)->GetWorldPosition(); 
+
 	PointLight* pointLight = data.pointLight;
 
 	pointLight->Color.X;
@@ -175,8 +171,6 @@ void LightSystem::UpdateLightGPU(uint32 index) {
 
 void LightSystem::RemoveLight(const EntityDestroyedEvent& event) {
 	//check if entity is in the map
-
-	uint32 pointLightIndex = -1;
 
 	if (lightMap.contains(event.entity)) {
 		uint32 pointLightIndex = lightMap[event.entity];

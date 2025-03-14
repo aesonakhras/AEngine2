@@ -87,11 +87,13 @@ VOut VShader(
     return output;
 }
 
-float3 FresnelSchlickRoughness(float VdotH, float3 F0, float roughness) {
+float3 FresnelSchlickRoughness(float cosTheta, float3 F0, float roughness) {
+    return F0 + (max(float3(1.0 - roughness, 1.0 - roughness, 1.0 - roughness), F0) - F0) * pow(saturate(1.0 - cosTheta), 5.0);
+    
     float oneMinusRough = 1.0 - roughness;
 
     float3 F0_mod = max(float3(oneMinusRough, oneMinusRough, oneMinusRough), F0);
-    return F0 + (F0_mod - F0) * exp2((-5.55473 * VdotH - 6.98316) * VdotH);
+    return F0 + (F0_mod - F0) * exp2((-5.55473 * cosTheta - 6.98316) * cosTheta);
 }
 
 float3 FresnelSchlick(float cosTheta, float3 F0) {
@@ -254,7 +256,9 @@ float4 PShader(
     float4 dirColor = float4(1, 1, 1, 1);
     input.uv = input.uv * 1;
     float3 albedo = baseColorMap.Sample(baseColorSampler, input.uv);
-    float roughness = roughnessMap.Sample(roughnessSampler, input.uv).r;
+    //float roughness = roughnessMap.Sample(roughnessSampler, input.uv).r;
+    float roughness = max(roughnessMap.Sample(roughnessSampler, input.uv).r, 0.05);
+    
     //roughness = 0.0f;
     float metallic = metallicMap.Sample(metallicSampler, input.uv).r;
     float3 normal = normalMap.Sample(normalMapSampler, input.uv).xyz;
@@ -263,6 +267,7 @@ float4 PShader(
 
     //extract normal
     normal = normalize(normal * 2.0f - 1.0f);
+    normal.y = -normal.y;
 
     float3 N = normalize(
         normal.x * input.TtoW0 +
@@ -303,27 +308,27 @@ float4 PShader(
             metallic
         ) * shadowFactor;
 
-    float NdotV = max(dot(N, V), 0.0001);
+    float NdotV = max(dot(N, V), 0.0f);
 
-    float3 F0 = float3(0.04f, 0.04f, 0.04f); 
+    float3 F0 = float3(0.04f, 0.04f, 0.04f);
     F0 = lerp(F0, albedo.rgb, metallic);
 
     float3 F =  FresnelSchlickRoughness(NdotV, F0, roughness);
 
     float3 kS = F;
-    float3 kD = 1.0 - kS;
+    float3 kD = (1.0 - kS) * (1.0 - metallic);
 
     float3 irradiance = envIrradiance.Sample(envIrradianceSampler, N);
     float3 diffuse = irradiance * albedo;
     diffuse *= shadowFactor * 0.5 + 0.5;
-
-
-    float3 prefilteredColor = envRadiance.SampleLevel(envRadianceSampler, R, roughness * REFLECTIONLOD);
-    float2 brdf = brdf_lut.Sample(brdf_lutSampler, float2(NdotV, roughness)).rg;
+    
+    float3 prefilteredColor = envRadiance.SampleLevel(envRadianceSampler, R, (roughness) * REFLECTIONLOD).rgb;
+    
+    //1 minus because I pulled the LUT from learnopenGl
+    float2 brdf = brdf_lut.Sample(brdf_lutSampler, float2(NdotV, 1.0f - roughness)).rg;
     float3 specular = prefilteredColor * (F * brdf.x + brdf.y) * shadowFactor;
 
     float3 ambient = (kD * diffuse + specular) ;
-
     color += float4(ambient, 1);
 
     return color;

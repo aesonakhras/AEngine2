@@ -13,7 +13,7 @@ namespace AE::Graphics {
 				entt::registry& registry,
 				entt::entity entity,
 				Vec3 position,
-				Transform* parent,
+				entt::entity parent,
 				float intensity,
 				Vec3 color,
 				float radius,

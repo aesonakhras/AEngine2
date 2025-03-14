@@ -11,6 +11,8 @@
 
 #include "Core/Systems/SystemLocator.h"
 
+#include "System/Audio/AudioManager.h"
+
 using namespace AE::Core;
 using namespace AE::App;
 //using namespace DirectX;
@@ -137,6 +139,8 @@ void PlayerSystem::Start(entt::registry& scene) {
 	}
 
 	auto playerEntity = playerView.front();
+
+	//TODO: DO NOT CACHE THESE.  IT CAN MOVE
 	playerMovementCache = &playerView.get<Movement>(playerEntity);
 	playerTransformCache = &playerView.get<Transform>(playerEntity);
 
@@ -227,9 +231,6 @@ void PlayerSystem::Start(entt::registry& scene) {
 		AE::System::AxisType::MouseY,
 		std::bind(&PlayerSystem::OnVertical, this, std::placeholders::_1)
 	);
-
-	
-
 }
 
 void PlayerSystem::OnForwardDown() {
@@ -282,11 +283,21 @@ void PlayerSystem::OnZUp() {
 
 void PlayerSystem::OnSpaceDown() {
 
+	//TODO: NEVER CACHE TRANSFORMS
+	Vec3 offset = Vec3(0.5f, 0.0f, 2.0f);
+	DirectX::XMVECTOR offsetVec = DirectX::XMVectorSet(offset.X, offset.Y, offset.Z, 1.0f);
+	DirectX::XMVECTOR offsetWorldVec = DirectX::XMVector3TransformCoord(offsetVec, playerTransformCache->WorldMatrix);
+
+	Vec3 offsetWorld;
+	DirectX::XMStoreFloat3(reinterpret_cast<DirectX::XMFLOAT3*>(&offsetWorld), offsetWorldVec);
+
 	AE::App::ProjectileFactory::Create(
 		playerTransformCache->GetForwardDir(),
-		playerTransformCache->GetLocalPosition(),
-		3
+		offsetWorld,
+		30
 	);
+
+	AE::System::AudioManager::GetInstance().PlayAudio("gunshot");
 }
 
 //TODO: Look into why the y axis is negative

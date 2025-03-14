@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+//#include "Graphics/GraphicsManager.h"
 
 #include <entt/entt.hpp>
 
@@ -16,7 +17,9 @@ namespace AE::App {
 		static entt::entity Create(
 			entt::registry& registry,
 			AE::Graphics::Material& material,
-			const Vec3& startPosition
+			const Vec3& startPosition,
+			float rotation,
+			std::shared_ptr<AE::Graphics::ISampler> sampler
 		);
 	};
 }

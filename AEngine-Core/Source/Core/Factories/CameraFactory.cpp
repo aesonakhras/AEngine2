@@ -60,7 +60,7 @@ entt::entity CameraFactory::Create(
 		position,
 		DirectX::XMQuaternionRotationRollPitchYawFromVector({pitch, yaw, 0.0f}),
 		{ 1.0f, 1.0f, 1.0f },
-		nullptr,
+		entt::null,
 		"Camera"
 	};
 

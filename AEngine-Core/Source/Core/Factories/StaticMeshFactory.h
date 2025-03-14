@@ -21,7 +21,7 @@ namespace AE::Core {
 				Vec3 pos,
 				DirectX::XMVECTOR rot,
 				Vec3 scale,
-				Transform* parent,
+				entt::entity parent,
 				std::string name
 			);
 	};

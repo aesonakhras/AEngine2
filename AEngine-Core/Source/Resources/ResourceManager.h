@@ -20,6 +20,11 @@
 
 #include "Core/Debug.h"
 
+//TODO: Split the resource manager into seperate things,
+//I do not like that I have pulled in this
+#include "Physics/PhysicsManager.h"
+#include "Physics/Bounds.h"
+
 
 namespace AE::Core {
 	class ResourceManager : public AE::Utils::Singleton<ResourceManager> {
@@ -37,6 +42,7 @@ namespace AE::Core {
 			std::shared_ptr<AE::Graphics::Material> CreateMaterialInstance(std::string materialID);
 
 			std::shared_ptr<AE::Graphics::Material> GetSharedMaterial(std::string materialID);
+			std::shared_ptr<btConvexHullShape> GetConvexHull(std::string id);
 
 		protected:
 			friend class AE::Utils::Singleton<ResourceManager>;
@@ -59,6 +65,8 @@ namespace AE::Core {
 				AE::Graphics::UniformLayoutDescription& uniformDescription
 			);
 
+			
+
 			ResourceCache<AE::Graphics::Texture> textureCache;
 			ResourceCache<AE::Graphics::Mesh> meshCache;
 
@@ -68,5 +76,6 @@ namespace AE::Core {
 
 			ResourceCache<AE::Graphics::IFragmentShader> fragmentShaderCache;
 			ResourceCache<AE::Graphics::IVertexShader> vertexShaderCache;
+			ResourceCache<btConvexHullShape> convexHulls;
 	};
 }

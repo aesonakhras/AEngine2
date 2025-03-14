@@ -59,6 +59,54 @@ void PhysicsManager::CheckCollisionRigidBody(
     dynamicsWorld.contactTest(&rigidBody, *this);
 }
 
+std::shared_ptr<btConvexHullShape> PhysicsManager::CreateBounds(
+    const MeshData& meshData,
+    int vertexStride,
+    AABB& Aabb
+) {
+    std::shared_ptr<btConvexHullShape> convexHullShape = std::make_shared<btConvexHullShape>();
+
+    for (int i = 0; i < meshData.vertexCount; i+=3) {
+        
+        size_t offset = i * (vertexStride / sizeof(float));
+
+        float* vertices = static_cast<float*>(meshData.vertexData);
+
+        //convert vertex to btVertex
+        btVector3 vert = {
+            vertices[offset],
+            vertices[offset + 1],
+            vertices[offset + 2]
+        };
+
+        convexHullShape->addPoint(vert, false);
+    }
+
+    convexHullShape->optimizeConvexHull();
+    convexHullShape->recalcLocalAabb();
+
+    btVector3 min;
+    btVector3 max;
+
+    btTransform transform;
+
+    convexHullShape->getAabb(transform, min, max);
+
+    Aabb.min = {
+        min.x(),
+        min.y(),
+        min.z()
+    };
+
+    Aabb.max = {
+        max.x(),
+        max.y(),
+        max.z()
+    };
+
+    return convexHullShape;
+}
+
 bool PhysicsManager::initialize() {
     return true;
 }

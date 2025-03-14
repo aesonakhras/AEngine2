@@ -41,7 +41,7 @@ void DX11GLI::Init(const DeviceCreateInfo& info) {
     renderTextureDesc.Height = info.ScreenHeight;
     renderTextureDesc.MipLevels = 1;
     renderTextureDesc.ArraySize = 1;
-    renderTextureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    renderTextureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
     renderTextureDesc.SampleDesc.Count = 1;
     renderTextureDesc.Usage = D3D11_USAGE_DEFAULT;
     renderTextureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;

@@ -210,7 +210,7 @@ MeshData FileImporter::ImportMesh(std::string fileName) {
         std::cout << "model has failed" << std::endl;
     }
     if (scene->HasMeshes()) {
-        std::cout << "model exists, parsing now" << std::endl;
+        std::cout << "model exists, parsing now: " << fileName <<std::endl;
     }
 
     size_t indiciesCount = scene->mMeshes[0]->mNumFaces * 3;

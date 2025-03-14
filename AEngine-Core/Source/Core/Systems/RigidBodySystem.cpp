@@ -10,6 +10,37 @@
 
 using namespace AE::Physics;
 
+void RigidBodySystem::PreUpdate(entt::registry& registry, float32 timeStep) {
+	auto rigidBodyTransformView = registry.view<Transform, RigidBody>();
+
+	for (auto entity : rigidBodyTransformView) {
+		auto& transform = rigidBodyTransformView.get<Transform>(entity);
+		auto& rigidBody = rigidBodyTransformView.get<RigidBody>(entity);
+
+		//check for an update
+		if (transform.GetDirty()) {
+			btTransform physicsTransform;
+
+			auto wPos = transform.GetWorldPosition();
+			auto wQuat = transform.GetWorldRotation();
+
+			DirectX::XMFLOAT4 wRot;
+			DirectX::XMStoreFloat4(&wRot, wQuat);
+
+			btVector3 worldPos = {wPos.X, wPos.Y, wPos.Z};
+			btQuaternion worldRot = {wRot.x, wRot.y, wRot.z, wRot.w};
+
+
+			physicsTransform.setIdentity();
+			physicsTransform.setOrigin(worldPos);
+			physicsTransform.setRotation(worldRot);
+
+			rigidBody.rigidBodyBullet->setWorldTransform(physicsTransform);
+			rigidBody.rigidBodyBullet->getMotionState()->setWorldTransform(physicsTransform);
+		}
+	}
+}
+
 void RigidBodySystem::Update(entt::registry& registry, float32 timeStep) {
 	//Transforms
 	auto rigidBodyTransformView = registry.view<Transform, RigidBody>();

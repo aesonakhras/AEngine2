@@ -16,7 +16,7 @@ public:
 		return count++;
 	}
 
-	int Add(const T&& element) {
+	int Add(T&& element) {
 		if (count >= N) {
 			AE::Core::Debug::LogError("Packed Array is full.");
 			return -1;
@@ -33,6 +33,7 @@ public:
 		}
 
 		elements[index] = std::move(elements[count - 1]);
+		elements[count - 1] = T();
 		count--;
 
 		return index;

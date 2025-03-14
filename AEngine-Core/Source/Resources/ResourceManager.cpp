@@ -1,6 +1,7 @@
 #include "ResourceManager.h"
 #include "System/Input/InputManager.h"
 
+
 using namespace AE::Core;
 using namespace AE::Graphics;
 
@@ -83,9 +84,19 @@ std::shared_ptr<AE::Graphics::Mesh> ResourceManager::GetStaticMesh(std::string i
 		AE::Graphics::BufferType::Index
 	);
 	
-	//create mesh
-	auto mesh = std::make_shared<Mesh>(VB, IB);
+	AE::Physics::AABB AabbBounds {};
 
+	auto convexHull = AE::Physics::PhysicsManager::GetInstance().
+		CreateBounds(
+			meshData,
+			sizeof(AE::Graphics::StandardVertex),
+			AabbBounds
+		);
+
+	bool hullAdded = convexHulls.addItem(id, convexHull, 0, false);
+
+	//create mesh
+	auto mesh = std::make_shared<Mesh>(VB, IB, AabbBounds);
 	
 	//add to cache
 	bool result = meshCache.addItem(id, mesh, 0, false);
@@ -254,6 +265,16 @@ void ResourceManager::recompileFragmentShader(std::string name, std::shared_ptr<
 	GraphicsManager& graphicsManager = GraphicsManager::GetInstance();
 
 	graphicsManager.RecompileFragmentShader(name, fragmentShader);
+}
+
+std::shared_ptr<btConvexHullShape> ResourceManager::GetConvexHull(std::string id) {
+	auto hull = convexHulls.GetItem(id);
+
+	if (hull == nullptr) {
+		//TODO: Error
+	}
+
+	return hull;
 }
 
 void ResourceManager::shutdown() { return; }

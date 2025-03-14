@@ -36,11 +36,11 @@
 
 #include "Resources/ResourceManager.h"
 
-#define WINDOW_START_X 300
-#define WINDOW_START_Y 300
+#define WINDOW_START_X 0
+#define WINDOW_START_Y 0
 
-#define SCREEN_WIDTH 1920
-#define SCREEN_HEIGHT 1080
+#define SCREEN_WIDTH 3840
+#define SCREEN_HEIGHT 2160
 
 using namespace AE::Core;
 using namespace AE::Graphics;
@@ -60,7 +60,9 @@ RigidBodySystem rigidBodySystem;
 
 entt::registry* g_sceneRegistry;
 
-JobSystem jobSystem{8};
+//There is a thread issue somewhere debugging is highest priority
+//This puts a quick bandaid on it
+JobSystem jobSystem{1};
 
 CommandBuffer commandBuffer {};
 
@@ -90,6 +92,12 @@ void AE::Core::Run() {
         //execute command buffer for shared variable data in order
         commandBuffer.Execute();
 
+        //let the phyisics system know of the updates before simulation
+        rigidBodySystem.PreUpdate(
+            SceneManager::GetInstance().Registry,
+            deltaTime
+        );
+
         while(timeSinceLastPhysicsStep >= physicsTimeStep) {
             PhysicsManager::GetInstance().StepPhysics(timeSinceLastPhysicsStep, physicsTimeStep);
 
@@ -99,8 +107,6 @@ void AE::Core::Run() {
             );
             timeSinceLastPhysicsStep -= physicsTimeStep;
         }
-
-        
 
         lightSystem.Update();
 
@@ -163,6 +169,4 @@ void AE::Core::ShutDown() {
     AE::Graphics::GraphicsManager::ShutDown();
     AE::System::AudioManager::ShutDown();
     AE::System::DeltaTimeManager::ShutDown();
-
-    AE::System::MemoryAllocator::DonaldDUMP();
 }

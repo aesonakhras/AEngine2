@@ -24,9 +24,50 @@ void PrintMatrix(const DirectX::XMMATRIX& matrix, std::string name) {
 
 
 
-TransformSystem::TransformSystem()
+void TransformSystem::AddToWorld(entt::entity entity, entt::entity parent)
 {
+	if (parent != entt::null) {
+		AttachParent(entity, parent);
+	}
+}
 
+void TransformSystem::RemoveFromWorld(entt::entity entity) {
+	Transform* childTransform = registry->try_get<Transform>(entity);
+
+	if (!childTransform) return;
+
+	DetachParent(entity);
+}
+
+void TransformSystem::AttachParent(entt::entity child, entt::entity parent) {
+	Transform* childTransform = registry->try_get<Transform>(child);
+	Transform* parentTransform = registry->try_get<Transform>(parent);
+
+	if (!childTransform || !parentTransform) return;
+
+	if (childTransform->GetParent() != entt::null) {
+		DetachParent(child);
+	}
+
+	childTransform->SetParent(parent);
+	parentTransform->AddChild(child);
+}
+
+void TransformSystem::DetachParent(entt::entity child) {
+	Transform* childTransform = registry->try_get<Transform>(child);
+
+	if (!childTransform) return;
+
+	entt::entity parentEntity = childTransform->GetParent();
+	if (parentEntity == entt::null) return;
+
+	Transform* parentTransform = registry->try_get<Transform>(parentEntity);
+
+	if (parentTransform) {
+		parentTransform->RemoveChild(child);
+	}
+
+	childTransform->SetParent(entt::null);
 }
 
 void TransformSystem::SetScene(entt::registry& _registry) {
@@ -69,7 +110,7 @@ void TransformSystem::Update() {
 		auto& transform = transformView.get<Transform>(entity);
 
 		//dfs with root nodes only
-		if (transform.GetParent() == nullptr) {
+		if (transform.GetParent() == entt::null) {
 			if (transform.GetDirty()) {
 				transform.WorldMatrix = transform.GetLocalMatrix();
 				registry->emplace<TransformUpdatedTag>(transform.Entity);
@@ -93,20 +134,24 @@ void TransformSystem::updateWorldMatrix(
 ) {
 	if (parentTransform == nullptr) return;
 
-	
+	if (parentTransform->GetChildren().empty()) return;
 
-	for (Transform* childTransform : parentTransform->GetChildren()) {
+	for (entt::entity childTransformEntity : parentTransform->GetChildren()) {
+		Transform* childTransformComponent = registry->try_get<Transform>(childTransformEntity);
 
-		bool shouldUpdate = childTransform->GetDirty() || parentDirtyStatus;
+
+		bool shouldUpdate = childTransformComponent->GetDirty() || parentDirtyStatus;
 		
 		if (shouldUpdate) {
-			childTransform->WorldMatrix = childTransform->GetLocalMatrix() * parentWorldMatrix;
+			childTransformComponent->WorldMatrix = childTransformComponent->GetLocalMatrix() * parentWorldMatrix;
 
-			registry->emplace<TransformUpdatedTag>(childTransform->Entity);
-			childTransform->ClearDirty();
+
+			registry->emplace<TransformUpdatedTag>(childTransformComponent->Entity);
+
+			childTransformComponent->ClearDirty();
 		}
 
-		updateWorldMatrix(childTransform, childTransform->WorldMatrix, shouldUpdate);
+		updateWorldMatrix(childTransformComponent, childTransformComponent->WorldMatrix, shouldUpdate);
 	}
 }
 

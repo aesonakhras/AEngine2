@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+
 #include <unordered_map>
 #include <vector>
 #include <functional>
@@ -17,6 +19,7 @@ namespace AE::Core {
         template<typename EventType>
         static void Emit(const EventType& event) {
             for (const auto& listener : GetListeners<EventType>()) {
+                std::cout << "Emmiting ending event" << std::endl;
                 listener(event);
             }
         }

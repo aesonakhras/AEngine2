@@ -16,10 +16,10 @@
 namespace AE::App {
 	class ProjectileFactory {
 	public:
-		static entt::entity Create(Vec3 direction, Vec3 startPosition, float32 speed) {
-			auto projectileMesh = AE::Core::ResourceManager::GetInstance().GetStaticMesh(std::string("Assets/Rock/rock.obj"));
-			auto projectileMaterial = AE::Core::ResourceManager::GetInstance().GetSharedMaterial("RockMaterial");
+		static entt::entity Create(Vec3 direction, Vec3 startPosition, float32 speed, std::string append = "") {
+			auto projectileMesh = AE::Core::ResourceManager::GetInstance().GetStaticMesh(std::string("Assets/Sphere.obj"));
 
+			auto projectileMaterial = AE::Core::ResourceManager::GetInstance().GetSharedMaterial("ProjectileMaterial");
 			auto& sceneManager = AE::Core::SceneManager::GetInstance();
 
 			auto bulletEntity = AE::Core::StaticMeshFactory::Create(
@@ -28,9 +28,9 @@ namespace AE::App {
 				*projectileMaterial.get(),
 				startPosition,
 				DirectX::XMQuaternionIdentity(),
-				{ 0.1f, 0.1f, 0.1f },
-				nullptr,
-				"Bullet"
+				{ 1.0f, 1.0f, 1.0f },
+				entt::null,
+				"Bullet" + append
 			);
 
 			sceneManager.Registry.emplace<Projectile>(bulletEntity, direction, speed);
@@ -52,8 +52,8 @@ namespace AE::App {
 				AE::Physics::RigidBodyType::Dynamic,
 				startPosition,
 				0.25f,
-				direction * 20.0f,
-				100000.0f,
+				direction * speed,
+				0.5f,
 				1.0f
 			};
 

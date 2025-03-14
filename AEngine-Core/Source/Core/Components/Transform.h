@@ -4,6 +4,7 @@
 #include <DirectXMath.h>
 //TODO: At some point only have name in debug config
 #include <string>
+#include <Core/Debug.h>
 
 #include "Math/Vec3.h"
 
@@ -20,7 +21,7 @@ struct Transform {
 			Vec3 pos,
 			DirectX::XMVECTOR rot,
 			Vec3 scale,
-			Transform* parent,
+			entt::entity parent,
 			std::string name
 		) : 
 			Position { pos }, 
@@ -32,21 +33,7 @@ struct Transform {
 			WorldMatrix{ DirectX::XMMatrixIdentity() },
 			Entity(entity)
 		{
-			if (Parent != nullptr) {
-				Parent->AddChild(this);
-			}	
 		}
-
-		~Transform() {
-			if (Parent) {
-				Parent->RemoveChild(this);
-			}
-			//clear children
-			for (auto* child : Children) {
-				child->Parent = nullptr;
-			}
-		}
-
 		void SetLocalPosition(Vec3 pos) {
 			Position = pos;
 			isDirty = true;
@@ -71,17 +58,6 @@ struct Transform {
 		}
 
 		void SetWorldPosition(Vec3 pos) {
-			//DirectX::XMVECTOR worldPosition = {pos.X, pos.Y, pos.Z, 1.0f};
-
-			//DirectX::XMMATRIX inverseWorldMatrix = DirectX::XMMatrixInverse(nullptr, WorldMatrix);
-
-			//DirectX::XMVECTOR localPosition = DirectX::XMVector3TransformCoord(worldPosition, inverseWorldMatrix);
-
-			//DirectX::XMFLOAT3 localPositionVec3;
-			//DirectX::XMStoreFloat3(&localPositionVec3, localPosition);
-
-			//Position = { localPositionVec3.x, localPositionVec3.y, localPositionVec3.z };
-
 			Position = pos;
 
 			UpdateWorldMatrix();
@@ -104,6 +80,12 @@ struct Transform {
 
 		DirectX::XMVECTOR GetLocalRotation() {
 			return Rotation;
+		}
+
+		DirectX::XMVECTOR GetWorldRotation() {
+			DirectX::XMMATRIX rotationMatrix = WorldMatrix;
+			rotationMatrix.r[3] = DirectX::XMVectorSet(0, 0, 0, 1);
+			return DirectX::XMQuaternionRotationMatrix(rotationMatrix);
 		}
 
 		void SetScale(Vec3 scale) {
@@ -141,30 +123,11 @@ struct Transform {
 				DirectX::XMMatrixTranslationFromVector(dxPos);
 		}
 
-		void SetParent(Transform* parent) {
-			if (Parent != nullptr) {
-				Parent->AddChild(this);
-			}
 
-			isDirty = true;
-		}
 
-		void DetachParent() {
-			if (Parent != nullptr) {
-				Parent->RemoveChild(this);
-				Parent = nullptr;
-			}
-
-			isDirty = true;
-		}
-
-		const Transform* GetParent() {
-			return Parent;
-		}
-
-		const std::set<Transform*> GetChildren() {
-			return Children;
-		}
+		//const std::set<Transform*> GetChildren() {
+		//	return Children;
+		//}
 
 		const Vec3 GetForwardDir() {
 
@@ -183,21 +146,40 @@ struct Transform {
 		entt::entity Entity;
 		Vec3 worldPosition;
 
-	private:
-		void AddChild(Transform* newChild) {
+		void SetParent(entt::entity parent) {			
+			Parent = parent;
+			isDirty = true;
+		}
+
+		const entt::entity GetParent() {
+			return Parent;
+		}
+
+
+		void AddChild(entt::entity newChild) {
 			Children.insert(newChild);
 		}
 
-		void RemoveChild(Transform* childToRemove) {
+		void RemoveChild(entt::entity childToRemove) {
 			Children.erase(childToRemove);
 		}
+
+		const std::set<entt::entity>& GetChildren() {
+			return Children;
+		}
+
+		void ClearChildren() {
+			Children.clear();
+		}
+		std::string Name;
+	private:
+		entt::entity Parent;
+		std::set<entt::entity> Children{};
 
 		Vec3 Position;
 		//NOTE: This is a quaternion
 		DirectX::XMVECTOR Rotation;	
 		Vec3 Scale;
 		bool isDirty;
-		Transform* Parent;
-		std::set<Transform*> Children{};
-		std::string Name;
+		
 };

@@ -20,7 +20,7 @@ namespace AE::Core {
 			void RemoveDeletedEntities();
 
 		private:
-			void DFSMarkEntityDeletion(Transform* transform);
+			void DFSMarkEntityDeletion(entt::entity entity);
 
 			void initialize() {};
 			void shutdown();

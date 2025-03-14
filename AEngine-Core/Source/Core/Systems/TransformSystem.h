@@ -12,7 +12,7 @@ namespace AE::Core {
 
 	class TransformSystem {
 		public:
-			TransformSystem();
+			//TransformSystem();
 
 			void SetScene(entt::registry& registry);
 
@@ -29,6 +29,12 @@ namespace AE::Core {
 			void UpdateKinematicTransforms();
 
 			void ClearUpdated();
+
+			void AddToWorld(entt::entity entity, entt::entity parent);
+			void RemoveFromWorld(entt::entity entity);
+
+			void AttachParent(entt::entity child, entt::entity parent);
+			void DetachParent(entt::entity child);
 
 		private:
 			CommandBuffer transformCommandbuffer;
